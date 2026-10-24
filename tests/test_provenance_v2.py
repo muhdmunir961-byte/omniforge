@@ -211,7 +211,7 @@ def test_legacy_v1_migration_preserves_hashes_and_original_bytes(tmp_path):
     result = v2.migrate(tmp_path, approve=True)
     assert result["legacy_ref"]["head"] == old_block["hash"]
     assert old_path.read_bytes() == old_bytes
-    assert legacy_verify(tmp_path)["ok"]
+    assert legacy_verify(tmp_path, check_current=True)["ok"]
     backup = tmp_path / ".of-provenance" / "legacy-v1-chain.jsonl"
     assert backup.read_bytes() == old_bytes
     genesis = v2.snapshot(tmp_path)
