@@ -1,6 +1,8 @@
 # Security policy
 
-OmniForge executes commands only after explicit user approval. Its default MCP skills execution is **disabled** unless the host process sets `OMNIFORGE_MCP_EXECUTION=1`. Browser execution is separately disabled unless the host sets `OMNIFORGE_MCP_BROWSER=1`. Agent tools can sometimes set request-level arguments autonomously, so never enable these flags for an agent you do not trust.
+OmniForge's **MCP interface is preview-only for execution and browser tools**, regardless of request parameters or environment variables. A model-supplied `approve: true` never authorizes a shell command or browser session. Use the local CLI with an explicit `--approve` flag for actions you have reviewed. CLI approval is a user opt-in, not proof of an independent permission broker.
+
+Skill installation, VS Code configuration, AI patch backups, and screenshots reject symlinked destination paths beneath the project; this mitigates symlink-based escapes but does **not** prevent time-of-check/time-of-use (TOCTOU) races against a concurrently malicious filesystem process. Do not run tools against hostile worktrees or allow untrusted processes to alter the project simultaneously.
 
 Docker isolation mounts the project and script read-only, drops capabilities, disables network by default and has resource caps. It is **not** a complete solution against kernel exploits, Docker daemon compromise or device-level side effects. Docker images must be pulled by the operator, and OmniForge sets `--pull=never`. `--unsafe-local` deliberately bypasses isolation.
 
