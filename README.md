@@ -31,7 +31,7 @@ For development: `python -m pip install pytest && python -m pytest -q`.
 | Lazy skill load | `omniforge load log-triage` | Loads only one SKILL.md on request |
 | VS Code MCP integration | `omniforge setup-vscode --project .` | Configures project-local `.vscode/mcp.json` |
 | Local VS Code extension source | Open `vscode-extension/` and press F5 | Development Host only; not a published Marketplace extension |
-| MCP bridge | `omniforge mcp` | Search, load, budget and permission-gated execution/browser preview |
+| MCP bridge | `omniforge mcp` | Search, load, budget and read-only execution/browser previews |
 | Skill installation | `omniforge install log-triage --agent codex --project .` | No overwrite without `--force` |
 | Skill validation | `omniforge validate skills/my-skill` | Static format check |
 | Skill audit | `omniforge audit skills/my-skill` | Heuristic check, not a malware scanner |
@@ -118,14 +118,9 @@ By default it previews the model's proposed unified diff. Add `--apply` only aft
 
 ## MCP safety
 
-The MCP server exposes `omniforge_search`, `omniforge_load`, `omniforge_budget`, `omniforge_run` and `omniforge_browser`. The last two are preview-only unless the human operator deliberately enables them in the MCP server process:
+The MCP server exposes `omniforge_search`, `omniforge_load`, `omniforge_budget`, `omniforge_run` and `omniforge_browser`. **The last two are preview-only.** No MCP request argument, environment flag, or model response can approve live execution. This prevents an AI agent from treating its own `approve: true` as human permission.
 
-```bash
-OMNIFORGE_MCP_EXECUTION=1 omniforge mcp
-OMNIFORGE_MCP_BROWSER=1 omniforge mcp
-```
-
-Even when enabled, calls must include explicit approval. MCP skill execution uses Docker isolation. **Do not enable these flags for untrusted agents.**
+For an actual script run or browser session, invoke the **local CLI** yourself, inspect the target and arguments, and explicitly use `--approve`. Local CLI execution is a user operation; `--unsafe-local` bypasses Docker isolation and should be used only for trusted code. See [SECURITY.md](SECURITY.md).
 
 ## Search and token use
 
