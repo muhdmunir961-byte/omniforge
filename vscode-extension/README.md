@@ -7,3 +7,7 @@ Experimental native VS Code extension providing commands for skill search, inspe
 The extension requires a local OmniForge installation (`python -m pip install -e .` in the repository). Set `omniforge.executable` if `omniforge` is not available on PATH.
 
 Use `OmniForge: Search Skills` or `OmniForge: Install Skill` from the Command Palette. Installation asks for confirmation and does not overwrite an existing skill directory.
+
+## Integration verification
+
+The Linux CI workflow `.github/workflows/e2e.yml` packages the VSIX and runs an actual VS Code Extension Development Host via `@vscode/test-electron`. It verifies command activation and that the OmniForge diagnostics command opens valid JSON returned by the installed Python CLI. This is not a Marketplace publication or a cross-platform compatibility guarantee.

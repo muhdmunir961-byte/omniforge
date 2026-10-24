@@ -4,7 +4,7 @@ OmniForge's **MCP interface is preview-only for execution and browser tools**, r
 
 Skill installation, VS Code configuration, AI patch backups, and screenshots reject symlinked destination paths beneath the project; this mitigates symlink-based escapes but does **not** prevent time-of-check/time-of-use (TOCTOU) races against a concurrently malicious filesystem process. Do not run tools against hostile worktrees or allow untrusted processes to alter the project simultaneously.
 
-Docker isolation mounts the project and script read-only, drops capabilities, disables network by default and has resource caps. It is **not** a complete solution against kernel exploits, Docker daemon compromise or device-level side effects. Docker images must be pulled by the operator, and OmniForge sets `--pull=never`. `--unsafe-local` deliberately bypasses isolation.
+Docker isolation mounts the project and script read-only, drops capabilities, runs under the caller's Linux UID/GID (instead of root where available), disables network by default and has resource caps. It is **not** a complete solution against kernel exploits, Docker daemon compromise or device-level side effects. Docker images must be pulled by the operator, and OmniForge sets `--pull=never`. `--unsafe-local` deliberately bypasses isolation.
 
 Do not run third-party scripts merely because `omniforge audit` reports no findings. Its static scan is heuristic and can miss attacks or flag benign content. Review supporting scripts and dependencies before installation.
 

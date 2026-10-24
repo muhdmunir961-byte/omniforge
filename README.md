@@ -137,3 +137,25 @@ See [RELEASE_AUDIT.md](RELEASE_AUDIT.md), [SECURITY.md](SECURITY.md) and [CONTRI
 ## License
 
 MIT for OmniForge code. Upstream software retains its own licenses and must be installed separately.
+
+## Verified integration tests (v1.1.1)
+
+GitHub Actions [real integration run](https://github.com/muhdmunir961-byte/omniforge/actions/runs/40100424908) passed four jobs on Linux:
+
+- **Docker:** launched a real `python:3.13-alpine` container, read a private temporary project using the calling user's UID/GID, analyzed Python source, and completed a two-step dependency-ordered skill workflow. Project and skill script were mounted read-only, with networking disabled.
+- **Playwright Chromium:** visited an authorized localhost test server, filled and clicked real page elements, and saved a screenshot in the project.
+- **Model HTTP compatibility:** sent one explicitly chosen file to a local mock OpenAI-compatible server over real HTTP; verified the proposal, preview, approved apply, and backup restoration source.
+- **VS Code:** packaged a VSIX and launched a real Linux VS Code Extension Development Host; verified command activation and the CLI diagnostics response.
+
+Run the opt-in local integration tests only after installing their prerequisites:
+
+```bash
+python -m pip install -e . pytest playwright
+python -m playwright install chromium
+docker pull python:3.13-alpine
+OMNIFORGE_LIVE=1 python -m pytest -q tests/test_live_integrations.py
+```
+
+The VS Code host test requires a graphical/Xvfb Linux runner and `@vscode/test-electron`; see `.github/workflows/e2e.yml`. Live browser, Docker and extension integration tests run automatically in that workflow when relevant source changes are pushed.
+
+**Limits:** The integration suite uses a local test website and mock model server. It does *not* certify remote model providers, actual customer websites, Windows/macOS compatibility, or all threat models.

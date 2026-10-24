@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 — Integration verification and Docker permissions fix (2026-10-24)
+
+- Fixed Docker sandbox access for private user-owned project directories by running with the invoking UID/GID rather than root with dropped capabilities.
+- Added real Chromium browser interaction, screenshot, local model HTTP, and Docker isolated execution plus DAG workflow tests.
+- Added real VS Code Extension Development Host test and VSIX packaging check on Linux.
+- Added opt-in E2E GitHub Actions workflow alongside the existing three-version Python unit-test matrix.
+- Confirmed user-controlled approval and retained read-only Docker mounts and network-disabled default.
+- Limitations remain for real third-party APIs, unaudited websites, and non-Linux environments.
+
 ## 1.1.0 — Capability extension (2026-10-24)
 
 - Added metadata hybrid search and optional *offline* neural embedding search.
