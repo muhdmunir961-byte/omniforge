@@ -1,0 +1,115 @@
+name: Verified release candidate
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-regression:
+    name: Release tests / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m pip install -e . -r requirements-dev.txt
+      - run: python -m pytest -q
+
+  verified-artifacts:
+    name: Verify and attest build artifacts
+    needs: release-regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install pinned build tools
+        run: python -m pip install build==1.6.1 twine==7.0.0 cyclonedx-bom==7.5.0
+      - name: Check tag and component versions
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')"
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+          python - "$VERSION" <<'PY'
+          import json, sys
+          release_version=sys.argv[1]
+          ext=json.load(open('vscode-extension/package.json',encoding='utf-8'))['version']
+          if ext != release_version:
+              raise SystemExit(f'VS Code version {ext} != Python {release_version}')
+          print('Matching Python and extension versions:', release_version)
+          PY
+          if [[ "$GITHUB_REF" == refs/tags/* ]] && [[ "$GITHUB_REF_NAME" != "v$VERSION" ]]; then
+            echo "Release tag does not match declared package version"
+            exit 1
+          fi
+      - name: Build reproducible-input wheel and sdist
+        shell: bash
+        run: |
+          set -euo pipefail
+          export SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          python -m build --sdist --wheel --outdir dist
+          python -m twine check dist/*.whl dist/*.tar.gz
+          python scripts/release_check.py --dist dist --version "${{ steps.version.outputs.value }}"
+      - name: Build version-matched VSIX extension
+        working-directory: vscode-extension
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm exec --yes --package=@vscode/vsce@3.6.0 -- vsce package --no-dependencies -o "../dist/omniforge-local-${{ steps.version.outputs.value }}.vsix"
+          test -s "../dist/omniforge-local-${{ steps.version.outputs.value }}.vsix"
+      - name: Generate CycloneDX SBOM (build environment)
+        shell: bash
+        run: |
+          cyclonedx-py environment --output-format JSON --output-file dist/build-environment.sbom.cdx.json
+      - name: Final SHA-256 checksums
+        shell: bash
+        run: |
+          (cd dist && sha256sum *.whl *.tar.gz *.vsix > SHA256SUMS.txt)
+          cat dist/SHA256SUMS.txt
+      - name: GitHub provenance attestation for versioned release artifacts
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/attest@v4
+        with:
+          subject-path: |
+            dist/*.whl
+            dist/*.tar.gz
+            dist/*.vsix
+      - name: Store release assets for inspection
+        uses: actions/upload-artifact@v4
+        with:
+          name: omniforge-release-candidate
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish GitHub Release only for explicit version tags
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
