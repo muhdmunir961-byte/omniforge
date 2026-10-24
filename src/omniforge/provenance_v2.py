@@ -53,10 +53,17 @@ def read_safe(path: Path, limit: int = MAX_LEDGER_BYTES) -> bytes:
         st = os.fstat(fd)
         if not stat.S_ISREG(st.st_mode) or st.st_size > limit:
             raise ValueError("Provenance file is not regular or is too large")
-        data = os.read(fd, limit + 1)
-        if len(data) > limit:
-            raise ValueError("Provenance file exceeds size limit")
-        return data
+        parts = []
+        total = 0
+        while True:
+            chunk = os.read(fd, min(128 * 1024, limit + 1 - total))
+            if not chunk:
+                break
+            parts.append(chunk)
+            total += len(chunk)
+            if total > limit:
+                raise ValueError("Provenance file exceeds size limit")
+        return b"".join(parts)
     finally:
         os.close(fd)
 
@@ -183,6 +190,8 @@ def migrate(project: Path, *, approve: bool = False) -> dict:
     raw = read_safe(old)
     entries = strict_legacy(raw)
     path = secure_project_path(root, ".omniforge", "anchors.jsonl")
+    if path.is_symlink():
+        raise ValueError("Legacy anchor metadata cannot be symlinked")
     anchors = read_safe(path) if path.is_file() else None
     ref = {
         "head": entries[-1]["hash"],
