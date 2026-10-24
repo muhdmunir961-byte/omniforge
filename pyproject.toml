@@ -5,13 +5,26 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "omniforge-agent"
 version = "1.3.1"
-description = "Local-first AI agent skill router, audited registry, token-aware discovery, and MCP stdio bridge."
+description = "Local-first AI skill discovery, permission-gated workflows, read-only MCP tools, and provenance verification."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
 authors = [{name = "OmniForge Contributors"}]
-keywords = ["agent-skills", "mcp", "codex", "claude-code", "opencode", "cursor", "vscode", "skill-router"]
-classifiers = ["Programming Language :: Python :: 3"]
+keywords = ["agent-skills", "mcp", "codex", "claude-code", "opencode", "cursor", "vscode", "skill-router", "provenance", "hash-chain"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/muhdmunir961-byte/omniforge"
+Source = "https://github.com/muhdmunir961-byte/omniforge"
+Issues = "https://github.com/muhdmunir961-byte/omniforge/issues"
+Changelog = "https://github.com/muhdmunir961-byte/omniforge/blob/main/CHANGELOG.md"
+Security = "https://github.com/muhdmunir961-byte/omniforge/blob/main/SECURITY.md"
 
 [project.scripts]
 omniforge = "omniforge.cli:main"
