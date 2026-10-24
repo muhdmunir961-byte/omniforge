@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.3.1 — Cross-platform reliability and release readiness (2026-10-25)
+
+- Added Linux/Windows/macOS CI for Python 3.11 and 3.13. Fixed actual Windows raw-byte hashing errors caused by OS text-mode CRLF/Control-Z conversion, and removed a Linux-only test assumption on macOS.
+- Added CodeQL v4, pip-audit, redacted high-confidence secret-pattern scanning, Dependabot and measured branch-aware Python coverage.
+- Added tested Python wheel/source/VSIX release-candidate pipeline with file-content checks, SHA-256 checksums, CycloneDX build-environment SBOM and version-tag-gated Sigstore attestation and GitHub Release.
+- Added architecture and release-process guides, quickstart, CODEOWNERS and contributor issue/PR templates.
+- Disabled HTTP redirects from BYOK model providers to prevent chosen source files and API credentials being forwarded to unintended destinations.
+- Unit/branch coverage baseline was approximately 73% before additional regression tests. Security automation does not replace an independent penetration test.
+- No public release, registry publication, Marketplace listing, external adoption, full provider-compatibility guarantee or security certification is claimed by this changelog alone.
+
+
 ## 1.3.0 — Strict OF-Provenance v2 and safe legacy migration (2026-10-25)
 
 - Added new `ofprov` CLI and `omniforge provenance` subcommands without changing v1 `omniforge blockchain`.
