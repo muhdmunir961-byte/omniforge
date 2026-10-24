@@ -112,6 +112,10 @@ def test_real_v2_provenance_anchor_and_rpc_verification(tmp_path: Path):
     assert verified["ok"], verified
     assert verified["entry_hash"] == entry["entry_hash"]
     assert verified["confirmations"] >= 1
+    saved = v2.save_rpc_receipt(tmp_path, verified, wallet=wallet)
+    assert saved["status"] == "journaled-local-only"
+    assert v2.verify(tmp_path)["anchor_evidence_events"] == 1
+    assert v2.proof(tmp_path, 0)["anchor_status"] == "not_requested"
 
     (tmp_path / "new-feature.py").write_text("integrity = False\n")
     v2.snapshot(tmp_path)
