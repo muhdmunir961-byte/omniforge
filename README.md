@@ -6,6 +6,8 @@
 
 Python 3.11+ · MCP (stdio) · VS Code · MIT
 
+[![CI](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/ci.yml/badge.svg)](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/ci.yml) [![Cross-platform](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/portability.yml/badge.svg)](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/portability.yml) [![Security](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/security.yml/badge.svg)](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/security.yml) [![E2E](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/e2e.yml/badge.svg)](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/e2e.yml)
+
 **Languages:** **English** · [Bahasa Indonesia](README.id.md) · [Bahasa Melayu](README.ms.md)
 
 </div>
@@ -23,7 +25,7 @@ omniforge list
 omniforge search "debug ESP32 errors"
 ```
 
-For development: `python -m pip install pytest && python -m pytest -q`.
+For development: `python -m pip install -e . -r requirements-dev.txt && python -m pytest -q`. See the [quickstart](examples/quickstart/README.md), [architecture](docs/ARCHITECTURE.md), [release process](docs/RELEASE_PROCESS.md) and [real CLI preview](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/preview.yml).
 
 ## What it does
 
@@ -133,7 +135,7 @@ Default search is a local hybrid ranking of metadata. Use `--mode keyword` for t
 
 ## Test status and limitations
 
-GitHub Actions runs the Python tests on Linux/Python 3.11–3.13. This release also provides an optional native extension source and modules for external tools, but does not claim their behavior has been verified on every supported machine. Windows/macOS CI, signed bundles, package-registry publication, fully autonomous iterative coding and 112 third-party integrations are **not** part of the verified core.
+Core tests now run on **Linux, Windows and macOS** (Python 3.11 and 3.13), plus a Linux 3.11–3.13 matrix. Real integration jobs separately exercise restricted Docker execution, Playwright Chromium, local HTTP model compatibility, Foundry Anvil, VSIX packaging and the VS Code host. A packaged CLI preview executes 32 commands against disposable projects. CI measures actual *branch-aware* Python coverage; the first observed baseline was **73%**, which is a starting point for better test coverage rather than a release guarantee. A verified release-candidate workflow builds a wheel, sdist, VSIX, SBOM and checksums and only publishes a GitHub Release for an explicit matching version tag. **No PyPI or VS Code Marketplace publication, independent penetration test, third-party adoption, or 112 completed external integrations is claimed.**
 
 See [RELEASE_AUDIT.md](RELEASE_AUDIT.md), [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
