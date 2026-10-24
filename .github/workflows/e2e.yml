@@ -102,7 +102,7 @@ jobs:
         env:
           OMNIFORGE_CHAIN_LIVE: '1'
         run: |
-          node_modules/.bin/anvil --host 127.0.0.1 --port 8545 --chain-id 1337 --accounts 1 > /tmp/omniforge-anvil.log 2>&1 &
+          npx --yes @foundry-rs/anvil@1.7.1 --host 127.0.0.1 --port 8545 --chain-id 1337 --accounts 1 > /tmp/omniforge-anvil.log 2>&1 &
           evm_pid=$!
           trap 'kill "$evm_pid" 2>/dev/null || true' EXIT
           python - <<'PY'
