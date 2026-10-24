@@ -11,7 +11,8 @@ Date: 2026-10-24
 - Browser URL/action validation and browser preview without real navigation.
 - AI patch proposal validation, diff preview, backup-protected application, remote opt-in checks.
 - File hash manifest detection of changed source.
-- Disabled-by-default MCP tool execution and browser navigation.
+- MCP execution/browser tools are **always preview-only**, even if a client passes `approve: true` or sets legacy environment flags.
+- Regression tests cover symlinked write destinations for skill installation, VS Code setup, code-edit backups and browser screenshots.
 - Optional skill adapter files and JavaScript extension syntax.
 
 ## Limitations and honest status
@@ -26,4 +27,11 @@ Date: 2026-10-24
 - SHA-256 inventory is **unsigned** and does not authenticate a maintainer identity.
 - Existing upstream catalog of 112 tools is still candidate-only.
 
-Python package version: 1.1.0. GitHub CI results for this upgrade should be recorded only after a successful workflow run. Do not reuse v1.0 CI evidence as proof of the new features.
+## Published source verification
+
+- Python package version: **1.1.0**, published as source code on the repository default branch.
+- Hardened upgrade published successfully by GitHub Actions run [40088583617](https://github.com/muhdmunir961-byte/omniforge/actions/runs/40088583617).
+- Post-publication CI run [40088762489](https://github.com/muhdmunir961-byte/omniforge/actions/runs/40088762489): **64/64 tests passed** independently on Linux/Python 3.11, 3.12 and 3.13; native VS Code extension Node smoke passed.
+- MCP tool requests cannot grant human approval; actual actions require an independently invoked local CLI `--approve` flag.
+- Destination symlink checks mitigate accidental escapes, but do not prevent concurrent path-swap/TOCTOU attacks. Do not run on hostile worktrees while another process can mutate paths.
+- These automated tests do not establish live Playwright compatibility, real Docker isolation, external API availability, full security certification or package registry publication.
