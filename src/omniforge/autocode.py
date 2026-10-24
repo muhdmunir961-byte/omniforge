@@ -14,8 +14,20 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request, HTTPRedirectHandler, build_opener
 from .core import secure_project_path
+
+class _RejectProviderRedirects(HTTPRedirectHandler):
+    """Never forward chosen source files or bearer tokens via 30x responses."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError("Model provider redirects are disabled to prevent source/token leakage")
+
+
+def urlopen(req, timeout: int):
+    """Local wrapper also allows safe fixture injection in unit tests."""
+    return build_opener(_RejectProviderRedirects()).open(req, timeout=timeout)
+
 
 MAX_FILES = 5
 MAX_FILE_BYTES = 32_000
@@ -56,7 +68,8 @@ def request_edits(task: str, project: Path, paths: list[str], *, endpoint: str, 
     if not task.strip() or len(task) > 4000 or not model.strip():
         raise ValueError('A short task and model are required')
     parsed = urlparse(endpoint)
-    if parsed.scheme not in {'https', 'http'} or not parsed.hostname or parsed.username:
+    if (parsed.scheme not in {'https', 'http'} or not parsed.hostname
+        or parsed.username or parsed.password or parsed.fragment):
         raise ValueError('Invalid OpenAI-compatible endpoint')
     local = parsed.hostname in {'localhost', '127.0.0.1', '::1'}
     if parsed.scheme != 'https' and not local:
