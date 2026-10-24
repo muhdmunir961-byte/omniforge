@@ -33,3 +33,10 @@ Remote JSON-RPC calls must use HTTPS (local loopback HTTP is allowed). The verif
 - POSIX openat and locking mitigate common races; hostile concurrent filesystem changes and non-POSIX systems are not formally certified.
 
 Required warnings: Ledger setempat boleh diubah oleh sesiapa yang ada akses fail. Anchoring ke EVM tidak membuktikan pemilikan atau keselamatan kod. Jangan masukkan rahsia dalam nota anchor. Data on-chain kekal kelihatan selama-lamanya.
+
+## Provider redirects and portability (1.3.1)
+
+- The BYOK code editor **refuses model HTTP redirects**, preventing automatic forwarding of selected source files or bearer tokens in response to HTTP 30x. Supply the final expected model API URL directly.
+- Linux, Windows and macOS run automated core regression tests. Filesystem race controls still differ by OS, and multi-platform CI is not a security certification.
+- CodeQL, pip-audit, Dependabot and basic high-confidence secret-pattern checks run regularly. They have distinct blind spots and do not establish the absence of malicious code.
+- Observed branch-aware unit coverage was approximately 73% before follow-up regression tests; additional end-to-end suites are separate.
