@@ -45,8 +45,12 @@ def prepare_run(name: str, args: list[str], project: Path, *, docker: bool = Tru
             mapped_args.append('/workspace/' + str(Path(arg).relative_to(root))
                                if Path(arg).is_absolute() and Path(arg).is_relative_to(root)
                                else arg)
+        # Run as the invoking user's UID/GID, not root. With all capabilities
+        # dropped, container root cannot read user-owned 0700 project directories.
+        # Matching the host owner preserves access without restoring root bypass.
+        identity = ['--user', f'{os.getuid()}:{os.getgid()}'] if hasattr(os, 'getuid') else []
         command = [shutil.which('docker') or 'docker', 'run', '--rm', '--pull=never', '--init', '--read-only', '--cap-drop=ALL',
-                   '--security-opt=no-new-privileges', '--pids-limit=64',
+                   '--security-opt=no-new-privileges', *identity, '--pids-limit=64',
                    '--memory=256m', '--cpus=1', '--tmpfs', '/tmp:rw,noexec,nosuid,size=32m',
                    '--network', 'bridge' if allow_network else 'none',
                    '--mount', f'type=bind,src={root},dst=/workspace,readonly',
