@@ -182,6 +182,26 @@ omniforge blockchain verify-anchor --project . --wallet 0xALAMAT_WALLET_ANDA --c
 
 Ledger disimpan dalam `.omniforge/chain.jsonl`. Ia menyimpan hash SHA-256, jumlah fail, timestamp dan nota ringkas—bukan kandungan source code. Sesiapa yang boleh mengubah semua rekod tempatan masih boleh menjana semula hash; anchor yang diperiksa secara bebas memberi bukti lebih kukuh. **Ini bukan pengesahan hak milik, lesen atau keselamatan kod.** Rujuk [Blockchain Guide](docs/BLOCKCHAIN.md).
 
+## OF-Provenance v2 — ledger integriti yang diaudit
+
+**API baharu tanpa memutuskan versi lama:** `ofprov` atau `omniforge provenance`. Arahan lama `omniforge blockchain` v1 kekal dan hash/anchor terdahulu tidak ditulis semula.
+
+```bash
+ofprov init --project .
+ofprov snapshot --project . --note "sebelum release"
+ofprov verify --project . --check-files
+ofprov audit --project .
+ofprov backup --project . --out ../trusted-backup-001
+```
+
+v2 menyimpan **hash SHA-256 setiap fail dan polisi scan penuh dalam setiap rekod**. Verifier ketat menolak duplicate JSON key, medan tambahan, path berbahaya dan perubahan polisi tanpa kelulusan. `--expected-head` bersama `--expected-seq` mesti dibanding dengan checkpoint yang disimpan **di luar projek** untuk mengesan penulisan semula sejarah.
+
+Jika ada ledger v1, jalankan `ofprov migrate --project . --approve`, kemudian `ofprov snapshot --project .`. Migrasi menyalin rekod v1 byte-for-byte tanpa menukar hash lama.
+
+EVM anchor kekal **opt-in**: OmniForge hanya menyediakan unsigned transaction selepas `--ack-public-data`. Wallet luar mesti meluluskan, menandatangani dan menghantar sendiri. Receipt RPC dalam journal tempatan tidak dianggap bukti blockchain terkini. MCP v2 hanya menawarkan verify/proof/audit **read-only**.
+
+**Amaran:** local ledger bukan blockchain terdesentralisasi, hash bukan bukti hak milik atau keselamatan kod, dan simpan backup + trusted checkpoint secara berasingan. Panduan lanjut: [OF-Provenance v2](docs/PROVENANCE_V2.ms.md) dan [JSON schema](docs/PROVENANCE_V2_SCHEMA.json).
+
 ## Lesen
 
 MIT untuk kod OmniForge. Software upstream kekal dengan lesen masing-masing.
