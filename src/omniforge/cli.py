@@ -19,6 +19,8 @@ from .agents import execute_workflow
 from .browser import browser_session, load_actions
 from .autocode import request_edits, apply_proposal
 from .provenance import build_manifest, check_manifest
+from .blockchain import record as chain_record, verify as chain_verify, proof as chain_proof, anchor_payload
+from .evm import verify_anchor
 
 
 def as_json(value: object) -> None:
@@ -116,6 +118,30 @@ def parser() -> argparse.ArgumentParser:
     rel.add_argument("query"); rel.add_argument("--limit", type=int, default=5)
     pl = sub.add_parser("plan", help="reviewable offline skill workflow")
     pl.add_argument("task"); pl.add_argument("--limit", type=int, default=3)
+    bc = sub.add_parser("blockchain", help="local hash-chain provenance and EVM transaction anchoring")
+    bs = bc.add_subparsers(dest="chain_action", required=True)
+    cr = bs.add_parser("record", help="append snapshot hash to the tamper-evident local ledger")
+    cr.add_argument("--project", type=Path, default=Path.cwd())
+    cr.add_argument("--note", default="")
+    cv = bs.add_parser("verify", help="verify local hash links and optionally current files")
+    cv.add_argument("--project", type=Path, default=Path.cwd())
+    cv.add_argument("--check-current", action="store_true")
+    cp = bs.add_parser("proof", help="inspect a stored ledger record")
+    cp.add_argument("--project", type=Path, default=Path.cwd())
+    cp.add_argument("--height", type=int)
+    ca = bs.add_parser("anchor", help="prepare unsigned self-transaction calldata for a wallet")
+    ca.add_argument("--project", type=Path, default=Path.cwd())
+    ca.add_argument("--height", type=int)
+    ca.add_argument("--wallet", required=True, help="public EVM address, never a private key")
+    ca.add_argument("--chain-id", type=int, required=True)
+    cf = bs.add_parser("verify-anchor", help="read-only check of confirmed EVM transaction via RPC")
+    cf.add_argument("--project", type=Path, default=Path.cwd())
+    cf.add_argument("--height", type=int)
+    cf.add_argument("--wallet", required=True)
+    cf.add_argument("--chain-id", type=int, required=True)
+    cf.add_argument("--rpc-url", required=True, help="HTTPS or localhost HTTP JSON-RPC")
+    cf.add_argument("--tx-hash", required=True)
+    cf.add_argument("--min-confirmations", type=int, default=1)
     sub.add_parser("mcp", help="start stdio MCP tool server")
     return ap
 
@@ -193,6 +219,25 @@ def main(argv: list[str] | None = None) -> int:
             as_json(related(args.query, limit=args.limit))
         elif args.action == "plan":
             as_json(plan(args.task, limit=args.limit))
+        elif args.action == "blockchain":
+            if args.chain_action == "record":
+                as_json(chain_record(args.project, note=args.note))
+            elif args.chain_action == "verify":
+                result = chain_verify(args.project, check_current=args.check_current)
+                as_json(result)
+                return 0 if result["ok"] else 1
+            elif args.chain_action == "proof":
+                as_json(chain_proof(args.project, args.height))
+            elif args.chain_action == "anchor":
+                as_json(anchor_payload(args.project, address=args.wallet,
+                                       chain_id=args.chain_id, height=args.height))
+            elif args.chain_action == "verify-anchor":
+                result = verify_anchor(args.project, endpoint=args.rpc_url,
+                                       tx_hash=args.tx_hash, address=args.wallet,
+                                       chain_id=args.chain_id, height=args.height,
+                                       min_confirmations=args.min_confirmations)
+                as_json(result)
+                return 0 if result["ok"] else 1
         elif args.action == "mcp":
             from .mcp import serve
             serve()
