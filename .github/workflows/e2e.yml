@@ -12,26 +12,39 @@ on:
 permissions:
   contents: read
 jobs:
-  browser-docker-model:
+  browser-model:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
-      - name: Install OmniForge, pytest and Playwright
+      - name: Install OmniForge, pytest and Chromium
         run: |
           python -m pip install -e . pytest playwright
           python -m playwright install --with-deps chromium
-      - name: Prepare Docker sandbox image
-        run: |
-          docker info
-          docker pull python:3.13-alpine
-      - name: Browser, Docker and local HTTP model integration tests
+      - name: Real browser and mock model HTTP tests
         env:
           OMNIFORGE_LIVE: '1'
-        run: python -m pytest -q tests/test_live_integrations.py
+        run: python -m pytest -vv tests/test_live_integrations.py -k 'not docker'
+  docker-sandbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install OmniForge and prepare isolated Docker image
+        run: |
+          python -m pip install -e . pytest
+          docker info
+          docker pull python:3.13-alpine
+      - name: Real Docker sandbox integration test
+        env:
+          OMNIFORGE_LIVE: '1'
+        run: python -m pytest -vv -s --tb=long tests/test_live_integrations.py -k docker
   vscode-package:
     runs-on: ubuntu-latest
     timeout-minutes: 12
