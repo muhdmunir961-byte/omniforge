@@ -14,15 +14,15 @@ Date: 2026-10-24
 
 ## Known limitations
 
-1. This is a **local v1.0 code release**. GitHub release tag, PyPI distribution and VS Code marketplace extension are **not** published.
+1. The source is published on GitHub. GitHub release tag, PyPI distribution and VS Code marketplace extension are **not** published.
 2. MCP only exposes skill discovery, document loading and rough budget calculation; it cannot execute arbitrary tools or autonomously code and deploy a project.
 3. The 112 third-party projects are **discovery candidates, not 112 verified integrations**.
 4. Keyword-based router has no semantic embeddings. Matching other languages may be weaker than English.
 5. The token estimate is approximate (`ceil(characters / 4)`) and omits host-specific context overhead.
 6. Static heuristic audits can miss malicious code and flag benign regex rules. In this release `log-triage` and `secret-hygiene` each trigger a known heuristic `credential-reference` false positive in their own redaction/scanning regex. These were inspected manually but are **not proof of full safety**.
-7. Python 3.11+ only. CI is configured for 3.11–3.13 on GitHub-hosted Linux; Windows/macOS compatibility is not yet verified.
+7. Python 3.11+ only. GitHub Actions CI passed 23/23 tests on each of Python 3.11, 3.12 and 3.13 on GitHub-hosted Linux (run 40085116661). Windows/macOS compatibility is not yet verified.
 8. No claims of outperforming Codex, Claude Code or other proprietary agents are supported by comparative benchmarks.
 
 ## Practical release status
 
-**Core functional locally; packaging verified; external publication pending.**
+**Core functional locally; packaging verified; source published on GitHub; GitHub CI passed on Python 3.11–3.13. No release tag or package-registry publication yet.**
