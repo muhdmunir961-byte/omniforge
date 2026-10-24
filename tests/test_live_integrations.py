@@ -123,7 +123,7 @@ def test_live_docker_isolated_skill(tmp_path: Path):
     assert plan["mode"] == "docker-isolated"
     assert "--network" in plan["command"] and plan["command"][plan["command"].index("--network")+1] == "none"
     response = execute_run(plan, approve=True)
-    assert response["status"] == "completed", response
+    assert response["status"] == "completed", json.dumps(response, indent=2)
     parsed = json.loads(response["stdout"])
     assert any(x["name"] == "Example" for x in parsed["symbols"]), parsed
     # Code and data were passed to a read-only container mount.
