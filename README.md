@@ -139,6 +139,9 @@ See [RELEASE_AUDIT.md](RELEASE_AUDIT.md), [SECURITY.md](SECURITY.md) and [CONTRI
 
 ## Blockchain provenance (v1.2.0)
 
+**AI/MCP support:** `omniforge_chain_verify` and `omniforge_chain_proof` are read-only MCP tools. They never record entries or initiate wallet transactions.
+
+
 OmniForge now includes a **local hash-chain ledger** for project/skill snapshot integrity and optional Ethereum-compatible transaction anchoring. The local ledger is **not a decentralized blockchain**; real on-chain anchoring requires a wallet and network gas. OmniForge never asks for your private key or sends transactions automatically.
 
 ```bash
