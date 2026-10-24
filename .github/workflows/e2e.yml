@@ -121,6 +121,6 @@ jobs:
                   time.sleep(.25)
           else:
               print(Path('/tmp/omniforge-anvil.log').read_text()[-6000:])
-    raise SystemExit('Local Anvil RPC failed to start')
+              raise SystemExit('Local Anvil RPC failed to start')
           PY
           python -m pytest -vv tests/test_blockchain_evm.py
