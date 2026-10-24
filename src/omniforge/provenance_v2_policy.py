@@ -154,7 +154,12 @@ def scan_project(project: Path, policy: dict) -> dict[str, str]:
         raise ValueError("Project is not a directory")
     files: dict[str, str] = {}
     bytes_scanned = 0
-    for parent, directories, filenames in os.walk(root, topdown=True, followlinks=False):
+    def _walk_error(error: OSError) -> None:
+        raise ValueError(f"Project scan failed; refusing incomplete snapshot: {error}") from error
+
+    for parent, directories, filenames in os.walk(
+        root, topdown=True, followlinks=False, onerror=_walk_error
+    ):
         here = Path(parent)
         kept = []
         for name in sorted(directories):
