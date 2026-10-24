@@ -2,7 +2,7 @@ name: Publish audited OmniForge upgrade
 on:
   push:
     paths:
-      - '.bootstrap/part-5'
+      - '.bootstrap/upgrade.b64'
 permissions:
   contents: write
 jobs:
@@ -15,7 +15,7 @@ jobs:
           python - <<'PY'
           from pathlib import Path, PurePosixPath
           import base64, hashlib, io, lzma, tarfile
-          bundle = base64.b64decode(''.join(Path(f'.bootstrap/part-{i}').read_text().strip() for i in range(1,6)), validate=True)
+          bundle = base64.b64decode(Path('.bootstrap/upgrade.b64').read_text().strip(), validate=True)
           expected = 'caa4bdce5b897f76e64af8efc96bf00ea33d23f51f445f1168209d8b4068bda1'
           if hashlib.sha256(bundle).hexdigest() != expected:
               raise SystemExit('Upgrade archive SHA256 mismatch')
