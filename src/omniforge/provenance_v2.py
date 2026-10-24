@@ -331,6 +331,86 @@ def snapshot(project: Path, *, note: str = "", allow_policy_change: bool = False
                 "files": len(found)}
 
 
+def _anchor_events(root: Path, items: list[dict]) -> list[dict]:
+    """Local journal integrity only; it is NOT evidence of current RPC validity."""
+    raw = read_safe(local_path(root, "anchors.jsonl"))
+    if raw and not raw.endswith(b"\n"):
+        raise ValueError("Truncated anchor evidence log")
+    try:
+        events = [parse_json(line) for line in raw.decode("utf-8").splitlines()]
+    except (ValueError, UnicodeError) as exc:
+        raise ValueError("Invalid anchor evidence JSONL") from exc
+    if len(events) > MAX_RECORDS:
+        raise ValueError("Too many anchor evidence records")
+    from .blockchain import ADDRESS
+    from .evm import TXID
+    previous = ZERO
+    required = {"version", "seq", "entry_hash", "tx_hash", "wallet", "chain_id",
+                "confirmations", "checked_at", "status", "prev_event_hash", "event_hash"}
+    for event in events:
+        if not isinstance(event, dict) or set(event) != required:
+            raise ValueError("Invalid anchor evidence schema")
+        index = event["seq"]
+        if (type(event["version"]) is not int or event["version"] != 2
+            or type(index) is not int or index < 0 or index >= len(items)
+            or event["entry_hash"] != items[index]["entry_hash"]
+            or not isinstance(event["tx_hash"], str) or not TXID.fullmatch(event["tx_hash"])
+            or not isinstance(event["wallet"], str) or not ADDRESS.fullmatch(event["wallet"])
+            or type(event["chain_id"]) is not int or not 1 <= event["chain_id"] < 2**53
+            or type(event["confirmations"]) is not int or event["confirmations"] < 1
+            or event["status"] != "verified_via_rpc_at_time"
+            or not isinstance(event["checked_at"], str)
+            or not UTC_PATTERN.fullmatch(event["checked_at"])
+            or event["prev_event_hash"] != previous
+            or event["event_hash"] != hashed(
+                b"OF-ANCHOR-EVENT-v2",
+                {k: v for k, v in event.items() if k != "event_hash"}
+            )):
+            raise ValueError("Invalid/tampered anchor evidence event")
+        previous = event["event_hash"]
+    return events
+
+
+def save_rpc_receipt(project: Path, report: dict, *, wallet: str) -> dict:
+    """Persist a locally untrusted time-of-check record after explicit RPC verification."""
+    from .blockchain import ADDRESS
+    if not isinstance(wallet, str) or not ADDRESS.fullmatch(wallet):
+        raise ValueError("Invalid public wallet")
+    if report.get("ok") is not True:
+        raise ValueError("Only successful RPC verification can be journaled")
+    root = root_path(project)
+    with locked(root):
+        items = read_entries(root, config_for(root))
+        seq = report.get("seq")
+        if type(seq) is not int or not 0 <= seq < len(items):
+            raise ValueError("Invalid anchor sequence")
+        if items[seq]["entry_hash"] != report.get("entry_hash"):
+            raise ValueError("Ledger changed between RPC check and saving receipt")
+        events = _anchor_events(root, items)
+        payload = {
+            "version": 2, "seq": seq, "entry_hash": report["entry_hash"],
+            "tx_hash": report["tx_hash"], "wallet": wallet,
+            "chain_id": report["chain_id"],
+            "confirmations": report["confirmations"], "checked_at": utc_now(),
+            "status": "verified_via_rpc_at_time",
+            "prev_event_hash": events[-1]["event_hash"] if events else ZERO,
+        }
+        event = {**payload, "event_hash": hashed(b"OF-ANCHOR-EVENT-v2", payload)}
+        line = canonical(event) + b"\n"
+        path = local_path(root, "anchors.jsonl")
+        if path.stat().st_size + len(line) > MAX_LEDGER_BYTES:
+            raise ValueError("Anchor evidence log full")
+        fd = os.open(path, os.O_WRONLY | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0))
+        try:
+            if os.write(fd, line) != len(line):
+                raise OSError("Partial anchor journal write")
+            os.fsync(fd)
+        finally:
+            os.close(fd)
+        return {"status": "journaled-local-only", "event_hash": event["event_hash"],
+                "warning": "Stored RPC response is NOT current on-chain proof; verify again."}
+
+
 def differences(old: dict, new: dict) -> dict:
     a, b = set(old), set(new)
     return {"missing": sorted(a - b), "added": sorted(b - a),
@@ -353,10 +433,13 @@ def verify(project: Path, *, check_files: bool = False,
             items = read_entries(root, cfg)
             if not items:
                 return {"ok": False, "reason": "empty-ledger"}
+            events = _anchor_events(root, items)
             tip = items[-1]
             report = {
                 "ok": True, "seq": tip["seq"], "entries": len(items),
                 "head": tip["entry_hash"], "project_id": cfg["project_id"],
+                "anchor_evidence_events": len(events),
+                "anchor_evidence_note": "Historical untrusted RPC claims only; re-verify on chain.",
                 "trusted_checkpoint": expected_head is not None,
                 "policy_history": [
                     {"seq": row["seq"], "policy_hash": row["policy_hash"]}
