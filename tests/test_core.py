@@ -80,7 +80,10 @@ def test_mcp_handshake_and_tools():
     init = dispatch({"jsonrpc":"2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18"}})
     assert init["result"]["serverInfo"]["name"] == "omniforge"
     listing = dispatch({"jsonrpc":"2.0", "id": 2, "method":"tools/list"})
-    assert len(listing["result"]["tools"]) == 5
+    names = {item["name"] for item in listing["result"]["tools"]}
+    assert {"omniforge_search", "omniforge_load", "omniforge_budget",
+            "omniforge_run", "omniforge_browser", "omniforge_chain_verify",
+            "omniforge_chain_proof"} <= names
     result = dispatch({"jsonrpc":"2.0", "id": 3, "method":"tools/call", "params": {
         "name":"omniforge_search", "arguments":{"query":"sqlite"}}})
     assert "sqlite-inspector" in result["result"]["content"][0]["text"]
