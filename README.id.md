@@ -161,6 +161,24 @@ Bukti: [Unit CI](https://github.com/muhdmunir961-byte/omniforge/actions/runs/401
 
 Dokumentasi lanjutan: [Release Audit](RELEASE_AUDIT.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md).
 
+## Blockchain provenance (v1.2.0)
+
+OmniForge sekarang punya **local hash-chain ledger** buat mencatat integritas snapshot project/skill, plus opsi *on-chain anchoring* di jaringan Ethereum-compatible. Local ledger **bukan blockchain terdesentralisasi**. Kalau mau catat bukti ke EVM sungguhan, kamu perlu wallet sendiri dan gas fee. OmniForge nggak meminta private key atau otomatis mengirim transaksi.
+
+```bash
+omniforge blockchain record --project . --note "rilis baru"
+omniforge blockchain verify --project . --check-current
+omniforge blockchain proof --project . --height 0
+
+# Siapkan unsigned transaction (belum dikirim ke blockchain)
+omniforge blockchain anchor --project . --wallet 0xALAMAT_WALLET_KAMU --chain-id 1337
+
+# Setelah kamu approve + broadcast melalui wallet:
+omniforge blockchain verify-anchor --project . --wallet 0xALAMAT_WALLET_KAMU --chain-id 1337 --rpc-url http://127.0.0.1:8545 --tx-hash 0xHASH_TRANSAKSI_KAMU
+```
+
+File ledger disimpan di `.omniforge/chain.jsonl`. Yang dicatat hanya hash SHA-256, jumlah file, timestamp, dan catatan singkat—bukan konten source code. Kalau seseorang bisa mengubah semua isi ledger lokal, ia juga bisa menghitung ulang seluruh chain. Anchor yang diverifikasi secara independen memberikan bukti lebih kuat; **bukan jaminan siapa pembuat kode atau bahwa kode itu aman**. Dokumentasi lengkap: [Blockchain Guide](docs/BLOCKCHAIN.md).
+
 ## Lisensi
 
 MIT untuk kode OmniForge. Software upstream tetap menggunakan lisensinya masing-masing.
