@@ -198,10 +198,19 @@ def scan_project(project: Path, policy: dict) -> dict[str, str]:
                         raise ValueError("File grew beyond max_file_bytes: " + relative)
                     digest.update(chunk)
                 after = os.fstat(fd)
-                if ((before.st_dev, before.st_ino, before.st_size, before.st_mtime_ns,
-                     before.st_ctime_ns) !=
-                    (after.st_dev, after.st_ino, after.st_size, after.st_mtime_ns,
-                     after.st_ctime_ns) or read != after.st_size):
+                # Windows os.fstat metadata (particularly inode/creation-time
+                # fields) can differ between successive handle queries. For
+                # Windows use stable size/mtime checks; POSIX additionally
+                # checks device, inode and ctime for stronger race detection.
+                if os.name == "nt":
+                    changed = ((before.st_size, before.st_mtime_ns) !=
+                               (after.st_size, after.st_mtime_ns))
+                else:
+                    changed = ((before.st_dev, before.st_ino, before.st_size,
+                                before.st_mtime_ns, before.st_ctime_ns) !=
+                               (after.st_dev, after.st_ino, after.st_size,
+                                after.st_mtime_ns, after.st_ctime_ns))
+                if changed or read != after.st_size:
                     raise ValueError("Project file changed during snapshot: " + relative)
             finally:
                 os.close(fd)
