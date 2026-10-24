@@ -158,6 +158,26 @@ omniforge blockchain verify-anchor --project . --wallet 0xYOUR_PUBLIC_ADDRESS --
 
 The ledger lives at `.omniforge/chain.jsonl` and records SHA-256 snapshots without storing file contents. Local history can be rewritten by someone with filesystem access; anchoring an independently trusted head hash provides stronger evidence. A confirmed transaction is **not proof of authorship, licensing, or code safety**. See [Blockchain Guide](docs/BLOCKCHAIN.md).
 
+## OF-Provenance v2 — audited local integrity
+
+**New, backwards-compatible API:** `ofprov` or `omniforge provenance` implements strict v2 provenance without modifying the older `omniforge blockchain` v1 records.
+
+```bash
+ofprov init --project .
+ofprov snapshot --project . --note "before release"
+ofprov verify --project . --check-files
+ofprov audit --project .
+ofprov backup --project . --out ../trusted-backup-001
+```
+
+v2 stores **all selected per-file SHA-256 hashes and the full scan policy in each immutable JSONL record**, rejects duplicate JSON keys, malformed paths and unexpected fields, and uses `--expected-head` together with `--expected-seq` to check a checkpoint saved **outside** the mutable project. When a v1 ledger already exists, use `ofprov migrate --project . --approve` and then `ofprov snapshot --project .`; v1 hashes/anchors are copied, not rewritten.
+
+Anchoring remains optional: `ofprov anchor --project . --seq 0 --chain-id 1337 --wallet 0xPUBLIC_ADDRESS --prepare --ack-public-data` only prepares an **unsigned** self-transaction. The external wallet must separately approve, sign and broadcast and may charge network gas. The read-only `--verify-tx` mode optionally records a historical RPC receipt with `--save-receipt`; local receipts are **not trusted on-chain proof**.
+
+AI/MCP: `omniforge_provenance_verify`, `omniforge_provenance_proof` and `omniforge_provenance_audit` are read-only; no wallet signing or broadcasting is exposed.
+
+**Boundary:** local hash chains are rewritable by filesystem owners; a trusted external head is necessary to detect whole-history rewrites. EVM proofs do not prove code authorship, licensing or safety. See [the audited Malay guide](docs/PROVENANCE_V2.ms.md) and [strict JSON schema](docs/PROVENANCE_V2_SCHEMA.json).
+
 ## License
 
 MIT for OmniForge code. Upstream software retains its own licenses and must be installed separately.
