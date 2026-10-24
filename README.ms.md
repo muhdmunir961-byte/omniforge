@@ -12,6 +12,8 @@ Python 3.11+ · MCP (stdio) · VS Code · MIT
 
 OmniForge ialah *companion toolkit* untuk Codex, Claude Code, Cursor, OpenCode, Gemini dan coding assistant lain. **Ia bukan model AI baharu dan bukan pengganti AI coding agent.** Fungsinya membantu agent mencari, memasang dan menggunakan skill yang sesuai, dengan kawalan kebenaran bagi tindakan berisiko.
 
+**Kemas kini 1.3.1:** Core tests sudah lulus pada Linux, Windows dan macOS (Python 3.11/3.13), dengan CodeQL, dependency checks, Dependabot, dan verified release-candidate workflow. Coverage branch-aware yang diukur sekitar 73%—belum semua laluan kod diuji. [Seni bina](docs/ARCHITECTURE.md) · [Release](docs/RELEASE_PROCESS.md) · [CLI preview](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/preview.yml).
+
 ## Quick start
 
 Pastikan Python 3.11+ dan Git tersedia:
