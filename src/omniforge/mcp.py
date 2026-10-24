@@ -12,6 +12,7 @@ from .router import search_skills, load_skill, token_report
 from .semantic import hybrid_search
 from .runtime import prepare_run, execute_run
 from .browser import browser_session
+from .blockchain import verify as verify_provenance_chain, proof as read_provenance_block
 
 PROTOCOL = "2025-06-18"
 TOOLS = [
@@ -45,6 +46,21 @@ TOOLS = [
             "url":{"type":"string"}, "project":{"type":"string"},
             
         },"required":["url","project"]},
+    },
+    {
+        "name": "omniforge_chain_verify",
+        "description": "Read-only verification of a local OmniForge blockchain provenance ledger and optional current project snapshot.",
+        "inputSchema": {"type": "object", "properties": {
+            "project": {"type": "string"},
+            "check_current": {"type": "boolean", "default": False}
+        }, "required": ["project"]},
+    },
+    {
+        "name": "omniforge_chain_proof",
+        "description": "Read-only access to one previously recorded local provenance block hash. No wallet or network access.",
+        "inputSchema": {"type": "object", "properties": {
+            "project": {"type": "string"}, "height": {"type": "integer", "minimum": 0}
+        }, "required": ["project"]},
     },
     {
         "name": "omniforge_budget",
@@ -111,6 +127,17 @@ def dispatch(message: dict) -> dict | None:
                 if not isinstance(url,str) or not isinstance(project,str):
                     raise ValueError("url and project must be strings")
                 outcome = tool_result(browser_session(url,project=Path(project),approve=False))
+            elif name == "omniforge_chain_verify":
+                project, current = args.get("project"), args.get("check_current", False)
+                if not isinstance(project, str) or type(current) is not bool:
+                    raise ValueError("project must be a string and check_current a boolean")
+                outcome = tool_result(verify_provenance_chain(Path(project), check_current=current))
+            elif name == "omniforge_chain_proof":
+                project, height = args.get("project"), args.get("height")
+                if not isinstance(project, str) or (height is not None and
+                   (type(height) is not int or height < 0)):
+                    raise ValueError("project must be a string and height must be a nonnegative integer")
+                outcome = tool_result(read_provenance_block(Path(project), height))
             elif name == "omniforge_budget":
                 selected = args.get("selected")
                 if selected is not None and not isinstance(selected, str):
