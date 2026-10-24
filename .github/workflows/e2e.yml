@@ -1,0 +1,51 @@
+name: Real Integrations E2E
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'tests/test_live_integrations.py'
+      - '.github/workflows/e2e.yml'
+      - 'vscode-extension/**'
+      - 'pyproject.toml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-docker-model:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install OmniForge, pytest and Playwright
+        run: |
+          python -m pip install -e . pytest playwright
+          python -m playwright install --with-deps chromium
+      - name: Prepare Docker sandbox image
+        run: |
+          docker info
+          docker pull python:3.13-alpine
+      - name: Browser, Docker and local HTTP model integration tests
+        env:
+          OMNIFORGE_LIVE: '1'
+        run: python -m pytest -q tests/test_live_integrations.py
+  vscode-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Extension syntax and command registration
+        run: |
+          node --check vscode-extension/extension.js
+          node vscode-extension/tests/smoke.js
+      - name: Package local VS Code extension
+        working-directory: vscode-extension
+        run: |
+          npm exec --yes --package @vscode/vsce -- vsce package --no-dependencies -o /tmp/omniforge-test.vsix
+          test -s /tmp/omniforge-test.vsix
