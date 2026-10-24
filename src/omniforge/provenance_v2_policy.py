@@ -134,7 +134,7 @@ def _open_file(root: Path, relative: str):
         # Windows fallback: path checks cannot eliminate all concurrent swaps.
         from .core import secure_project_path
         path = secure_project_path(root, *parts)
-        return os.open(path, os.O_RDONLY | nonblock | nofollow)
+        return os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0) | nonblock | nofollow)
     current = os.open(root, os.O_RDONLY | directory | nofollow)
     try:
         for component in parts[:-1]:
