@@ -2,7 +2,7 @@ name: Publish audited OmniForge upgrade
 on:
   push:
     paths:
-      - '.bootstrap/upgrade-trigger-hotfix'
+      - '.bootstrap/upgrade-trigger-hotfix-v2'
 permissions:
   contents: write
 concurrency:
@@ -59,7 +59,13 @@ jobs:
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git rm -r .bootstrap .github/scripts/compat_upgrade.py .github/scripts/harden_upgrade.py .github/workflows/publish-upgrade.yml
+          # GitHub Actions token cannot modify workflow files; preserve existing CI.
+          git restore --source=HEAD --staged --worktree -- .github/workflows/ci.yml
+          git rm -r .bootstrap .github/scripts/compat_upgrade.py .github/scripts/harden_upgrade.py
           git add -A
+          if git diff --cached --name-only | grep -q '^.github/workflows/'; then
+            echo 'Refusing to change workflow files with restricted Actions token'
+            exit 1
+          fi
           git commit -m 'feat: publish hardened OmniForge v1.1 after regression tests'
           git push origin HEAD:main
