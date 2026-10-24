@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 
 from omniforge.autocode import apply_proposal, request_edits
+from omniforge.agents import execute_workflow
 from omniforge.browser import browser_session
 from omniforge.runtime import execute_run, prepare_run
 
@@ -152,3 +153,23 @@ def test_live_http_model_proposal_preview_and_apply(tmp_path: Path, serve):
     assert applied["status"] == "applied"
     assert file.read_text() == "answer = 2\n"
     assert (Path(applied["backup"]) / "app.py").read_text() == "answer = 1\n"
+
+
+def test_live_docker_dependency_workflow(tmp_path: Path):
+    sample = tmp_path / "workflow_sample.py"
+    sample.write_text("def ready(): return True\n", encoding="utf-8")
+    workflow = tmp_path / "workflow.json"
+    workflow.write_text(json.dumps({"tasks": [
+        {"id": "inspect", "kind": "skill", "skill": "python-symbols",
+         "args": [str(sample)]},
+        {"id": "confirm", "kind": "skill", "skill": "python-symbols",
+         "args": [str(sample)], "depends_on": ["inspect"]}
+    ]}))
+    preview = execute_workflow(workflow, tmp_path)
+    assert preview["success"] and len(preview["tasks"]) == 2
+    assert all(step["status"] == "preview-only" for step in preview["tasks"])
+    result = execute_workflow(workflow, tmp_path, approve=True, timeout=90)
+    assert result["success"], json.dumps(result, indent=2)
+    assert [step["id"] for step in result["tasks"]] == ["inspect", "confirm"]
+    assert all(step["status"] == "completed" for step in result["tasks"])
+    assert all("ready" in step["stdout"] for step in result["tasks"])
