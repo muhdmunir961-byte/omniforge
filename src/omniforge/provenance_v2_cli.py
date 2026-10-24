@@ -56,6 +56,8 @@ def build_parser() -> argparse.ArgumentParser:
                              help="I understand calldata and wallet address may remain public")
             cmd.add_argument("--rpc-url", help="HTTPS or loopback-only HTTP")
             cmd.add_argument("--confirmations", type=int, default=1)
+            cmd.add_argument("--save-receipt", action="store_true",
+                             help="journal successful RPC result locally; still not independent proof")
     return p
 
 
@@ -100,6 +102,10 @@ def main(argv: list[str] | None = None) -> int:
                 chain_id=args.chain_id, tx_hash=args.verify_tx,
                 endpoint=args.rpc_url, min_confirmations=args.confirmations,
             )
+            if result["ok"] and args.save_receipt:
+                result["local_journal"] = ledger.save_rpc_receipt(
+                    args.project, result, wallet=args.wallet
+                )
         else:
             raise ValueError("Unknown command")
         print(json.dumps(result, sort_keys=True, indent=2))
