@@ -122,6 +122,9 @@ def test_live_docker_isolated_skill(tmp_path: Path):
     plan = prepare_run("python-symbols", [str(target)], tmp_path, docker=True, timeout=90)
     assert plan["mode"] == "docker-isolated"
     assert "--network" in plan["command"] and plan["command"][plan["command"].index("--network")+1] == "none"
+    # Preserve file access for private 0700 project roots without granting root privileges.
+    assert "--user" in plan["command"]
+    assert plan["command"][plan["command"].index("--user")+1] == f"{os.getuid()}:{os.getgid()}"
     response = execute_run(plan, approve=True)
     assert response["status"] == "completed", json.dumps(response, indent=2)
     parsed = json.loads(response["stdout"])
