@@ -32,6 +32,8 @@ OmniForge does **not** provide a replacement language model, a fully autonomous 
 | Static safety audit | ✅ Heuristic only | Metadata validation and suspicious-text detection |
 | Tool discovery catalog | ✅ Bundled | 112 **unverified candidate** GitHub tools (not implementations) |
 | Multi-agent autonomous orchestration | ❌ Not in v1.0 | Separate, future runtime effort |
+| Offline workflow planner | ✅ Added after v1.0 | Dry-run skill sequence; never executes commands |
+| Synonym-aware search | ✅ Added after v1.0 | Offline lexical expansion, not embeddings or LLM semantics |
 | Browser and terminal remote execution | ❌ Not in v1.0 | Not safe or implemented as a default capability |
 
 ## Quickstart
@@ -46,6 +48,8 @@ python -m pip install -e .
 omniforge doctor
 omniforge search "sqlite database schema"
 omniforge load sqlite-inspector
+omniforge related "REST endpoint"
+omniforge plan "debug python errors"
 omniforge budget --selected sqlite-inspector
 ```
 
@@ -121,6 +125,8 @@ If you're vibe coding in VS Code, **do not paste dozens of SKILL.md files into e
 omniforge doctor
 omniforge list
 omniforge search "my task" --limit 5
+omniforge related "REST endpoint"
+omniforge plan "debug python errors"
 omniforge load log-triage
 omniforge budget --selected log-triage
 omniforge catalog "network" --category network
