@@ -13,6 +13,7 @@ from .semantic import hybrid_search
 from .runtime import prepare_run, execute_run
 from .browser import browser_session
 from .blockchain import verify as verify_provenance_chain, proof as read_provenance_block
+from . import provenance_v2 as provenance2
 
 PROTOCOL = "2025-06-18"
 TOOLS = [
@@ -60,6 +61,33 @@ TOOLS = [
         "description": "Read-only access to one previously recorded local provenance block hash. No wallet or network access.",
         "inputSchema": {"type": "object", "properties": {
             "project": {"type": "string"}, "height": {"type": "integer", "minimum": 0}
+        }, "required": ["project"]},
+    },
+    {
+        "name": "omniforge_provenance_verify",
+        "description": "Read-only strict v2 project hash-chain verification; supports an externally trusted checkpoint.",
+        "inputSchema": {"type": "object", "properties": {
+            "project": {"type": "string"},
+            "check_files": {"type": "boolean", "default": False},
+            "expected_head": {"type": "string"},
+            "expected_seq": {"type": "integer", "minimum": 0}
+        }, "required": ["project"]},
+    },
+    {
+        "name": "omniforge_provenance_proof",
+        "description": "Read one validated immutable v2 project snapshot. No wallet/signing/network access.",
+        "inputSchema": {"type": "object", "properties": {
+            "project": {"type": "string"},
+            "seq": {"type": "integer", "minimum": 0}
+        }, "required": ["project"]},
+    },
+    {
+        "name": "omniforge_provenance_audit",
+        "description": "Read-only v2 audit: local chain, files, policy history and privacy warnings.",
+        "inputSchema": {"type": "object", "properties": {
+            "project": {"type": "string"},
+            "expected_head": {"type": "string"},
+            "expected_seq": {"type": "integer", "minimum": 0}
         }, "required": ["project"]},
     },
     {
@@ -138,6 +166,32 @@ def dispatch(message: dict) -> dict | None:
                    (type(height) is not int or height < 0)):
                     raise ValueError("project must be a string and height must be a nonnegative integer")
                 outcome = tool_result(read_provenance_block(Path(project), height))
+            elif name in ("omniforge_provenance_verify",
+                              "omniforge_provenance_audit",
+                              "omniforge_provenance_proof"):
+                project = args.get("project")
+                if not isinstance(project, str):
+                    raise ValueError("project must be a string")
+                if name == "omniforge_provenance_proof":
+                    seq = args.get("seq")
+                    if seq is not None and (type(seq) is not int or seq < 0):
+                        raise ValueError("seq must be a nonnegative integer")
+                    outcome = tool_result(provenance2.proof(Path(project), seq))
+                else:
+                    head, seq = args.get("expected_head"), args.get("expected_seq")
+                    if (head is not None and not isinstance(head, str)
+                        or seq is not None and (type(seq) is not int or seq < 0)):
+                        raise ValueError("Invalid trusted checkpoint")
+                    if name == "omniforge_provenance_verify":
+                        check = args.get("check_files", False)
+                        if type(check) is not bool:
+                            raise ValueError("check_files must be boolean")
+                        outcome = tool_result(provenance2.verify(
+                            Path(project), check_files=check,
+                            expected_head=head, expected_seq=seq))
+                    else:
+                        outcome = tool_result(provenance2.audit(
+                            Path(project), expected_head=head, expected_seq=seq))
             elif name == "omniforge_budget":
                 selected = args.get("selected")
                 if selected is not None and not isinstance(selected, str):
