@@ -142,6 +142,8 @@ def parser() -> argparse.ArgumentParser:
     cf.add_argument("--rpc-url", required=True, help="HTTPS or localhost HTTP JSON-RPC")
     cf.add_argument("--tx-hash", required=True)
     cf.add_argument("--min-confirmations", type=int, default=1)
+    pv = sub.add_parser("provenance", help="OF-Provenance v2 strict ledger and audit commands")
+    pv.add_argument("subcommand", nargs=argparse.REMAINDER)
     sub.add_parser("mcp", help="start stdio MCP tool server")
     return ap
 
@@ -238,6 +240,9 @@ def main(argv: list[str] | None = None) -> int:
                                        min_confirmations=args.min_confirmations)
                 as_json(result)
                 return 0 if result["ok"] else 1
+        elif args.action == "provenance":
+            from .provenance_v2_cli import main as provenance_main
+            return provenance_main(args.subcommand)
         elif args.action == "mcp":
             from .mcp import serve
             serve()
