@@ -163,6 +163,9 @@ Dokumentasi lanjut: [Release Audit](RELEASE_AUDIT.md) · [Security](SECURITY.md)
 
 ## Blockchain provenance (v1.2.0)
 
+**Sokongan MCP:** AI assistant boleh guna `omniforge_chain_verify` dan `omniforge_chain_proof` secara read-only. Agent tidak boleh menulis ledger, sign wallet atau broadcast transaksi melalui MCP.
+
+
 OmniForge sekarang ada **local hash-chain ledger** untuk merekod integriti snapshot projek/skill, serta pilihan *on-chain anchoring* pada rangkaian Ethereum-compatible. Local ledger **bukan blockchain terdesentralisasi**. Untuk rekod bukti ke EVM sebenar, pengguna perlukan wallet dan membayar gas fee sendiri. OmniForge tidak meminta private key atau menghantar transaksi secara automatik.
 
 ```bash
