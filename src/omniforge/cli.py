@@ -68,6 +68,10 @@ def parser() -> argparse.ArgumentParser:
     vs.add_argument("--project", type=Path, default=Path.cwd()); vs.add_argument("--force", action="store_true")
     rr = sub.add_parser("inspect", help="read-only local project reconnaissance")
     rr.add_argument("project", nargs="?", type=Path, default=Path.cwd())
+    sem = sub.add_parser("related", help="synonym-aware offline skill search")
+    sem.add_argument("query"); sem.add_argument("--limit", type=int, default=5)
+    pl = sub.add_parser("plan", help="generate reviewable skill workflow without executing it")
+    pl.add_argument("task"); pl.add_argument("--limit", type=int, default=3)
     sub.add_parser("mcp", help="start stdio MCP tool server")
     return ap
 
@@ -114,6 +118,12 @@ def main(argv: list[str] | None = None) -> int:
             as_json({"written": [str(p) for p in configure_vscode(args.project, force=args.force)]})
         elif args.action == "inspect":
             as_json(repo_recon(args.project))
+        elif args.action == "related":
+            from .planner import related
+            as_json(related(args.query, limit=args.limit))
+        elif args.action == "plan":
+            from .planner import plan
+            as_json(plan(args.task, limit=args.limit))
         elif args.action == "mcp":
             from .mcp import serve
             serve()
