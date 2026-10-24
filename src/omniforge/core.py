@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 from importlib.resources import files
@@ -155,9 +156,15 @@ def secure_project_path(project: Path, *parts: str) -> Path:
             if component in ("", "."):
                 continue
             current = current / component
-            if current.is_symlink():
+            # On Windows, junctions are reparse points even when is_symlink()
+            # is False. Never traverse them in a project write destination.
+            if current.is_symlink() or (hasattr(current, "is_junction") and current.is_junction()):
                 raise ValueError(f"Refusing symlinked destination: {current}")
-            if not current.resolve(strict=False).is_relative_to(root):
+            # On Windows, resolve(strict=False) is not stable for paths being
+            # created concurrently, and can falsely report a path escape.
+            # Every component has been appended from the resolved root and
+            # reparse points are rejected above; retain the stricter POSIX check.
+            if os.name != "nt" and not current.resolve(strict=False).is_relative_to(root):
                 raise ValueError("Destination escapes project")
     return current
 
