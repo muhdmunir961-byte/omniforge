@@ -1,0 +1,60 @@
+name: Cross-platform CLI and provenance
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'pyproject.toml'
+      - 'requirements-dev.txt'
+      - '.github/workflows/portability.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: portability-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  portable-tests:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.11', '3.13']
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install local package and pinned pytest
+        run: python -m pip install -e . -r requirements-dev.txt
+      - name: Run full core regression suite
+        run: python -m pytest -q
+      - name: Compile installed source
+        run: python -m compileall -q src
+      - name: Portable CLI smoke
+        run: |
+          omniforge doctor
+          omniforge related "logs errors"
+          ofprov --help
+      - name: Cross-platform provenance roundtrip
+        shell: python
+        run: |
+          import json
+          import pathlib
+          import subprocess
+          import tempfile
+          import sys
+          with tempfile.TemporaryDirectory() as d:
+              p = pathlib.Path(d)
+              (p / "hello.py").write_text("print('hello')\n", encoding="utf-8")
+              for action in [["init"],["snapshot"],["verify","--check-files"],["audit"]]:
+                  cmd = [sys.executable, "-m", "omniforge.provenance_v2_cli", *action, "--project", str(p)]
+                  completed = subprocess.run(cmd, capture_output=True, text=True, check=True)
+                  data = json.loads(completed.stdout)
+                  if action[0] in ("verify", "audit"):
+                      assert data["ok"], completed.stdout
+          print("PASS: init, snapshot, verify, audit")
