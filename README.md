@@ -8,7 +8,7 @@
 
 ![Version](https://img.shields.io/badge/release-v1.0.0-252525) ![Python](https://img.shields.io/badge/python-3.11%2B-3776ab) ![License](https://img.shields.io/badge/license-MIT-202a23) ![MCP](https://img.shields.io/badge/MCP-stdio-202a23)
 
-[Quickstart](#quickstart) · [CLI](#cli-commands) · [VS Code](#vs-code-integration) · [Security](SECURITY.md) · [Roadmap](ROADMAP.md)
+[Quickstart](#quickstart) · [CLI](#cli-commands) · [VS Code](#vs-code-integration) · [Security](SECURITY.md) · [Scope](ROADMAP.md)
 
 </div>
 
@@ -33,7 +33,6 @@ OmniForge does **not** provide a replacement language model, a fully autonomous 
 | Tool discovery catalog | ✅ Bundled | 112 **unverified candidate** GitHub tools (not implementations) |
 | Multi-agent autonomous orchestration | ❌ Not in v1.0 | Separate, future runtime effort |
 | Browser and terminal remote execution | ❌ Not in v1.0 | Not safe or implemented as a default capability |
-| 10,000 GitHub stars | 🎯 Goal | Community milestone, never guaranteed |
 
 ## Quickstart
 
