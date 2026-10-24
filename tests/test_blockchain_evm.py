@@ -82,3 +82,39 @@ def test_real_ethereum_compatible_anchor(tmp_path: Path):
         chain_id=1337, height=0,
     )
     assert original["ok"]
+
+
+def test_real_v2_provenance_anchor_and_rpc_verification(tmp_path: Path):
+    """Sign/broadcast ONLY with an unlocked disposable Ganache testing account."""
+    from omniforge import provenance_v2 as v2
+    from omniforge.provenance_v2_evm import prepare as v2_prepare, check_tx
+
+    accounts = send_rpc("eth_accounts", [])
+    assert accounts and int(send_rpc("eth_chainId", []), 16) == 1337
+    wallet = accounts[0]
+    (tmp_path / "new-feature.py").write_text("integrity = True\n")
+    v2.init(tmp_path)
+    entry = v2.snapshot(tmp_path, note="new v2 source")
+    prepared = v2_prepare(tmp_path, seq=0, wallet=wallet, chain_id=1337,
+                          ack_public_data=True)
+    transaction = prepared["unsigned_transaction"]
+    assert transaction["data"] == "0x" + entry["entry_hash"]
+    assert transaction["value"] == "0x0"
+    # The application never sends transactions. This test harness alone
+    # broadcasts using disposable test accounts in the local Ganache node.
+    txid = send_rpc("eth_sendTransaction", [{
+        "from": wallet, "to": wallet, "value": "0x0", "data": transaction["data"],
+        "gas": "0x186a0",
+    }])
+    assert send_rpc("eth_getTransactionReceipt", [txid])["status"] == "0x1"
+    verified = check_tx(tmp_path, seq=0, wallet=wallet, chain_id=1337,
+                        tx_hash=txid, endpoint=ENDPOINT)
+    assert verified["ok"], verified
+    assert verified["entry_hash"] == entry["entry_hash"]
+    assert verified["confirmations"] >= 1
+
+    (tmp_path / "new-feature.py").write_text("integrity = False\n")
+    v2.snapshot(tmp_path)
+    mismatch = check_tx(tmp_path, seq=1, wallet=wallet, chain_id=1337,
+                        tx_hash=txid, endpoint=ENDPOINT)
+    assert not mismatch["ok"] and mismatch["reason"] == "transaction-content-mismatch"
