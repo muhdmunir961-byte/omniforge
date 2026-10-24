@@ -24,8 +24,8 @@ Only a repository maintainer should create the reviewed version tag. For example
 git fetch origin
 git checkout main
 git pull --ff-only
-git tag -a v1.3.0 -m "OmniForge 1.3.0 verified release"
-git push origin v1.3.0
+git tag -a v1.3.1 -m "OmniForge 1.3.0 verified release"
+git push origin v1.3.1
 ```
 
 The tag triggers `.github/workflows/release.yml`. That workflow runs its own
