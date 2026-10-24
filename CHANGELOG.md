@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3.0 — Strict OF-Provenance v2 and safe legacy migration (2026-10-25)
+
+- Added new `ofprov` CLI and `omniforge provenance` subcommands without changing v1 `omniforge blockchain`.
+- Implemented strict per-file SHA-256 snapshots with immutable full scan policy, domain-separated hashes, versioned schema and rejection of duplicate JSON keys, unexpected fields and unsafe paths.
+- Added independent trusted head verification (`--expected-head` plus `--expected-seq`) to catch full ledger rewrites/rollbacks when the checkpoint is stored outside the mutable project.
+- Added copy-only migration preserving byte-exact v1 JSONL/anchor backups, original v1 head and a linked v2 genesis. Excluded the v2 state from v1 manifests so legacy current-source verification remains compatible.
+- Added filesystem limits, protected scan descriptors, change-during-read detection, writer locks, backup/export with checksums and a separate hash-linked RPC receipt journal that does not modify snapshot hashes.
+- Added optional unsigned EVM anchor preparation requiring `--ack-public-data`; read-only RPC verification and optional local historic receipt journaling. No private keys or transaction broadcasting.
+- Added read-only MCP v2 proof, verify and audit tools.
+- Expanded Python security/migration/restore tests and real local EVM node tests, using the maintained Foundry toolchain Anvil v1.8.6 in GitHub CI.
+- Added [audited Malay design and user documentation](docs/PROVENANCE_V2.ms.md) and [strict ledger schema](docs/PROVENANCE_V2_SCHEMA.json).
+- Known limits: no independent blockchain consensus verification, cross-platform pen-testing or production mainnet validation; externally trusted checkpoints are necessary for full rewrite detection.
+
+
 ## 1.2.0 — Blockchain provenance and EVM anchoring (2026-10-24)
 
 - Added SHA-256 local hash-chain ledger and source snapshot verification.
