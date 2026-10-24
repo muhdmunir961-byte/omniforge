@@ -12,6 +12,13 @@ from .core import (AGENT_LOCATIONS, audit_skill, bundled_names, bundled_root, ca
                    forge_skill, install_skill, validate_skill)
 from .router import index, load_skill, search_skills, token_report
 from .vscode import configure_vscode
+from .semantic import hybrid_search, embedding_search
+from .planner import related, plan
+from .runtime import prepare_run, execute_run
+from .agents import execute_workflow
+from .browser import browser_session, load_actions
+from .autocode import request_edits, apply_proposal
+from .provenance import build_manifest, check_manifest
 
 
 def as_json(value: object) -> None:
@@ -44,6 +51,8 @@ def parser() -> argparse.ArgumentParser:
     sub.add_parser("list", help="list compact bundled skill summaries")
     s = sub.add_parser("search", help="search bundled skills without reading their full bodies")
     s.add_argument("query"); s.add_argument("--limit", type=int, default=5)
+    s.add_argument("--mode", choices=("keyword", "hybrid", "embeddings"), default="hybrid")
+    s.add_argument("--model-path", help="already-installed local sentence embedding model")
     l = sub.add_parser("load", help="expand exactly one bundled SKILL.md")
     l.add_argument("name", choices=bundled_names())
     l.add_argument("--max-chars", type=int, default=12000)
@@ -68,9 +77,44 @@ def parser() -> argparse.ArgumentParser:
     vs.add_argument("--project", type=Path, default=Path.cwd()); vs.add_argument("--force", action="store_true")
     rr = sub.add_parser("inspect", help="read-only local project reconnaissance")
     rr.add_argument("project", nargs="?", type=Path, default=Path.cwd())
-    sem = sub.add_parser("related", help="synonym-aware offline skill search")
-    sem.add_argument("query"); sem.add_argument("--limit", type=int, default=5)
-    pl = sub.add_parser("plan", help="generate reviewable skill workflow without executing it")
+    run = sub.add_parser("run", help="permission-gated bundled skill execution (Docker by default)")
+    run.add_argument("name", choices=bundled_names())
+    run.add_argument("--project", type=Path, default=Path.cwd())
+    run.add_argument("--unsafe-local", action="store_true", help="host execution is NOT sandboxed")
+    run.add_argument("--allow-network", action="store_true")
+    run.add_argument("--approve", action="store_true")
+    run.add_argument("--timeout", type=int, default=30)
+    run.add_argument("args", nargs=argparse.REMAINDER, help="script args, after --")
+    ag = sub.add_parser("orchestrate", help="run a validated dependency-ordered skill/agent workflow")
+    ag.add_argument("workflow", type=Path)
+    ag.add_argument("--project", type=Path, default=Path.cwd())
+    ag.add_argument("--approve", action="store_true")
+    ag.add_argument("--unsafe-local", action="store_true")
+    ag.add_argument("--allow-network", action="store_true")
+    ag.add_argument("--allow-command", action="append", default=[])
+    ag.add_argument("--workers", type=int, default=2)
+    br = sub.add_parser("browser", help="opt-in Playwright page visit and deterministic browser actions")
+    br.add_argument("--url", required=True)
+    br.add_argument("--actions", type=Path)
+    br.add_argument("--screenshot")
+    br.add_argument("--project", type=Path, default=Path.cwd())
+    br.add_argument("--approve", action="store_true")
+    br.add_argument("--allow-local", action="store_true")
+    code = sub.add_parser("code", help="request opt-in AI patch proposal for explicitly selected source files")
+    code.add_argument("--task", required=True)
+    code.add_argument("--file", action="append", required=True)
+    code.add_argument("--endpoint", required=True)
+    code.add_argument("--model", required=True)
+    code.add_argument("--project", type=Path, default=Path.cwd())
+    code.add_argument("--allow-remote", action="store_true")
+    code.add_argument("--apply", action="store_true")
+    man = sub.add_parser("manifest", help="generate or verify SHA-256 integrity inventory (unsigned)")
+    man.add_argument("--project", type=Path, default=Path.cwd())
+    man.add_argument("--out", type=Path, default=Path('omniforge-manifest.json'))
+    man.add_argument("--verify", action="store_true")
+    rel = sub.add_parser("related", help="synonym-aware offline skill search")
+    rel.add_argument("query"); rel.add_argument("--limit", type=int, default=5)
+    pl = sub.add_parser("plan", help="reviewable offline skill workflow")
     pl.add_argument("task"); pl.add_argument("--limit", type=int, default=3)
     sub.add_parser("mcp", help="start stdio MCP tool server")
     return ap
@@ -83,13 +127,15 @@ def main(argv: list[str] | None = None) -> int:
             as_json({"name": "OmniForge", "version": __version__, "python": sys.version.split()[0],
                      "skills": bundled_names(), "candidates": len(catalog()),
                      "agents": sorted(AGENT_LOCATIONS), "executable": shutil.which("omniforge"),
-                     "mode": "local-only; no LLM subscription or API key required"})
+                     "mode": "core works locally without keys; optional code command uses BYOK endpoint"})
         elif args.action == "list":
             as_json(index())
         elif args.action == "search":
             if not 1 <= args.limit <= 20:
                 raise ValueError("--limit must be 1..20")
-            as_json(search_skills(args.query, limit=args.limit))
+            as_json(search_skills(args.query, limit=args.limit) if args.mode == "keyword" else
+                    hybrid_search(args.query, limit=args.limit) if args.mode == "hybrid" else
+                    embedding_search(args.query, model_path=args.model_path or "", limit=args.limit))
         elif args.action == "load":
             as_json(load_skill(args.name, max_chars=args.max_chars))
         elif args.action == "budget":
@@ -118,11 +164,34 @@ def main(argv: list[str] | None = None) -> int:
             as_json({"written": [str(p) for p in configure_vscode(args.project, force=args.force)]})
         elif args.action == "inspect":
             as_json(repo_recon(args.project))
+        elif args.action == "run":
+            arguments = args.args[1:] if args.args and args.args[0] == "--" else args.args
+            execution_plan = prepare_run(args.name, arguments, args.project,
+                               docker=not args.unsafe_local, allow_network=args.allow_network,
+                               timeout=args.timeout)
+            as_json(execute_run(execution_plan, approve=args.approve))
+        elif args.action == "orchestrate":
+            as_json(execute_workflow(args.workflow, args.project, approve=args.approve,
+                     unsafe_local=args.unsafe_local, allow_network=args.allow_network,
+                     allow_commands=set(args.allow_command), workers=args.workers))
+        elif args.action == "browser":
+            as_json(browser_session(args.url, steps=load_actions(args.actions), project=args.project,
+                                    screenshot=args.screenshot, approve=args.approve,
+                                    allow_local=args.allow_local))
+        elif args.action == "code":
+            proposal = request_edits(args.task, args.project, args.file, endpoint=args.endpoint,
+                                     model=args.model, allow_remote=args.allow_remote)
+            as_json(apply_proposal(proposal, args.project, approve=args.apply))
+        elif args.action == "manifest":
+            if args.verify:
+                as_json(check_manifest(args.project, args.out))
+            else:
+                manifest = build_manifest(args.project)
+                args.out.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+                as_json({"created":str(args.out), "count": len(manifest["files"])})
         elif args.action == "related":
-            from .planner import related
             as_json(related(args.query, limit=args.limit))
         elif args.action == "plan":
-            from .planner import plan
             as_json(plan(args.task, limit=args.limit))
         elif args.action == "mcp":
             from .mcp import serve

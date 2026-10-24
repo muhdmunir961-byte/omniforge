@@ -1,21 +1,13 @@
-# Security Policy
+# Security policy
 
-## Supported releases
+OmniForge executes commands only after explicit user approval. Its default MCP skills execution is **disabled** unless the host process sets `OMNIFORGE_MCP_EXECUTION=1`. Browser execution is separately disabled unless the host sets `OMNIFORGE_MCP_BROWSER=1`. Agent tools can sometimes set request-level arguments autonomously, so never enable these flags for an agent you do not trust.
 
-Security fixes target the current supported OmniForge release. Prefer GitHub private vulnerability reporting when it is enabled on the repository.
+Docker isolation mounts the project and script read-only, drops capabilities, disables network by default and has resource caps. It is **not** a complete solution against kernel exploits, Docker daemon compromise or device-level side effects. Docker images must be pulled by the operator, and OmniForge sets `--pull=never`. `--unsafe-local` deliberately bypasses isolation.
 
-## Threat model and limitations
+Do not run third-party scripts merely because `omniforge audit` reports no findings. Its static scan is heuristic and can miss attacks or flag benign content. Review supporting scripts and dependencies before installation.
 
-Skills can contain instructions that lead agents into destructive commands, leaked credentials or unsafe network actions. **Never execute unreviewed remote code.** `omniforge audit` checks only selected text patterns and structural rules. It does **not** sandbox code, detect all prompt injections, verify dependencies or guarantee safety.
+Browser automation should only target sites you control or are authorized to test. The browser policy blocks private/IP and cross-domain targets at the application layer by default, but does **not** provide perfect SSRF or DNS rebinding protection.
 
-OmniForge's MCP server is *discovery-only* and cannot run arbitrary shell commands. It exposes only read-only search, load and budget tools. Bundled skill scripts are invoked outside the MCP server by the user or their coding agent. Some scripts (especially `api-probe`) may make explicit network requests when invoked. Do not use them against unauthorized targets.
+For `omniforge code`, only user-specified files are sent to the provided model endpoint; never select a file containing credentials or personal data unless disclosure is authorized. The resulting patch is restricted to selected files, protects against concurrent edits with SHA-256, and uses local backups. This does not make generated code inherently safe: review the diff and test it.
 
-Installing a skill copies local instructions and scripts into the target agent's skill directory. The user and the host agent are responsible for reviewing those scripts. Avoid `--force` unless you have backed up the destination.
-
-## Safe defaults
-
-- Never embed credentials or `.env` in skills and repositories.
-- Review PRs, pin dependencies and inspect upstream licensing before adding third-party tools.
-- Use least-privilege credentials and test untrusted content in disposable environments.
-- Require explicit human approval for filesystem writes, package installation, secret handling and remote deployment.
-- Do not assume an instruction file is trustworthy merely because it is syntactically valid.
+Do not send secrets, tokens or credentials in bug reports. Report security-sensitive issues privately using GitHub Security Advisories.

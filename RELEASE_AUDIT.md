@@ -1,28 +1,29 @@
-# OmniForge v1.0 — release audit
+# OmniForge 1.1.0 audit
 
 Date: 2026-10-24
 
-## Verified locally
+## What the automated suite covers
 
-- Python source test suite: **23 passed** on Python 3.13.
-- `pip install -e . --no-build-isolation --no-deps`: succeeded with locally installed setuptools.
-- Built a distributable Python wheel using `pip wheel --no-build-isolation --no-deps`.
-- Installed wheel into an isolated target and verified 10 skills, 112 candidate records and MCP tools/list.
-- Tested JSON-RPC initialize, notification suppression, tools/list, search and lazy document loading.
-- Tested all 10 skill scripts using realistic temporary project data or an authorized localhost HTTP listener.
-- VS Code MCP configuration merging was tested; existing user entries are preserved.
+- Existing CLI, ten original skills, installation guardrails, metadata router and MCP handshake.
+- Local hybrid retrieval and missing-model behavior.
+- Docker run preview, network restrictions and explicit unsandboxed execution.
+- Workflow dependency validation, cycle rejection, approval and local execution.
+- Browser URL/action validation and browser preview without real navigation.
+- AI patch proposal validation, diff preview, backup-protected application, remote opt-in checks.
+- File hash manifest detection of changed source.
+- Disabled-by-default MCP tool execution and browser navigation.
+- Optional skill adapter files and JavaScript extension syntax.
 
-## Known limitations
+## Limitations and honest status
 
-1. The source is published on GitHub. GitHub release tag, PyPI distribution and VS Code marketplace extension are **not** published.
-2. MCP only exposes skill discovery, document loading and rough budget calculation; it cannot execute arbitrary tools or autonomously code and deploy a project.
-3. The 112 third-party projects are **discovery candidates, not 112 verified integrations**.
-4. Keyword-based router has no semantic embeddings. Matching other languages may be weaker than English.
-5. The token estimate is approximate (`ceil(characters / 4)`) and omits host-specific context overhead.
-6. Static heuristic audits can miss malicious code and flag benign regex rules. In this release `log-triage` and `secret-hygiene` each trigger a known heuristic `credential-reference` false positive in their own redaction/scanning regex. These were inspected manually but are **not proof of full safety**.
-7. Python 3.11+ only. GitHub Actions CI passed 23/23 tests on each of Python 3.11, 3.12 and 3.13 on GitHub-hosted Linux (run 40085116661). Windows/macOS compatibility is not yet verified.
-8. No claims of outperforming Codex, Claude Code or other proprietary agents are supported by comparative benchmarks.
+- Browser end-to-end interaction requires a Playwright Chromium installation and an authorized live website; these are not covered by the offline unit suite.
+- Docker operation requires a suitable container daemon and locally pulled image; the offline suite validates command construction and policy, not actual container isolation.
+- Neural embedding retrieval requires the optional package and an already installed local model; offline fallback is hybrid text ranking.
+- Actual external Trivy/KiCad/esptool commands require their respective executables and hardware/files.
+- BYOK model calls depend on a compatible remote or local provider. The suite checks local validation and atomic application, not live model quality.
+- Native VS Code extension is development source; JavaScript syntax can be checked, but Marketplace packaging, UI host behavior and platform portability require further validation.
+- Agent task coordinator is deterministic workflow execution, not autonomous iterative goal planning.
+- SHA-256 inventory is **unsigned** and does not authenticate a maintainer identity.
+- Existing upstream catalog of 112 tools is still candidate-only.
 
-## Practical release status
-
-**Core functional locally; packaging verified; source published on GitHub; GitHub CI passed on Python 3.11–3.13. No release tag or package-registry publication yet.**
+Python package version: 1.1.0. GitHub CI results for this upgrade should be recorded only after a successful workflow run. Do not reuse v1.0 CI evidence as proof of the new features.

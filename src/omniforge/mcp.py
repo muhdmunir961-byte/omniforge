@@ -2,17 +2,22 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
+from pathlib import Path
 from typing import Any, TextIO
 from . import __version__
 from .core import bundled_names
 from .router import search_skills, load_skill, token_report
+from .semantic import hybrid_search
+from .runtime import prepare_run, execute_run
+from .browser import browser_session
 
 PROTOCOL = "2025-06-18"
 TOOLS = [
     {
         "name": "omniforge_search",
-        "description": "Search available local agent skills by task. Returns compact metadata, not full instructions.",
+        "description": "Search local agent skills with hybrid local text ranking. Returns metadata only.",
         "inputSchema": {"type": "object", "properties": {
             "query": {"type": "string", "description": "Short task description"},
             "limit": {"type": "integer", "minimum": 1, "maximum": 20, "default": 5}
@@ -24,6 +29,22 @@ TOOLS = [
         "inputSchema": {"type": "object", "properties": {
             "name": {"type": "string"}
         }, "required": ["name"]},
+    },
+    {
+        "name": "omniforge_run",
+        "description": "Preview a bundled skill execution. Execution is disabled via MCP; use the local CLI for manually approved actions.",
+        "inputSchema": {"type":"object","properties":{
+            "name":{"type":"string"}, "args":{"type":"array","items":{"type":"string"}},
+            "project":{"type":"string"}
+        },"required":["name","project"]},
+    },
+    {
+        "name": "omniforge_browser",
+        "description": "Preview a browser navigation. Navigation is disabled via MCP; use the local CLI for manually approved actions.",
+        "inputSchema":{"type":"object","properties":{
+            "url":{"type":"string"}, "project":{"type":"string"},
+            
+        },"required":["url","project"]},
     },
     {
         "name": "omniforge_budget",
@@ -72,12 +93,24 @@ def dispatch(message: dict) -> dict | None:
                 limit = args.get("limit", 5)
                 if type(limit) is not int or not 1 <= limit <= 20:
                     raise ValueError("limit must be between 1 and 20")
-                outcome = tool_result(search_skills(query, limit=limit))
+                outcome = tool_result(hybrid_search(query, limit=limit))
             elif name == "omniforge_load":
                 skill = args.get("name")
                 if not isinstance(skill, str):
                     raise ValueError("name must be a string")
                 outcome = tool_result(load_skill(skill))
+            elif name == "omniforge_run":
+                name_arg, project = args.get("name"), args.get("project")
+                argv = args.get("args", [])
+                if not isinstance(name_arg,str) or not isinstance(project,str) or not isinstance(argv,list) or not all(isinstance(a,str) for a in argv):
+                    raise ValueError("name, project and args must be valid")
+                plan = prepare_run(name_arg, argv, Path(project), docker=True)
+                outcome = tool_result(execute_run(plan, approve=False))
+            elif name == "omniforge_browser":
+                url, project = args.get("url"), args.get("project")
+                if not isinstance(url,str) or not isinstance(project,str):
+                    raise ValueError("url and project must be strings")
+                outcome = tool_result(browser_session(url,project=Path(project),approve=False))
             elif name == "omniforge_budget":
                 selected = args.get("selected")
                 if selected is not None and not isinstance(selected, str):

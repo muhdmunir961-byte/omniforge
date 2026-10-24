@@ -1,0 +1,27 @@
+{
+  "name": "omniforge-local",
+  "displayName": "OmniForge Local Skills",
+  "description": "Search and install OmniForge skills from inside VS Code. Requires a local OmniForge CLI.",
+  "version": "1.1.0",
+  "license": "MIT",
+  "engines": {"vscode": "^1.88.0"},
+  "categories": ["Other"],
+  "main": "./extension.js",
+  "activationEvents": ["onCommand:omniforge.search", "onCommand:omniforge.doctor", "onCommand:omniforge.install", "onCommand:omniforge.load"],
+  "contributes": {
+    "commands": [
+      {"command": "omniforge.search", "title": "OmniForge: Search Skills"},
+      {"command": "omniforge.doctor", "title": "OmniForge: Diagnostics"},
+      {"command": "omniforge.install", "title": "OmniForge: Install Skill"},
+      {"command": "omniforge.load", "title": "OmniForge: View Skill Instructions"}
+    ],
+    "configuration": {
+      "title": "OmniForge",
+      "properties": {
+        "omniforge.executable": {"type":"string", "default":"omniforge", "description":"Path to the locally installed OmniForge CLI."},
+        "omniforge.agent": {"type":"string", "default":"codex", "enum":["codex","claude","cursor","opencode","copilot","gemini","universal"]}
+      }
+    }
+  },
+  "scripts": {"check": "node --check extension.js"}
+}
