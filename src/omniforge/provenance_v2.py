@@ -473,7 +473,20 @@ def audit(project: Path, *, expected_head: str | None = None,
           expected_seq: int | None = None) -> dict:
     outcome = verify(project, check_files=True,
                      expected_head=expected_head, expected_seq=expected_seq)
+    scope = None
+    if outcome.get("ok") or outcome.get("reason") == "files-or-policy-changed":
+        try:
+            latest = proof(project)
+            scope = {
+                "files_included": len(latest["file_hashes"]),
+                "policy_version": latest["policy"]["version"],
+                "excluded_directories": latest["policy"]["exclude_dirs"],
+                "excluded_files": latest["policy"]["exclude_files"],
+            }
+        except (ValueError, OSError):
+            pass
     return {**outcome, "audit_scope": "hash-chain, policy, current files, trusted head",
+            "snapshot_scope": scope,
             "warnings": [
                 "Ledger setempat boleh diubah oleh sesiapa yang ada akses fail.",
                 "Anchoring ke EVM tidak membuktikan pemilikan atau keselamatan kod.",
