@@ -309,3 +309,41 @@ def test_entry_hash_has_domain_separator(tmp_path):
     payload = {k: v for k, v in entry.items() if k != "entry_hash"}
     assert entry["entry_hash"] == hashed(b"OF-ENTRY-v2", payload)
     assert entry["snapshot_hash"] == snapshot_digest(entry["file_hashes"])
+
+
+def test_anchor_evidence_journal_is_separate_and_not_trusted(tmp_path):
+    initialize(tmp_path)
+    head = v2.proof(tmp_path)
+    # This API saves an UNTRUSTED historical claim; a real caller first verifies
+    # against read-only RPC. The local JSONL is NOT independent on-chain proof.
+    saved = v2.save_rpc_receipt(
+        tmp_path,
+        {"ok": True, "seq": 0, "entry_hash": head["entry_hash"],
+         "tx_hash": "0x" + "ab"*32, "chain_id": 1337, "confirmations": 2},
+        wallet=WALLET,
+    )
+    assert saved["status"] == "journaled-local-only"
+    assert rows(tmp_path)[0]["anchor_status"] == "not_requested"
+    outcome = v2.verify(tmp_path)
+    assert outcome["ok"] and outcome["anchor_evidence_events"] == 1
+    assert "untrusted" in outcome["anchor_evidence_note"]
+    journal = tmp_path / ".of-provenance" / "anchors.jsonl"
+    journal.write_text(journal.read_text().replace('"confirmations":2', '"confirmations":200'))
+    assert not v2.verify(tmp_path)["ok"]
+    with pytest.raises(ValueError, match="tampered"):
+        v2.snapshot(tmp_path)
+
+
+def test_risky_backup_and_legacy_links_are_refused(tmp_path):
+    legacy_record(tmp_path)
+    legacy_dir = tmp_path / ".omniforge"
+    anchor_metadata = legacy_dir / "anchors.jsonl"
+    outside = tmp_path.parent / (tmp_path.name + "-external-anchors")
+    outside.write_text("wallet not to be followed")
+    try:
+        anchor_metadata.symlink_to(outside)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks unavailable")
+    with pytest.raises(ValueError, match="symlink"):
+        v2.migrate(tmp_path, approve=True)
+    assert not (tmp_path / ".of-provenance").exists()
