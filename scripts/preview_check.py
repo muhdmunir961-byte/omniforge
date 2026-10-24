@@ -67,9 +67,9 @@ def run_preview(output):
         wallet = "0x" + "11" * 20
 
         version = call("CLI version", ["omniforge", "--version"])
-        check("1.3.0" in version, "version")
+        check("1.3.1" in version, "version")
         doc = call("Diagnostics", ["omniforge", "doctor"])
-        check(doc["version"] == "1.3.0", "diagnostics")
+        check(doc["version"] == "1.3.1", "diagnostics")
         check(len(doc["skills"]) == 14, "14 bundled skills")
         all_skills = call("Bundled skills", ["omniforge", "list"])
         check(len(all_skills) == 14, "skill list")
@@ -215,7 +215,7 @@ def run_preview(output):
         check(invalid["ok"] is False, "ledger tampering is rejected")
 
     stamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    meta = {"result": "PASS", "version": "1.3.0", "utc": stamp,
+    meta = {"result": "PASS", "version": "1.3.1", "utc": stamp,
             "cli_scenarios": len(records), "assertions": assertions,
             "details": "Installed wheel CLI; mock local projects only; no real wallets or third-party APIs"}
     (output / "trace.json").write_text(json.dumps({"meta": meta, "runs": records}, indent=2))
