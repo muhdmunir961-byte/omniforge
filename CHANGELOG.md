@@ -8,9 +8,10 @@
 - Added opt-in Playwright website actions and remote-model-assisted code patch proposals with SHA-256 checks and backups.
 - Added an experimental local VS Code extension (source, not Marketplace published).
 - Added Trivy, KiCad CLI, esptool and Playwright adapter skill packages; actual upstream dependencies remain optional.
-- Expanded MCP to five tools with disabled-by-default execution and browser capabilities.
+- Expanded MCP to five tools; execution and browser MCP endpoints are **preview-only** and cannot use model-supplied approval.
 - Added unsigned local SHA-256 manifests.
 - Kept existing v1.0 commands and 112 unverified catalog candidates.
+- Hardened skill installation, VS Code configuration, AI patch backups and screenshot destinations against symlink traversal.
 
 ## 1.0.0 — Initial core release (2026-10-24)
 
