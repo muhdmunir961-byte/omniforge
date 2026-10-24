@@ -43,6 +43,7 @@ For development: `python -m pip install pytest && python -m pytest -q`.
 | Browser automation | `omniforge browser --url https://example.org --approve` | Requires optional Playwright and Chromium; actions limited to an approved host |
 | BYOK code editing | `omniforge code --task "..." --file main.py --endpoint URL --model MODEL` | Sends only selected files, previews diff; `--apply` makes changes and keeps backups |
 | SHA-256 manifest | `omniforge manifest --project .` | Local integrity check, **unsigned** |
+| Blockchain provenance | `omniforge blockchain record --project .` | Local hash-chain + optional EVM anchor; wallet required for real transactions |
 | Repo catalog | `omniforge catalog "firmware"` | 112 research candidates, not 112 integrated tools |
 
 ## Packaged skills (14)
@@ -135,6 +136,24 @@ Default search is a local hybrid ranking of metadata. Use `--mode keyword` for t
 GitHub Actions runs the Python tests on Linux/Python 3.11–3.13. This release also provides an optional native extension source and modules for external tools, but does not claim their behavior has been verified on every supported machine. Windows/macOS CI, signed bundles, package-registry publication, fully autonomous iterative coding and 112 third-party integrations are **not** part of the verified core.
 
 See [RELEASE_AUDIT.md](RELEASE_AUDIT.md), [SECURITY.md](SECURITY.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Blockchain provenance (v1.2.0)
+
+OmniForge now includes a **local hash-chain ledger** for project/skill snapshot integrity and optional Ethereum-compatible transaction anchoring. The local ledger is **not a decentralized blockchain**; real on-chain anchoring requires a wallet and network gas. OmniForge never asks for your private key or sends transactions automatically.
+
+```bash
+omniforge blockchain record --project . --note "release build"
+omniforge blockchain verify --project . --check-current
+omniforge blockchain proof --project . --height 0
+
+# Prepare unsigned self-transaction with ledger hash in calldata:
+omniforge blockchain anchor --project . --wallet 0xYOUR_PUBLIC_ADDRESS --chain-id 1337
+
+# After YOU sign/broadcast via wallet, verify using a trusted RPC:
+omniforge blockchain verify-anchor --project . --wallet 0xYOUR_PUBLIC_ADDRESS --chain-id 1337 --rpc-url http://127.0.0.1:8545 --tx-hash 0xYOUR_TRANSACTION_HASH
+```
+
+The ledger lives at `.omniforge/chain.jsonl` and records SHA-256 snapshots without storing file contents. Local history can be rewritten by someone with filesystem access; anchoring an independently trusted head hash provides stronger evidence. A confirmed transaction is **not proof of authorship, licensing, or code safety**. See [Blockchain Guide](docs/BLOCKCHAIN.md).
 
 ## License
 
