@@ -9,6 +9,9 @@ on:
       - 'pyproject.toml'
       - 'tests/test_blockchain_evm.py'
       - 'tests/test_blockchain.py'
+      - 'tests/test_provenance_v2.py'
+      - 'scripts/preview_check.py'
+      - 'requirements-dev.txt'
   pull_request:
   workflow_dispatch:
 permissions:
