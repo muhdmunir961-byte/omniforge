@@ -1,0 +1,166 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/muhdmunir961-byte/omniforge/blob/main/docs/PROVENANCE_V2_SCHEMA.json",
+  "title": "OmniForge OF-Provenance v2 immutable snapshot JSONL record",
+  "description": "A single UTF-8 JSON object on one line of .of-provenance/chain.jsonl. Runtime also checks hashes, strict paths, UTC timestamps, UUIDv4 and sequential links.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "seq",
+    "timestamp",
+    "project_id",
+    "file_hashes",
+    "snapshot_hash",
+    "policy",
+    "policy_hash",
+    "prev_hash",
+    "entry_hash",
+    "anchor_status"
+  ],
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\d(?:\\.\\d+)?Z$"
+    },
+    "project_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "file_hashes": {
+      "type": "object",
+      "maxProperties": 3000,
+      "propertyNames": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024,
+        "description": "Must be canonical relative POSIX path; runtime checks path traversal and Unicode normalization."
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/hash"
+      }
+    },
+    "snapshot_hash": {
+      "$ref": "#/$defs/hash"
+    },
+    "policy": {
+      "$ref": "#/$defs/policy"
+    },
+    "policy_hash": {
+      "$ref": "#/$defs/hash"
+    },
+    "prev_hash": {
+      "$ref": "#/$defs/hash"
+    },
+    "entry_hash": {
+      "$ref": "#/$defs/hash"
+    },
+    "anchor_status": {
+      "const": "not_requested"
+    },
+    "note": {
+      "type": "string",
+      "maxLength": 160
+    },
+    "legacy_ref": {
+      "$ref": "#/$defs/legacy"
+    }
+  },
+  "$defs": {
+    "hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "version",
+        "exclude_dirs",
+        "exclude_files",
+        "max_files",
+        "max_file_bytes",
+        "max_total_bytes"
+      ],
+      "properties": {
+        "version": {
+          "const": 1
+        },
+        "exclude_dirs": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "exclude_files": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 100
+          }
+        },
+        "max_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3000
+        },
+        "max_file_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20000000
+        },
+        "max_total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 512000000
+        }
+      }
+    },
+    "legacy": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Only allowed in seq 0 when explicitly migrating from v1; runtime enforces genesis-only.",
+      "required": [
+        "head",
+        "ledger_sha256",
+        "entries",
+        "anchors_sha256"
+      ],
+      "properties": {
+        "head": {
+          "$ref": "#/$defs/hash"
+        },
+        "ledger_sha256": {
+          "$ref": "#/$defs/hash"
+        },
+        "entries": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000
+        },
+        "anchors_sha256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/hash"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
