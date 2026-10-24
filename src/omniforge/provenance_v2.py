@@ -294,6 +294,7 @@ def snapshot(project: Path, *, note: str = "", allow_policy_change: bool = False
     with locked(root):
         cfg = config_for(root)
         items = read_entries(root, cfg)
+        _anchor_events(root, items)
         if len(items) >= MAX_RECORDS:
             raise ValueError("Ledger full; archive and re-initialize a new project instead of truncating")
         head = items[-1]["entry_hash"] if items else ZERO
@@ -356,6 +357,7 @@ def _anchor_events(root: Path, items: list[dict]) -> list[dict]:
             or event["entry_hash"] != items[index]["entry_hash"]
             or not isinstance(event["tx_hash"], str) or not TXID.fullmatch(event["tx_hash"])
             or not isinstance(event["wallet"], str) or not ADDRESS.fullmatch(event["wallet"])
+            or not int(event["wallet"][2:], 16)
             or type(event["chain_id"]) is not int or not 1 <= event["chain_id"] < 2**53
             or type(event["confirmations"]) is not int or event["confirmations"] < 1
             or event["status"] != "verified_via_rpc_at_time"
@@ -367,6 +369,10 @@ def _anchor_events(root: Path, items: list[dict]) -> list[dict]:
                 {k: v for k, v in event.items() if k != "event_hash"}
             )):
             raise ValueError("Invalid/tampered anchor evidence event")
+        try:
+            datetime.fromisoformat(event["checked_at"].replace("Z", "+00:00"))
+        except ValueError as exc:
+            raise ValueError("Invalid anchor journal date") from exc
         previous = event["event_hash"]
     return events
 
