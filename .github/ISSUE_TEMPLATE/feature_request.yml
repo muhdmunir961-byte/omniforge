@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest a scoped enhancement with measurable acceptance criteria.
+title: "[Feature] "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: What is currently impossible or unnecessarily difficult?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution and alternatives
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria and test evidence
+      description: Include OS, security boundaries, backward compatibility and negative tests.
+    validations:
+      required: true

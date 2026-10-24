@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible bug without disclosing secrets.
+title: "[Bug] "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: "Please remove credentials, API keys and private project content. For exploitable security issues, use GitHub's private vulnerability reporting instead."
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Exact OmniForge command and a synthetic/reproducible project.
+      placeholder: "Commands, sanitized sample inputs, expected and actual behavior."
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options: ["Linux", "Windows", "macOS", "Other"]
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: OmniForge and Python versions
+      placeholder: "OmniForge 1.3.0 / Python 3.13.0"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Sanitized output
+      description: Redact absolute private paths, secrets and identifiers.
+      render: shell
