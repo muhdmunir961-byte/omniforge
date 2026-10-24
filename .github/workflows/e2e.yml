@@ -94,15 +94,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Install OmniForge and disposable EVM node
+      - name: Install OmniForge and disposable Foundry Anvil node
         run: |
           python -m pip install -e . pytest
-          npm install --no-save --no-package-lock --ignore-scripts ganache@7.9.2
-      - name: Real blockchain transaction and verification (local Ganache only)
+          npm install --no-save --no-package-lock @foundry-rs/anvil@1.7.1
+      - name: Real blockchain transaction and verification (local Anvil only)
         env:
           OMNIFORGE_CHAIN_LIVE: '1'
         run: |
-          node_modules/.bin/ganache --server.host 127.0.0.1 --server.port 8545 --chain.chainId 1337 --wallet.totalAccounts 1 > /tmp/omniforge-ganache.log 2>&1 &
+          node_modules/.bin/anvil --host 127.0.0.1 --port 8545 --chain-id 1337 --accounts 1 > /tmp/omniforge-anvil.log 2>&1 &
           evm_pid=$!
           trap 'kill "$evm_pid" 2>/dev/null || true' EXIT
           python - <<'PY'
@@ -119,6 +119,6 @@ jobs:
               except (OSError, KeyError):
                   time.sleep(.25)
           else:
-              raise SystemExit('Local Ganache RPC failed to start')
+              raise SystemExit('Local Anvil RPC failed to start')
           PY
           python -m pytest -vv tests/test_blockchain_evm.py
