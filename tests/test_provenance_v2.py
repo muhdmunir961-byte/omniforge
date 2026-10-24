@@ -457,3 +457,16 @@ def test_external_backup_restore_roundtrip_against_trusted_checkpoint(tmp_path):
     # for later work; source mutation is still detected separately.
     (restored / "main.py").write_text("safe = False\n")
     assert not v2.verify(restored, check_files=True)["ok"]
+
+
+
+def test_snapshot_hashes_raw_crlf_and_control_z_bytes_portably(tmp_path):
+    """Windows text-mode open must never translate CRLF or truncate Ctrl-Z."""
+    raw = b"alpha\r\nbeta\r\n\x1a\r\ngamma\r\n"
+    target = tmp_path / "binary_in_text.txt"
+    target.write_bytes(raw)
+    v2.init(tmp_path)
+    v2.snapshot(tmp_path)
+    entry = v2.proof(tmp_path)
+    assert entry["file_hashes"]["binary_in_text.txt"] == hashlib.sha256(raw).hexdigest()
+    assert v2.verify(tmp_path, check_files=True)["ok"]
