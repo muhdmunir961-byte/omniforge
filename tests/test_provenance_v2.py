@@ -347,3 +347,30 @@ def test_risky_backup_and_legacy_links_are_refused(tmp_path):
     with pytest.raises(ValueError, match="symlink"):
         v2.migrate(tmp_path, approve=True)
     assert not (tmp_path / ".of-provenance").exists()
+
+
+def test_mcp_v2_tools_are_read_only_and_strict(tmp_path):
+    from omniforge.mcp import dispatch
+    initialize(tmp_path)
+    old_bytes = chain_path(tmp_path).read_bytes()
+    names = {"omniforge_provenance_verify", "omniforge_provenance_proof",
+             "omniforge_provenance_audit"}
+    listed = dispatch({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
+    tools = {x["name"]: x for x in listed["result"]["tools"] if x["name"] in names}
+    assert set(tools) == names
+    assert all("approve" not in tool["inputSchema"]["properties"] for tool in tools.values())
+    for name in names:
+        response = dispatch({
+            "jsonrpc": "2.0", "id": 2, "method": "tools/call",
+            "params": {"name": name, "arguments": {"project": str(tmp_path)}},
+        })
+        report = json.loads(response["result"]["content"][0]["text"])
+        assert report.get("ok", True) or "entry_hash" in report
+        assert not response["result"]["isError"]
+    assert chain_path(tmp_path).read_bytes() == old_bytes
+    invalid = dispatch({
+        "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+        "params": {"name": "omniforge_provenance_verify",
+                   "arguments": {"project": str(tmp_path), "check_files": "true"}},
+    })
+    assert invalid["result"]["isError"]
