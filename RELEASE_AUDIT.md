@@ -1,3 +1,36 @@
+# OmniForge 1.3.0 / OF-Provenance v2 — Remediation Audit
+
+Audit date: 2026-10-25
+
+## Status and evidence
+
+- Strict OF-Provenance v2 is implemented as a separate command namespace (`ofprov`, `omniforge provenance`) while legacy v1 `omniforge blockchain` remains available. v1 hash values and original files are not rewritten.
+- Linux/Python 3.11, 3.12 and 3.13 regression runs: **112 passed, 6 skipped per version** as observed in successful GitHub Actions [CI run 40131000600](https://github.com/muhdmunir961-byte/omniforge/actions/runs/40131000600). Skipped tests are opt-in E2E, and are evaluated separately.
+- [Real Integrations E2E run 40130983003](https://github.com/muhdmunir961-byte/omniforge/actions/runs/40130983003): **all five jobs passed**, covering real Foundry Anvil local-chain anchoring of v1/v2, native VS Code host, VSIX packaging, Chromium interaction, local model HTTP, and isolated Docker execution.
+- Foundry Anvil installed through official maintained `foundry-rs/foundry-toolchain@v1` with binary version `v1.8.6`; the tests explicitly wait for a mined transaction receipt rather than assuming immediate finality.
+
+## Resolved audit findings
+
+1. **Strict schema verification:** no extra fields, duplicate JSON keys, non-canonical relative paths, malformed project UUIDs, invalid UTC values, Boolean masquerading as int, or wrong link/snapshot/policy hashes.
+2. **Immutable complete policy history:** full scan policy and policy hash stored in each snapshot, policy changes require explicit `--allow-policy-change`.
+3. **External trusted checkpoints:** verification of independently stored `expected_seq` and `expected_head` can detect entire rewritten/truncated local history; absent an external trust anchor, local ledger is not tamper-proof.
+4. **Copy-only migration:** existing v1 ledger and optional anchor metadata archived byte-for-byte and linked from new v2 genesis. Legacy v1 current-source checks still work following migration.
+5. **Resource and filesystem controls:** file count/size/total scan limits, 10 MB/10,000-entry ledger caps, symlink/nonregular rejection, POSIX nofollow descriptor opens, change-during-hash detection, fsync and writer locks.
+6. **Anchor metadata isolation:** immutable v2 chain maintains `anchor_status: not_requested`; optional receipt events stored in a hash-linked local journal, explicitly **untrusted** until rechecked against a live RPC.
+7. **External backup and manual recovery:** backup and SHA-256 manifest/checkpoint export to a new external directory; manual restore verified by regression test, without silently altering old history.
+8. **Privacy and EVM consent:** public-data acknowledgement is required for unsigned anchor preparation; applications never accept private keys or sign/broadcast transactions; actual wallet operation is separate.
+9. **Docs and tests:** full [Malay design and CLI guide](docs/PROVENANCE_V2.ms.md), [strict JSON schema](docs/PROVENANCE_V2_SCHEMA.json), expanded positive/negative/concurrent tests, and full EVM integration.
+
+## Remaining limitations, not a security certification
+
+- The local hash chain is rewritable by an attacker controlling all local files. A same-host checkpoint is not independent; use externally trusted versioned/offline storage.
+- A provider's JSON-RPC response and local receipt journal do not independently establish blockchain consensus or ownership. Chain reorganizations and dishonest providers remain possible.
+- Test transactions run on disposable **local Anvil** with simulated balances, not public mainnet/testnet wallet funds.
+- Windows/macOS concurrent malicious filesystem races and external penetration tests remain unverified.
+- Source hashes do not prove malware-free code, copyright, identity or full project integrity for intentionally excluded files.
+
+---
+
 # OmniForge 1.2.0 — Blockchain Provenance Audit
 
 Date: 2026-10-24
