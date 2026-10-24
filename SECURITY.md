@@ -21,3 +21,15 @@ The local `.omniforge/chain.jsonl` ledger can be rewritten by an attacker with f
 On-chain anchoring produces only an unsigned **zero-value self-transaction** with a 32-byte digest in EVM calldata. The user must approve gas and broadcast with their own wallet. OmniForge never requests private keys or recovery phrases or transmits a transaction.
 
 Remote JSON-RPC calls must use HTTPS (local loopback HTTP is allowed). The verifier relies on the RPC provider, cannot prove an independent consensus history and cannot guarantee finality against reorganizations. Addresses and calldata on public networks are visible forever. Never place secrets in ledger notes or RPC URLs.
+
+## OF-Provenance v2 security boundaries (OmniForge 1.3.0)
+
+- A fully writable local ledger can be rewritten, including recomputed hashes. Full rewrite/rollback detection requires a trusted external **sequence and head hash**; never derive trusted checkpoints from the suspect ledger.
+- v2 records contain immutable historical scan policy and explicit exclusions, including .env. Excluded source files are outside the covered scope. Duplicate JSON keys, unsupported fields, unsafe paths and incorrect links are rejected.
+- Local anchor receipt journal entries are not independent on-chain proof. RPC providers may lie or become stale due to reorganization. Check live RPC again for important decisions.
+- Migration is preview-first, copy-only with approval; old v1 hash/anchors are retained without conversion.
+- EVM preparation requires explicit public-data acknowledgement; OmniForge NEVER stores private keys, signs, broadcasts or pays gas. The user's separate wallet controls any transaction.
+- Export backup to a new directory OUTSIDE the project and preserve checkpoint copies under independently controlled storage. Same-host mutable backups are not independent trusted checkpoints.
+- POSIX openat and locking mitigate common races; hostile concurrent filesystem changes and non-POSIX systems are not formally certified.
+
+Required warnings: Ledger setempat boleh diubah oleh sesiapa yang ada akses fail. Anchoring ke EVM tidak membuktikan pemilikan atau keselamatan kod. Jangan masukkan rahsia dalam nota anchor. Data on-chain kekal kelihatan selama-lamanya.
