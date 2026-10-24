@@ -206,3 +206,52 @@ def test_adapter_checks_do_not_require_upstream_binaries():
         assert cp.returncode==0,cp.stderr
         obj=json.loads(cp.stdout)
         assert 'available' in obj
+
+
+def test_model_provider_redirect_never_follows_or_leaks_auth(tmp_path):
+    """Real local HTTP 302 must not forward a source file or bearer token."""
+    import threading
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+
+    class Redirect(BaseHTTPRequestHandler):
+        forwarded = False
+
+        def do_POST(self):
+            self.send_response(302)
+            self.send_header("Location", "/unexpected-destination")
+            self.end_headers()
+
+        def do_GET(self):
+            self.__class__.forwarded = True
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"unexpected")
+
+        def log_message(self, *args):
+            pass
+
+    source = tmp_path / "module.py"
+    source.write_text("secret_test_only = 'PRIVATE'\n")
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Redirect)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with pytest.raises(ValueError, match="redirects are disabled"):
+            request_edits("format this file", tmp_path, ["module.py"],
+                          endpoint=f"http://127.0.0.1:{server.server_port}/v1/chat/completions",
+                          model="fixture", api_key="test-token")
+        assert Redirect.forwarded is False
+        assert source.read_text() == "secret_test_only = 'PRIVATE'\n"
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+
+def test_model_endpoint_rejects_embedded_credentials_and_fragments(tmp_path):
+    (tmp_path / "main.py").write_text("valid = True")
+    for endpoint in ("https://user:password@api.example.org/v1/chat/completions",
+                     "https://api.example.org/v1/chat/completions#secret"):
+        with pytest.raises(ValueError, match="endpoint"):
+            request_edits("refactor", tmp_path, ["main.py"],
+                          endpoint=endpoint, model="fixture", allow_remote=True)
