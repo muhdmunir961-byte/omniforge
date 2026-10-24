@@ -10,3 +10,6 @@ dist/
 
 # Local source backups and provenance ledger; do not commit by default
 .omniforge/
+
+# v2 local provenance, checkpoints and optional public wallet receipts
+.of-provenance/
