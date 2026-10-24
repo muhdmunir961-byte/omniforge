@@ -41,7 +41,7 @@ This folder is excluded from the scanner and normally gitignored. Never assume a
 
 ## C. Stack, dependencies and assumptions
 
-Python 3.11+ is supported. Runtime dependencies are all from Python's standard library (argparse, json, pathlib, hashlib, os, uuid, urllib). Unit tests use pytest. EVM integration CI uses Ganache on a disposable local chain with simulated value and test-only unlocked accounts. Normal operation never requires a cryptocurrency library, real wallet or network.
+Python 3.11+ is supported; CI tests Python 3.11, 3.12 and 3.13. Runtime dependencies are all from Python's standard library (argparse, json, pathlib, hashlib, os, uuid, urllib). Unit tests use pytest. EVM integration CI uses Foundry Anvil on a disposable local chain with simulated value and test-only unlocked accounts. Normal operation never requires a cryptocurrency library, real wallet or network.
 
 On POSIX, scanner files are opened using descriptor-relative NOFOLLOW checks and writer locks use fcntl. Windows fallback is not yet proven equally resistant to concurrent malicious path-swap races. Timestamps reflect the host machine clock, not an authenticated time source.
 
@@ -210,7 +210,7 @@ The implementation also limits file size, locks writes, refuses truncation and v
 
 **Adakah migration rewrite v1 anchors?** Tidak. Raw backups and original head are preserved. The v2 genesis stores a reference only.
 
-**Test plan:** unit SHA-256, invalid schema/path/UUID, chain tampering, full ledger rewrite with external head, rollback/truncation, policy changes, migration, concurrent writes, missing files, unsafe symlinks, resource limits, anchor acknowledgments, journal tampering and real local Ganache EVM receipt verification.
+**Test plan:** unit SHA-256, invalid schema/path/UUID, chain tampering, full ledger rewrite with external head, rollback/truncation, policy changes, migration, concurrent writes, missing files, unsafe symlinks, resource limits, anchor acknowledgments, journal tampering and real local Foundry Anvil EVM receipt verification.
 
 **Known limits:** no formal supply-chain attestation, no guaranteed immutability without an independent checkpoint, no full cross-platform race protection, no on-chain mainnet certification, no wallet custody, no proof of authorship, and no antivirus behavior.
 
