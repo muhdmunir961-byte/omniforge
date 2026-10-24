@@ -107,8 +107,9 @@ jobs:
           trap 'kill "$evm_pid" 2>/dev/null || true' EXIT
           python - <<'PY'
           import json, time, urllib.request
+          from pathlib import Path
           endpoint = 'http://127.0.0.1:8545'
-          for attempt in range(40):
+          for attempt in range(80):
               request = urllib.request.Request(endpoint,
                   json.dumps({'jsonrpc':'2.0','id':1,'method':'eth_chainId','params':[]}).encode(),
                   {'Content-Type':'application/json'}, method='POST')
@@ -119,6 +120,7 @@ jobs:
               except (OSError, KeyError):
                   time.sleep(.25)
           else:
-              raise SystemExit('Local Anvil RPC failed to start')
+              print(Path('/tmp/omniforge-anvil.log').read_text()[-6000:])
+    raise SystemExit('Local Anvil RPC failed to start')
           PY
           python -m pytest -vv tests/test_blockchain_evm.py
