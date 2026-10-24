@@ -182,6 +182,26 @@ omniforge blockchain verify-anchor --project . --wallet 0xALAMAT_WALLET_KAMU --c
 
 File ledger disimpan di `.omniforge/chain.jsonl`. Yang dicatat hanya hash SHA-256, jumlah file, timestamp, dan catatan singkat—bukan konten source code. Kalau seseorang bisa mengubah semua isi ledger lokal, ia juga bisa menghitung ulang seluruh chain. Anchor yang diverifikasi secara independen memberikan bukti lebih kuat; **bukan jaminan siapa pembuat kode atau bahwa kode itu aman**. Dokumentasi lengkap: [Blockchain Guide](docs/BLOCKCHAIN.md).
 
+## OF-Provenance v2 — integrity ledger yang diaudit
+
+**API baru tanpa merusak versi lama:** `ofprov` atau `omniforge provenance`. Command lama `omniforge blockchain` v1 tetap tersedia dan hash/anchor lamanya tidak diubah.
+
+```bash
+ofprov init --project .
+ofprov snapshot --project . --note "before release"
+ofprov verify --project . --check-files
+ofprov audit --project .
+ofprov backup --project . --out ../trusted-backup-001
+```
+
+v2 menyimpan **hash SHA-256 tiap file dan full scan policy di setiap record**. Strict verifier menolak duplicate JSON key, field tambahan, path tak aman dan perubahan policy tanpa izin. `--expected-head` dan `--expected-seq` harus dibandingkan dengan checkpoint yang disimpan **di luar project** supaya full ledger rewrite bisa terdeteksi.
+
+Kalau sudah pakai ledger v1, gunakan `ofprov migrate --project . --approve`, lalu `ofprov snapshot --project .`. Migrasi menyalin data v1 byte-for-byte, bukan menghitung ulang hash lama.
+
+EVM anchor tetap **opt-in**: aplikasi cuma menyiapkan unsigned transaction setelah `--ack-public-data`. Wallet eksternal harus approve dan sign sendiri. RPC receipt yang disimpan lokal bukan bukti finalitas blockchain terkini. MCP v2 hanya menyediakan verify/proof/audit **read-only**.
+
+**Penting:** local ledger bukan blockchain decentralized, hash bukan bukti ownership/safety kode, dan user harus menyimpan backup plus trusted checkpoint secara terpisah. Detail: [panduan BM](docs/PROVENANCE_V2.ms.md) dan [JSON schema](docs/PROVENANCE_V2_SCHEMA.json).
+
 ## Lisensi
 
 MIT untuk kode OmniForge. Software upstream tetap menggunakan lisensinya masing-masing.
