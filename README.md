@@ -27,6 +27,12 @@ omniforge search "debug ESP32 errors"
 
 For development: `python -m pip install -e . -r requirements-dev.txt && python -m pytest -q`. See the [quickstart](examples/quickstart/README.md), [architecture](docs/ARCHITECTURE.md), [release process](docs/RELEASE_PROCESS.md) and [real CLI preview](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/preview.yml).
 
+## Interactive Vercel system explorer
+
+**[Open the live OmniForge feature explorer](https://omniforge-explorer.vercel.app)** to inspect all 14 packaged skills, the 10 MCP tool contracts, sample CLI commands, an editable workflow DAG, the SHA-256 provenance demonstration, permission rules, source architecture and linked GitHub CI evidence.
+
+This website is an **educational browser demo**, not a hosted Python CLI, Docker execution service, real MCP server or wallet. The provenance lab hashes **demo text in your own browser**, while real OmniForge runs locally. See [the web preview source](web-preview/README.md).
+
 ## What it does
 
 | Capability | Usage | Boundary |
