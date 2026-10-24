@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from .core import secure_project_path
 
 INSTRUCTIONS = """---
 description: 'Use OmniForge only when an external skill is useful'
@@ -17,9 +18,11 @@ Never send secrets or execute destructive commands without user approval.
 
 def configure_vscode(project: Path, *, force: bool = False) -> list[Path]:
     root = project.expanduser().resolve()
-    vscode = root / ".vscode"
+    vscode = secure_project_path(root, ".vscode")
+    config_path = secure_project_path(root, ".vscode", "mcp.json")
+    guide = secure_project_path(root, ".github", "instructions", "omniforge.instructions.md")
+    # Validate BOTH destinations before writing either file.
     vscode.mkdir(parents=True, exist_ok=True)
-    config_path = vscode / "mcp.json"
     config = {}
     if config_path.exists():
         try:
@@ -34,7 +37,7 @@ def configure_vscode(project: Path, *, force: bool = False) -> list[Path]:
     servers["omniforge"] = {"type": "stdio", "command": "omniforge", "args": ["mcp"]}
     config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
 
-    guide = root / ".github" / "instructions" / "omniforge.instructions.md"
+    secure_project_path(root, ".github", "instructions", "omniforge.instructions.md")
     guide.parent.mkdir(parents=True, exist_ok=True)
     if guide.exists() and not force:
         return [config_path]  # Do not silently overwrite user-written instructions.
