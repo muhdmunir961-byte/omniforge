@@ -248,3 +248,32 @@ def test_cli_rpc_verify_exit_codes(tmp_path, rpc_server, capsys):
     assert json.loads(capsys.readouterr().out)["ok"]
     assert main(argv + ["--min-confirmations", "4"]) == 1
     assert not json.loads(capsys.readouterr().out)["ok"]
+
+
+def test_mcp_blockchain_tools_are_read_only(tmp_path):
+    from omniforge.mcp import dispatch
+    recorded = record(tmp_path)
+    file_before = ledger_path(tmp_path).read_bytes()
+    listing = dispatch({"jsonrpc":"2.0", "id":1, "method":"tools/list"})["result"]["tools"]
+    names = {x["name"] for x in listing}
+    assert {"omniforge_chain_verify", "omniforge_chain_proof"} <= names
+    for tool in listing:
+        if tool["name"] in {"omniforge_chain_verify", "omniforge_chain_proof"}:
+            assert "approve" not in tool["inputSchema"]["properties"]
+
+    verification = dispatch({"jsonrpc":"2.0","id":2,"method":"tools/call",
+                            "params":{"name":"omniforge_chain_verify",
+                                      "arguments":{"project":str(tmp_path),"check_current":True}}})
+    report = json.loads(verification["result"]["content"][0]["text"])
+    assert report["ok"] and report["head"] == recorded["hash"]
+    proof_result = dispatch({"jsonrpc":"2.0","id":3,"method":"tools/call",
+                             "params":{"name":"omniforge_chain_proof",
+                                       "arguments":{"project":str(tmp_path),"height":0}}})
+    block = json.loads(proof_result["result"]["content"][0]["text"])
+    assert block["hash"] == recorded["hash"]
+    assert ledger_path(tmp_path).read_bytes() == file_before
+
+    bad = dispatch({"jsonrpc":"2.0","id":4,"method":"tools/call",
+                    "params":{"name":"omniforge_chain_verify",
+                              "arguments":{"project":str(tmp_path),"check_current":"yes"}}})
+    assert bad["result"]["isError"]
