@@ -413,8 +413,12 @@ def test_mutating_file_during_hash_fails_closed(tmp_path, monkeypatch):
     def race(fd, size):
         nonlocal changed
         chunk = original(fd, size)
-        link = Path("/proc/self/fd") / str(fd)
-        if not changed and chunk and link.exists() and Path(os.readlink(link)) == target:
+        # Linux has /proc/self/fd; macOS does not. Match file identity
+        # through fstat instead of relying on a Linux-only procfs path.
+        opened = os.fstat(fd)
+        actual = target.stat()
+        if (not changed and chunk and opened.st_dev == actual.st_dev
+            and opened.st_ino == actual.st_ino):
             changed = True
             target.write_text("data = 2\n")
         return chunk
