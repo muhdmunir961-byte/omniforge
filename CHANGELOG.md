@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.2.0 — Blockchain provenance and EVM anchoring (2026-10-24)
+
+- Added SHA-256 local hash-chain ledger and source snapshot verification.
+- Added blockchain CLI commands: record, verify, proof, anchor and verify-anchor.
+- Added unsigned EVM zero-value self-transaction payload generation; wallet signs and broadcasts independently.
+- Added read-only RPC verifier for chain ID, wallet, calldata, receipt status, hash and confirmations.
+- Added tamper, truncation, symlink, concurrency, wrong chain and RPC tests.
+- Verified actual EVM anchoring using a disposable local Ganache chain in CI.
+- Published guide and English / Indonesian / Malay README documentation.
+- Local ledger is not decentralized consensus; public network gas and user's wallet are required for anchoring.
+
+
 ## 1.1.1 — Integration verification and Docker permissions fix (2026-10-24)
 
 - Fixed Docker sandbox access for private user-owned project directories by running with the invoking UID/GID rather than root with dropped capabilities.
