@@ -1,4 +1,31 @@
-# OmniForge 1.1.1 audit
+# OmniForge 1.2.0 — Blockchain Provenance Audit
+
+Date: 2026-10-24
+
+## Scope verified
+
+- SHA-256 local provenance chain with timestamp, previous record hash and project snapshot hash.
+- Validation of chain structure, tamper/truncation detection, current source snapshot checks, symlink rejection and concurrent writers.
+- CLI record/verify/proof/anchor/verify-anchor, with unsigned EVM self-transaction payloads (no wallet keys).
+- Read-only RPC verification of network chain ID, sender/recipient, exact calldata, transaction receipt success and confirmations.
+- Real in-memory Ganache EVM network (chain ID 1337), with a 0-value on-chain transaction and successful RPC verification.
+- Negative test: a different ledger height must not validate against the earlier transaction.
+- GitHub EVM CI evidence: https://github.com/muhdmunir961-byte/omniforge/actions/runs/40105634750
+- Extended reference: docs/BLOCKCHAIN.md
+
+## Limitations and security boundaries
+
+- This is an application-level local hash chain plus optional anchor to an external EVM-compatible blockchain, NOT a newly implemented consensus network, wallet, cryptocurrency or token.
+- An attacker with local write access can recompute the entire chain. An independently saved or anchored hash is necessary to meaningfully detect a complete rewrite.
+- OmniForge never signs or broadcasts transactions. Users are responsible for the wallet, gas fee, network choice, confirmation depth and any financial or privacy implications.
+- Public-chain anchoring has not been tested on a real testnet or mainnet; CI confirms behavior against a disposable local Ganache node.
+- JSON-RPC verifier trusts the chosen provider's responses; it does not validate PoS consensus or guarantee finality.
+- SHA-256 identifies file snapshots, not authorship, source licensing or absence of malicious code.
+- This change has not been independently penetration-tested. Windows/macOS filesystem locking is not yet validated.
+
+---
+
+# OmniForge 1.1.1 — previous audit
 
 Date: 2026-10-24
 
