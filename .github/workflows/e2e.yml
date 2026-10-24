@@ -7,6 +7,8 @@ on:
       - '.github/workflows/e2e.yml'
       - 'vscode-extension/**'
       - 'pyproject.toml'
+      - 'tests/test_blockchain_evm.py'
+      - 'tests/test_blockchain.py'
   pull_request:
   workflow_dispatch:
 permissions:
@@ -81,3 +83,42 @@ jobs:
       - name: Real VS Code editor host integration
         working-directory: vscode-extension
         run: xvfb-run -a node tests/run-host.js
+  blockchain-evm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install OmniForge and disposable EVM node
+        run: |
+          python -m pip install -e . pytest
+          npm install --no-save --no-package-lock --ignore-scripts ganache@7.9.2
+      - name: Real blockchain transaction and verification (local Ganache only)
+        env:
+          OMNIFORGE_CHAIN_LIVE: '1'
+        run: |
+          node_modules/.bin/ganache --server.host 127.0.0.1 --server.port 8545 --chain.chainId 1337 --wallet.totalAccounts 1 > /tmp/omniforge-ganache.log 2>&1 &
+          evm_pid=$!
+          trap 'kill "$evm_pid" 2>/dev/null || true' EXIT
+          python - <<'PY'
+          import json, time, urllib.request
+          endpoint = 'http://127.0.0.1:8545'
+          for attempt in range(40):
+              request = urllib.request.Request(endpoint,
+                  json.dumps({'jsonrpc':'2.0','id':1,'method':'eth_chainId','params':[]}).encode(),
+                  {'Content-Type':'application/json'}, method='POST')
+              try:
+                  with urllib.request.urlopen(request, timeout=2) as response:
+                      assert int(json.load(response)['result'],16) == 1337
+                  break
+              except (OSError, KeyError):
+                  time.sleep(.25)
+          else:
+              raise SystemExit('Local Ganache RPC failed to start')
+          PY
+          python -m pytest -vv tests/test_blockchain_evm.py
