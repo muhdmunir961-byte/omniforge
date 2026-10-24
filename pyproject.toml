@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omniforge-agent"
+version = "1.0.0"
+description = "Local-first AI agent skill router, audited registry, token-aware discovery, and MCP stdio bridge."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "OmniForge Contributors"}]
+keywords = ["agent-skills", "mcp", "codex", "claude-code", "opencode", "cursor", "vscode", "skill-router"]
+classifiers = ["Programming Language :: Python :: 3"]
+
+[project.scripts]
+omniforge = "omniforge.cli:main"
+oforge = "omniforge.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+omniforge = ["data/*.json", "data/skills/*/SKILL.md", "data/skills/*/scripts/*.py"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

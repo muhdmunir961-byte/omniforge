@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "omniforge": {
+      "type": "stdio",
+      "command": "omniforge",
+      "args": ["mcp"]
+    }
+  }
+}
