@@ -1,0 +1,45 @@
+name: Packaged CLI Preview
+on:
+  push:
+    paths:
+      - 'src/**'
+      - 'scripts/preview_check.py'
+      - 'pyproject.toml'
+      - '.github/workflows/preview.yml'
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  packaged-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Build clean distributable wheel
+        run: |
+          python -m pip wheel --no-deps --wheel-dir dist .
+          test -n "$(ls dist/*.whl)"
+      - name: Install only packaged wheel in clean venv
+        run: |
+          python -m venv "$RUNNER_TEMP/omniforge-preview-venv"
+          "$RUNNER_TEMP/omniforge-preview-venv/bin/python" -m pip install --no-index --no-deps dist/*.whl
+          "$RUNNER_TEMP/omniforge-preview-venv/bin/python" -m pip show omniforge-agent
+      - name: Run real installed CLI preview on disposable project
+        shell: bash
+        run: |
+          set -euo pipefail
+          source "$RUNNER_TEMP/omniforge-preview-venv/bin/activate"
+          python scripts/preview_check.py --out preview-output
+          cat preview-output/preview.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload HTML, Markdown and JSON preview artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: omniforge-real-cli-preview
+          path: preview-output/
+          if-no-files-found: warn
+          retention-days: 14
