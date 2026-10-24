@@ -2,7 +2,7 @@
   "name": "omniforge-local",
   "displayName": "OmniForge Local Skills",
   "description": "Search and install OmniForge skills from inside VS Code. Requires a local OmniForge CLI.",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "license": "MIT",
   "engines": {"vscode": "^1.88.0"},
   "categories": ["Other"],
