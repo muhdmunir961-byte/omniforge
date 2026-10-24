@@ -96,7 +96,8 @@ def test_recomputed_hash_with_invalid_relative_path_is_rejected(tmp_path):
     def alter(entries):
         entry = entries[0]
         entry["file_hashes"]["../outside.py"] = "0" * 64
-        entry["snapshot_hash"] = snapshot_digest({})  # incorrect deliberately
+        # Recompute every hash correctly so only the strict PATH SCHEMA blocks it.
+        entry["snapshot_hash"] = hashed(b"OF-SNAPSHOT-v2", entry["file_hashes"])
     rebuild_chain(tmp_path, alter)
     assert not v2.verify(tmp_path)["ok"]
 
@@ -374,3 +375,52 @@ def test_mcp_v2_tools_are_read_only_and_strict(tmp_path):
                    "arguments": {"project": str(tmp_path), "check_files": "true"}},
     })
     assert invalid["result"]["isError"]
+
+
+def test_audit_exposes_exact_default_exclusion_policy(tmp_path):
+    (tmp_path / "main.py").write_text("ok")
+    initialize(tmp_path)
+    report = v2.audit(tmp_path)
+    assert report["ok"]
+    assert report["snapshot_scope"]["files_included"] == 1
+    assert ".env" in report["snapshot_scope"]["excluded_files"]
+    assert ".of-provenance" in report["snapshot_scope"]["excluded_directories"]
+
+
+def test_symlinked_nested_directory_is_rejected(tmp_path):
+    v2.init(tmp_path)
+    outside = tmp_path.parent / (tmp_path.name + "-external-dir")
+    outside.mkdir()
+    (outside / "private.py").write_text("secret")
+    try:
+        (tmp_path / "linked-dir").symlink_to(outside, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks unavailable")
+    with pytest.raises(ValueError, match="Symlinked project directory"):
+        v2.snapshot(tmp_path)
+
+
+def test_mutating_file_during_hash_fails_closed(tmp_path, monkeypatch):
+    if os.name != "posix":
+        pytest.skip("POSIX descriptor test")
+    import omniforge.provenance_v2_policy as policy_module
+    target = tmp_path / "mutable.py"
+    target.write_text("data = 1\n")
+    v2.init(tmp_path)
+    original = os.read
+    changed = False
+
+    def race(fd, size):
+        nonlocal changed
+        chunk = original(fd, size)
+        link = Path("/proc/self/fd") / str(fd)
+        if not changed and chunk and link.exists() and Path(os.readlink(link)) == target:
+            changed = True
+            target.write_text("data = 2\n")
+        return chunk
+
+    monkeypatch.setattr(policy_module.os, "read", race)
+    with pytest.raises(ValueError, match="changed during snapshot"):
+        v2.snapshot(tmp_path)
+    assert changed
+    assert not chain_path(tmp_path).read_bytes()
