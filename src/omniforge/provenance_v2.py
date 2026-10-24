@@ -48,7 +48,7 @@ def local_path(root: Path, name: str) -> Path:
 def read_safe(path: Path, limit: int = MAX_LEDGER_BYTES) -> bytes:
     if path.is_symlink():
         raise ValueError("Provenance file is a symlink")
-    fd = os.open(path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0))
+    fd = os.open(path, os.O_RDONLY | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0))
     try:
         st = os.fstat(fd)
         if not stat.S_ISREG(st.st_mode) or st.st_size > limit:
@@ -69,7 +69,7 @@ def read_safe(path: Path, limit: int = MAX_LEDGER_BYTES) -> bytes:
 
 
 def create_safe(path: Path, value: bytes) -> None:
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL |
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0) |
                  getattr(os, "O_NOFOLLOW", 0), 0o600)
     try:
         with os.fdopen(fd, "wb", closefd=False) as stream:
@@ -211,7 +211,7 @@ def migrate(project: Path, *, approve: bool = False) -> dict:
 @contextmanager
 def locked(root: Path):
     fd = os.open(local_path(root, "lock"),
-                 os.O_RDWR | getattr(os, "O_NOFOLLOW", 0))
+                 os.O_RDWR | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0))
     try:
         if os.name == "posix":
             import fcntl
@@ -320,7 +320,7 @@ def snapshot(project: Path, *, note: str = "", allow_policy_change: bool = False
         path = local_path(root, "chain.jsonl")
         if path.stat().st_size + len(line) > MAX_LEDGER_BYTES:
             raise ValueError("Ledger exceeds 10 MB: do not silently delete history")
-        fd = os.open(path, os.O_WRONLY | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0))
+        fd = os.open(path, os.O_WRONLY | os.O_APPEND | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0))
         try:
             if os.write(fd, line) != len(line):
                 raise OSError("Partial provenance ledger append")
@@ -406,7 +406,7 @@ def save_rpc_receipt(project: Path, report: dict, *, wallet: str) -> dict:
         path = local_path(root, "anchors.jsonl")
         if path.stat().st_size + len(line) > MAX_LEDGER_BYTES:
             raise ValueError("Anchor evidence log full")
-        fd = os.open(path, os.O_WRONLY | os.O_APPEND | getattr(os, "O_NOFOLLOW", 0))
+        fd = os.open(path, os.O_WRONLY | os.O_APPEND | getattr(os, "O_BINARY", 0) | getattr(os, "O_NOFOLLOW", 0))
         try:
             if os.write(fd, line) != len(line):
                 raise OSError("Partial anchor journal write")
