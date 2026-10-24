@@ -6,6 +6,8 @@
 
 Python 3.11+ · MCP (stdio) · VS Code · MIT
 
+**Languages:** **English** · [Bahasa Indonesia](README.id.md) · [Bahasa Melayu](README.ms.md)
+
 </div>
 
 OmniForge is a companion to coding assistants such as Codex, Claude Code, Cursor, OpenCode and Gemini. It does **not** bundle a model or replace an AI coding agent. Its default operation is local, with explicit opt-in for external model APIs and browser/network access.
