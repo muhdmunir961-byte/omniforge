@@ -5,7 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
-EXCLUDE = {'.git', '.omniforge', '.venv', '__pycache__', 'node_modules', '.pytest_cache'}
+EXCLUDE = {'.git', '.omniforge', '.of-provenance', '.venv', '__pycache__', 'node_modules', '.pytest_cache'}
 
 
 def _hash(path: Path) -> str:
