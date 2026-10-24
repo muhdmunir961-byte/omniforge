@@ -424,3 +424,32 @@ def test_mutating_file_during_hash_fails_closed(tmp_path, monkeypatch):
         v2.snapshot(tmp_path)
     assert changed
     assert not chain_path(tmp_path).read_bytes()
+
+
+def test_external_backup_restore_roundtrip_against_trusted_checkpoint(tmp_path):
+    """Restore is deliberate and manual; verify against saved external checkpoint."""
+    import shutil
+    original = tmp_path / "source"
+    original.mkdir()
+    (original / "main.py").write_text("safe = True\n")
+    initialize(original)
+    backup_dir = tmp_path / "offline-backup"
+    exported = v2.backup(original, backup_dir)
+    report = v2.verify(original, expected_head=exported["head"],
+                       expected_seq=exported["seq"], check_files=True)
+    assert report["ok"]
+    # Simulate source restoration using real source backups plus provenance backup.
+    restored = tmp_path / "restored"
+    restored.mkdir()
+    shutil.copy2(original / "main.py", restored / "main.py")
+    shutil.copytree(backup_dir, restored / ".of-provenance")
+    (restored / ".of-provenance" / "lock").write_text("0")
+    restored_report = v2.verify(
+        restored, check_files=True,
+        expected_head=exported["head"], expected_seq=exported["seq"]
+    )
+    assert restored_report["ok"], restored_report
+    # A restored config or source must not automatically establish provenance
+    # for later work; source mutation is still detected separately.
+    (restored / "main.py").write_text("safe = False\n")
+    assert not v2.verify(restored, check_files=True)["ok"]
