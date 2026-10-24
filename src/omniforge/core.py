@@ -136,11 +136,37 @@ def resolve_source(name: str, source: Path | None = None) -> Path:
     return path
 
 
+
+def secure_project_path(project: Path, *parts: str) -> Path:
+    """Reject symlinks beneath the project before filesystem writes.
+
+    This limits accidental traversal; it cannot prevent a concurrent
+    malicious process from changing paths after validation (TOCTOU).
+    """
+    root = project.expanduser().resolve(strict=True)
+    if not root.is_dir():
+        raise ValueError("Project must be an existing directory")
+    current = root
+    for part in parts:
+        segment = Path(part)
+        if segment.is_absolute() or any(value == ".." for value in segment.parts):
+            raise ValueError("Unsafe project destination")
+        for component in segment.parts:
+            if component in ("", "."):
+                continue
+            current = current / component
+            if current.is_symlink():
+                raise ValueError(f"Refusing symlinked destination: {current}")
+            if not current.resolve(strict=False).is_relative_to(root):
+                raise ValueError("Destination escapes project")
+    return current
+
+
 def install_skill(name: str, agent: str, project: Path, *, source: Path | None = None, force: bool = False) -> Path:
     if agent not in AGENT_LOCATIONS:
         raise ValueError(f"Unknown agent: {agent}")
     src = resolve_source(name, source)
-    destination = project.expanduser().resolve() / AGENT_LOCATIONS[agent] / name
+    destination = secure_project_path(project, AGENT_LOCATIONS[agent], name)
     if destination.exists() or destination.is_symlink():
         if not force:
             raise FileExistsError(f"{destination} already exists; use --force")
