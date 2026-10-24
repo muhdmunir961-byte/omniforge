@@ -10,6 +10,7 @@ This document describes capability boundaries, not growth milestones.
 - Preview-first Docker script execution and approved external-agent task workflow coordination.
 - Opt-in Playwright browser actions, optional OpenAI-compatible code-edit suggestions and backup-protected application.
 - Local SHA-256 inventory/verification.
+- Local hash-chain provenance and optional Ethereum-compatible transaction anchoring/verification, with user-signed transactions (no wallet custody).
 - VS Code MCP configuration and experimental local VS Code extension source.
 
 ## Boundaries
