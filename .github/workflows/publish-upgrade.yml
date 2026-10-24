@@ -2,9 +2,12 @@ name: Publish audited OmniForge upgrade
 on:
   push:
     paths:
-      - '.bootstrap/upgrade.b64'
+      - '.bootstrap/upgrade-trigger-hotfix'
 permissions:
   contents: write
+concurrency:
+  group: omniforge-upgrade
+  cancel-in-progress: false
 jobs:
   upgrade:
     runs-on: ubuntu-latest
@@ -18,7 +21,7 @@ jobs:
           bundle = base64.b64decode(Path('.bootstrap/upgrade.b64').read_text().strip(), validate=True)
           expected = 'caa4bdce5b897f76e64af8efc96bf00ea33d23f51f445f1168209d8b4068bda1'
           if hashlib.sha256(bundle).hexdigest() != expected:
-              raise SystemExit('Upgrade archive SHA256 mismatch')
+              raise SystemExit('Upgrade archive SHA-256 mismatch')
           with tarfile.open(fileobj=io.BytesIO(lzma.decompress(bundle)), mode='r:') as tar:
               members = tar.getmembers()
               seen = set()
@@ -27,26 +30,36 @@ jobs:
                   if (not item.isfile() or path.is_absolute() or '..' in path.parts
                       or not path.parts or path.parts[0] in {'.git', '.bootstrap'}
                       or item.name in seen):
-                      raise SystemExit('Unsafe or duplicated archive path')
+                      raise SystemExit('Unsafe or duplicated archive member')
                   seen.add(item.name)
               if len(members) != 31:
-                  raise SystemExit('Expected 31 source files')
+                  raise SystemExit('Expected exactly 31 source files')
               tar.extractall(path='.', members=members, filter='data')
           PY
-      - name: Run Python 3.11+ core tests
+      - name: Preserve backward-compatible CLI
+        run: python .github/scripts/compat_upgrade.py
+      - name: Harden permissions and destination paths
+        run: python .github/scripts/harden_upgrade.py
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install and run complete regression suite
         run: |
           python -m pip install -e . pytest
           python -m pytest -q
-      - name: Verify VS Code extension source
+          python -m compileall -q src
+          omniforge doctor
+          omniforge related "sqlite database"
+          omniforge plan "debug python errors"
+      - name: Check VS Code extension syntax and smoke tests
         run: |
           node --check vscode-extension/extension.js
           node vscode-extension/tests/smoke.js
-      - name: Publish source and remove bootstrap material
+      - name: Publish ONLY after all checks pass
         run: |
-          rm -rf .bootstrap
-          rm -f .github/workflows/publish-upgrade.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm -r .bootstrap .github/scripts/compat_upgrade.py .github/scripts/harden_upgrade.py .github/workflows/publish-upgrade.yml
           git add -A
-          git commit -m 'feat: add OmniForge 1.1 permissioned agents, browser, search and VS Code integration'
+          git commit -m 'feat: publish hardened OmniForge v1.1 after regression tests'
           git push origin HEAD:main
