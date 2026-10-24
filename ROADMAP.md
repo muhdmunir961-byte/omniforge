@@ -6,7 +6,7 @@ This document describes capability boundaries, not growth milestones.
 
 - CLI, lazy skill registry, metadata search and optional local embedding lookup.
 - 14 bundled skill packages: ten original operational Python scripts and four optional upstream adapters.
-- MCP stdio discovery and opt-in gated run/browser functionality.
+- MCP stdio discovery, skill loading and **preview-only** run/browser planning; live actions are available only through the separately invoked local CLI.
 - Preview-first Docker script execution and approved external-agent task workflow coordination.
 - Opt-in Playwright browser actions, optional OpenAI-compatible code-edit suggestions and backup-protected application.
 - Local SHA-256 inventory/verification.
