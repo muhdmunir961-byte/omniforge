@@ -9,4 +9,4 @@
 - Added read-only repository reconnaissance, local skill checks, heuristic audits and tests.
 - Added candidate catalog of 112 GitHub repositories, explicitly unverified as integrations.
 
-Release is prepared locally. No remote GitHub tag or published PyPI version has been created.
+Source is published on GitHub, with CI passing on Python 3.11–3.13. No GitHub release tag or published PyPI version has been created.
