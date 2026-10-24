@@ -100,6 +100,11 @@ Unlike live network usage, this test uses simulated local currency and an unlock
 
 ## Security and privacy
 
+## MCP integration (read-only)
+
+AI coding assistants connected via `omniforge mcp` can call `omniforge_chain_verify` and `omniforge_chain_proof` to inspect a project ledger. These tools **cannot** record new entries, sign wallets, submit transactions or access private keys. Use the CLI locally for recording and preparing unsigned anchor payloads.
+
+
 - Never publish private keys, recovery phrases or RPC credentials. OmniForge does not ask for them.
 - Never commit `.omniforge/` unless you explicitly intend to expose timestamps, notes and record hashes.
 - External EVM transactions reveal sender address and data permanently to network observers. No file contents are published by OmniForge.
