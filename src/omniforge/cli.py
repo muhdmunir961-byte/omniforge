@@ -46,7 +46,7 @@ def repo_recon(repo: Path) -> dict:
 
 
 def parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(prog="omniforge", description="OmniForge v1.0 — agent skills without loading everything")
+    ap = argparse.ArgumentParser(prog="omniforge", description="OmniForge — agent skills, controlled workflows and blockchain provenance")
     ap.add_argument("--version", action="version", version=f"OmniForge {__version__}")
     sub = ap.add_subparsers(dest="action", required=True)
     sub.add_parser("doctor", help="inspect local capabilities")
