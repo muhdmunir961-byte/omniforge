@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="Run real OmniForge CLI commands in an isolated Python function and execute Python code in a browser WebAssembly worker. Not a fake command replay.">
+  <title>Live Python Terminal · OmniForge</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23232f28'/%3E%3Cpath d='M14 18h16M14 26l8 7-8 7M32 43h17' fill='none' stroke='%23e6ae7b' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/showcase.css">
+  <link rel="stylesheet" href="/refinement.css">
+  <link rel="stylesheet" href="/terminal.css">
+  <script src="/terminal.js" defer></script>
+</head>
+<body class="terminal-page">
+<div class="announcement"><span class="announce-led"></span><strong>OMNIFORGE</strong><span class="announcement-divider">/</span><span>REAL EXECUTION LAB</span><a href="https://github.com/muhdmunir961-byte/omniforge" target="_blank" rel="noreferrer">Source ↗</a></div>
+<header class="site-head terminal-head">
+  <a class="mark" href="/" aria-label="OmniForge home"><span class="mark-hex" aria-hidden="true">⬡</span><span>OMNIFORGE<span class="mark-sub">LIVE DEVELOPER LAB</span></span></a>
+  <nav aria-label="Main navigation"><a href="/">Showcase</a><a href="/#use-cases">Use cases</a><a href="/explorer.html">Technical explorer</a><a class="nav-alt" href="#workbench">Try it live <span aria-hidden="true">↗</span></a></nav>
+  <button class="mobile-menu" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button>
+</header>
+
+<main class="terminal-container">
+  <section class="terminal-intro">
+    <div class="eyebrow"><span class="eyebrow-square"></span> ENGINEERING / RUNTIME LAB <span class="hero-ver">v1.3.1</span></div>
+    <div class="intro-grid">
+      <div><h1>Real code.<br><em>Actual execution.</em></h1><p>Di sini kau boleh jalankan <strong>OmniForge Python CLI sebenar</strong> pada project sementara, atau tulis kod Python bebas yang dilaksanakan terus dalam browser. Input dan output di bawah dijana semasa kau menekan Run, bukan rakaman lama.</p></div>
+      <aside class="intro-runtime"><div class="runtime-led"></div><span>2 REAL RUNTIMES</span><strong>Server CLI <span>+</span> Browser Python</strong><small>Restricted commands · isolated sample projects · no wallet · no access to your device files</small></aside>
+    </div>
+  </section>
+
+  <section class="workbench" id="workbench" aria-label="Executable terminal workbench">
+    <div class="workbench-heading">
+      <div><span class="workbench-eyebrow">01 / RUN A COMMAND</span><h2>Choose your runtime.</h2></div>
+      <span class="workbench-help">Ctrl / ⌘ + Enter to execute</span>
+    </div>
+    <div class="runtime-tabs" role="tablist" aria-label="Choose executable runtime">
+      <button type="button" id="cliTab" role="tab" aria-selected="true" aria-controls="cliPanel" class="selected"><span class="tab-icon">›_</span><span><b>OmniForge CLI</b><small>Real Python / Vercel function</small></span><span class="tab-status" id="cliTabStatus">CHECKING</span></button>
+      <button type="button" id="pythonTab" role="tab" aria-selected="false" aria-controls="pythonPanel"><span class="tab-icon">{ }</span><span><b>Python Playground</b><small>Real Python / WebAssembly</small></span><span class="tab-status">IN BROWSER</span></button>
+    </div>
+    <div class="runtime-panel" id="cliPanel" role="tabpanel" aria-labelledby="cliTab">
+      <div class="terminal-workspace">
+        <div class="code-pane">
+          <div class="pane-head"><span><i class="dot"></i> TERMINAL <span class="pane-muted">/ allowlisted commands only</span></span><span id="cliRuntimeStatus" class="engine-state">Connecting…</span></div>
+          <label for="commandInput" class="pane-hint">Enter a supported OmniForge command</label>
+          <div class="command-line"><span class="prompt">➜</span><input id="commandInput" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" value="omniforge doctor" maxlength="240" aria-describedby="commandHelp"><button type="button" class="action-main execute-button" id="runCli">Run command ↗</button></div>
+          <p id="commandHelp" class="input-help">Runs the actual <code>omniforge</code> / <code>ofprov</code> Python module in a fresh example project. Commands involving shell execution, private paths, external providers, Docker or wallet operations are deliberately blocked.</p>
+          <div class="examples-label">QUICK COMMANDS <span>/ click to load</span></div>
+          <div class="example-chips" id="cliExamples">
+            <button data-command="omniforge doctor" type="button">System doctor</button>
+            <button data-command='omniforge search "API errors"' type="button">Find skill</button>
+            <button data-command="omniforge list" type="button">14 skills</button>
+            <button data-command='omniforge plan "debug python errors"' type="button">Workflow plan</button>
+            <button data-command="omniforge budget --selected log-triage" type="button">Token budget</button>
+            <button data-command="ofprov snapshot" type="button">Take snapshot</button>
+            <button data-command="ofprov verify" type="button">Verify ledger</button>
+            <button data-command="ofprov tamper-demo" type="button">Detect tamper</button>
+          </div>
+          <div class="pane-foot"><span class="scope-dot"></span><span>Real subprocess · 5s per step · stateless project · max 16KB output</span></div>
+        </div>
+        <div class="output-pane">
+          <div class="pane-head output-heading"><span><i class="dot output-dot"></i> EXECUTION OUTPUT <span class="pane-muted">/ fresh response</span></span><button type="button" class="clear-button" id="clearCli">Clear</button></div>
+          <div class="result-meta"><span id="cliExecutionLabel">READY TO EXECUTE</span><span id="cliDuration">—</span></div>
+          <pre id="cliOutput" aria-live="polite" class="console-output"><span class="line-muted"># Real Python execution on Vercel.
+# Choose a sample above or type a command.
+# This panel never replays archived CI outputs.</span></pre>
+          <div class="trace-section" id="cliTrace" hidden><div class="trace-head">ACTUAL SUBPROCESS STEPS</div><div id="traceSteps"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="runtime-panel" id="pythonPanel" role="tabpanel" aria-labelledby="pythonTab" hidden>
+      <div class="terminal-workspace">
+        <div class="code-pane">
+          <div class="pane-head"><span><i class="dot"></i> PYTHON EDITOR <span class="pane-muted">/ WebAssembly worker</span></span><span id="pyVersion" class="engine-state">ENGINE IDLE</span></div>
+          <label for="pythonInput" class="pane-hint">Write real Python code; it runs in a dedicated worker on your device</label>
+          <textarea id="pythonInput" class="code-editor" spellcheck="false" autocomplete="off" aria-describedby="pythonHelp">import hashlib
+
+source = b"print('OmniForge')"
+digest = hashlib.sha256(source).hexdigest()
+
+print("Python executes for real.")
+print("SHA-256:", digest)
+</textarea>
+          <div class="editor-actions"><button type="button" class="action-main" id="runPython">▶ Run Python</button><button type="button" class="action-outline" id="stopPython">Stop / reset engine</button></div>
+          <p class="input-help" id="pythonHelp">Python executes inside a browser WebAssembly worker using Pyodide. Standard-library code is supported; first run downloads the pinned runtime (internet required). It never runs arbitrary Python on Vercel's server.</p>
+          <div class="examples-label">PYTHON EXAMPLES <span>/ editable</span></div>
+          <div class="example-chips" id="pythonExamples"><button type="button" data-python="hash" class="selected">SHA-256</button><button type="button" data-python="ast">AST explorer</button><button type="button" data-python="json">JSON report</button><button type="button" data-python="stats">Statistics</button><button type="button" data-python="hello">Hello world</button></div>
+          <div class="pane-foot"><span class="scope-dot"></span><span>Python in your browser · persistent worker until reset · 10s execution limit</span></div>
+        </div>
+        <div class="output-pane">
+          <div class="pane-head output-heading"><span><i class="dot output-dot"></i> PYTHON STDOUT / STDERR</span><button type="button" class="clear-button" id="clearPython">Clear</button></div>
+          <div class="result-meta"><span id="pyExecutionLabel">NOT STARTED</span><span id="pyDuration">—</span></div>
+          <pre id="pythonOutput" class="console-output" aria-live="polite"><span class="line-muted"># Click Run Python to download the WebAssembly engine.
+# Python runs on your device, not on our server.
+# Use Stop / reset to terminate a busy program.</span></pre>
+          <div class="python-info" id="pyInfo">Security note: this is a browser Python workspace, not OS-level Docker isolation. Do not paste credentials or run untrusted code.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="terminal-explainer">
+    <div class="explain-card"><span>01 / ACTUAL EXECUTION</span><h3>Every run is real.</h3><p>The CLI endpoint invokes installed OmniForge Python modules with validated arguments. Your chosen search queries generate fresh JSON, errors or evidence—not hardcoded responses.</p></div>
+    <div class="explain-card"><span>02 / SAFETY FIRST</span><h3>No public shell access.</h3><p>Remote demos use disposable files, restricted commands, short timeouts and no provided secrets. Arbitrary Python belongs in the browser-only engine, not an internet-facing shell.</p></div>
+    <div class="explain-card"><span>03 / VERIFY THE CODE</span><h3>Fully inspectable.</h3><p>See the <a href="https://github.com/muhdmunir961-byte/omniforge/tree/main/web-preview" target="_blank" rel="noreferrer">source, API allowlist and runtime tests ↗</a>. Production OmniForge workflows still require local install and user approval.</p></div>
+  </section>
+</main>
+<footer class="footer"><div><span class="footer-mark">⬡ OMNIFORGE</span><span>Real Python. Controlled access.</span></div><div><a href="/">Product showcase</a><a href="/explorer.html">All modules</a><a href="https://github.com/muhdmunir961-byte/omniforge" target="_blank" rel="noreferrer">GitHub source</a></div></footer>
+</body>
+</html>
