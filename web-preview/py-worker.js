@@ -1,5 +1,5 @@
 /* In-browser, real Python WebAssembly worker.
- * Pinned CDN artifact: Pyodide 0.27.7 (Python 3.13).
+ * Pinned CDN artifact: Pyodide 0.27.7 (CPython 3.12.7).
  * No DOM, no OS shell, no access to the host Vercel filesystem.
  * Parent kills the worker if the runtime exceeds its execution time.
  */
