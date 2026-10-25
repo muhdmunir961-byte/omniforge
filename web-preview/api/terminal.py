@@ -34,6 +34,7 @@ ALLOWED_SKILLS = frozenset({
     "firmware-preflight", "git-diff-review", "kicad-drc", "log-triage",
     "openapi-inventory", "python-symbols", "repo-recon", "secret-hygiene",
     "sqlite-inspector", "trivy-scan",
+    "interface-craft", "motion-interaction", "realtime-3d-mesh", "visual-qa",
 })
 SAFE_DEMO = "This is a fresh, disposable sample project; nothing is saved between requests."
 USAGE = (
@@ -41,7 +42,8 @@ USAGE = (
     "omniforge list, omniforge search \"task\", omniforge related \"task\", "
     "omniforge plan \"task\", omniforge budget [--selected SKILL], "
     "omniforge load SKILL, omniforge catalog [query], "
-    "omniforge inspect, ofprov init|snapshot|verify|audit|proof|tamper-demo. "
+    "omniforge inspect, omniforge integrations list|doctor, "
+    "ofprov init|snapshot|verify|audit|proof|tamper-demo. "
     "For arbitrary Python, use the in-browser Python Playground tab."
 )
 
@@ -94,6 +96,11 @@ def _parse(command: str) -> tuple[list[str], str]:
         return [sys.executable, "-m", "omniforge.cli", *args], "cli"
     if args == ["inspect"]:
         return [sys.executable, "-m", "omniforge.cli", "inspect"], "inspect"
+    if args == ["integrations", "list"]:
+        return [sys.executable, "-m", "omniforge.cli", "integrations", "list"], "cli"
+    if args == ["integrations", "doctor"]:
+        return [sys.executable, "-m", "omniforge.cli", "integrations", "doctor"], "cli"
+
     if args and args[0] in ("search", "related", "plan"):
         if len(args) != 2:
             raise DemoError("Provide exactly one quoted query, e.g. omniforge search \"API errors\".")
