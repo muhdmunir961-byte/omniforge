@@ -215,3 +215,78 @@ def test_real_browser_python_wasm_worker_executes_code(local_site):
         assert page.locator("#pyVersion").inner_text().startswith("PYTHON 3.12.")
         assert not errors, errors
         browser.close()
+
+
+
+def test_mobile_paste_four_commands_runs_four_real_python_processes(local_site):
+    """Regression for the screenshot: four commands pasted in ONE line.
+
+    The previous single-line input sent the entire string to one server API
+    call and produced REJECTED / ALLOWLIST. The new parser must split it into
+    four independent, validated real CLI requests.
+    """
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page(
+            viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True
+        )
+        errors = []
+        page.on("pageerror", lambda error: errors.append(str(error)))
+        page.goto(local_site + "/terminal.html", wait_until="networkidle")
+        page.wait_for_function(
+            "document.getElementById('cliRuntimeStatus').textContent.includes('READY')",
+            timeout=10000,
+        )
+        commands = (
+            'omniforge doctor omniforge search "API errors" '
+            'ofprov snapshot ofprov tamper-demo'
+        )
+        page.locator("#commandInput").fill(commands)
+        assert "4 commands ready" in page.locator("#batchHint").inner_text()
+        page.locator("#runCli").click()
+        page.wait_for_function(
+            "document.getElementById('cliExecutionLabel').textContent.includes('4/4 EXECUTED')",
+            timeout=30000,
+        )
+        result = page.locator("#cliOutput").inner_text()
+        assert result.count("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━") >= 5
+        for command in (
+            "omniforge doctor",
+            'omniforge search "API errors"',
+            "ofprov snapshot",
+            "ofprov tamper-demo",
+        ):
+            assert command in result
+        assert "TAMPERING DETECTED" in result
+        assert "Exit code 1 is expected" in result
+        assert "4/4 commands returned" in result
+        assert "Each command had its own temporary project" in result
+        assert page.locator("#stopCli").is_hidden()
+        assert not errors, errors
+        browser.close()
+
+
+def test_batch_button_and_multiline_keyboard_input(local_site):
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        page.goto(local_site + "/terminal.html", wait_until="domcontentloaded")
+        page.locator("#loadFullDemo").click()
+        editor = page.locator("#commandInput")
+        assert editor.input_value().splitlines() == [
+            "omniforge doctor",
+            'omniforge search "API errors"',
+            "ofprov snapshot",
+            "ofprov tamper-demo",
+        ]
+        assert "4-command demo loaded" in page.locator("#batchHint").inner_text()
+        editor.fill("omniforge doctor")
+        editor.press("End")
+        editor.press("Enter")
+        assert editor.input_value() == "omniforge doctor\n"
+        editor.fill("omniforge doctor; rm -rf /")
+        assert page.locator("#batchHint").get_attribute("class").endswith("invalid")
+        page.locator("#runCli").click()
+        assert "INPUT ERROR" in page.locator("#cliOutput").inner_text()
+        assert page.locator("#cliExecutionLabel").inner_text() == "INPUT FORMAT ERROR"
+        browser.close()
