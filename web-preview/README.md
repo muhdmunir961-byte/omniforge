@@ -1,44 +1,105 @@
-# OmniForge System Explorer — Vercel preview
+# OmniForge: Product Showcase & Live Python Terminal
 
-This is a **static interactive explainer** for the open-source OmniForge Python CLI v1.3.1, not a hosted OmniForge runtime.
+**Production:** https://omniforge-explorer.vercel.app
 
-**Live preview:** https://omniforge-explorer.vercel.app
+Three experiences are provided:
 
-It covers nine pages: overview, all 14 packaged skills, a clearly labeled **browser-only simulated CLI**, MCP tool schemas (10), editable workflow DAG validation, a **real browser Web Crypto SHA-256** v2-style hash-chain demonstration, runtime permission planning, architecture/source links, and read-only public GitHub Actions evidence.
+1. PRODUCT SHOWCASE (index.html): nine guided before/after cases with archived
+   v1.3.0 CLI traces and separately identified E2E test fixtures.
+2. TECHNICAL EXPLORER (explorer.html): 14 skills, 10 MCP tools, the simulated
+   workflow DAG and browser SHA-256 educational controls.
+3. EXECUTABLE PYTHON TERMINAL (terminal.html): real OmniForge CLI processes
+   executed in an allowlisted Vercel Python function, plus arbitrary Python
+   executed client-side in a dedicated Pyodide WebAssembly Worker.
 
-## Scope and privacy
+## Genuine hosted Python CLI
 
-- Pure HTML/CSS/ES modules; no npm dependencies, wallet handling or backend APIs.
-- Client-side demonstration state lives in memory; refreshing clears toy files and ledger.
-- CLI responses are **educational simulations**, not the actual Python CLI; no commands or Docker tasks execute remotely.
-- MCP interactions generate JSON-RPC envelopes, not connections to a local stdio process.
-- Workflow studio validates example DAGs in the browser; the real OmniForge CLI is authoritative for execution approval and validation.
-- The provenance lab computes SHA-256 using browser `crypto.subtle` but uses an illustrative scan policy. It does not attest the GitHub repository, recover files, store wallet keys or broadcast transactions.
-- Optional live GitHub status fetch makes browser requests only to the public GitHub REST API on explicit user click; rate limits may apply.
-- This explorer does not run AI models, upload selected files or access serial ports/hardware.
-- The preview is hosted as a **separate Vercel project** rather than modifying the existing Python CLI deployment behavior.
+The api/terminal.py route accepts a STRICT command allowlist. It imports the
+installed, pinned OmniForge v1.3.1 library and executes real Python subprocesses
+for these example commands:
 
-## Local static preview
+    python --version
+    omniforge doctor
+    omniforge list
+    omniforge search "API errors"
+    omniforge related "python error"
+    omniforge plan "debug python errors"
+    omniforge budget --selected log-triage
+    omniforge load python-symbols
+    omniforge inspect
+    omniforge catalog python
+    ofprov init
+    ofprov snapshot
+    ofprov verify
+    ofprov audit
+    ofprov proof
+    ofprov tamper-demo
 
-Run `python -m http.server 8765 --directory web-preview` in the repo root and open `http://localhost:8765`. For a real CLI, use the repo root and `python -m pip install -e .`.
+Each request creates its own disposable sample Python project. For
+ofprov tamper-demo the backend runs init, snapshot, modifies a safe sample file,
+then verifies the changed files. A nonzero verification exit code is expected.
+No history or filesystem state is shared across requests.
 
-## Source and features
+The public endpoint REJECTS arbitrary python -c, shell input, caller-selected
+filesystem paths, arbitrary binaries, Docker, external browser actions, AI model
+providers, network calls and wallet interactions. It gives subprocesses a
+minimal environment excluding project secrets and credentials, limits command
+length to 240 characters, JSON payloads to 1KB, subprocess time to 5 seconds
+per step and displayed output to 16KB.
 
-- `index.html` – shell/navigation plus all page layouts.
-- `style.css` – responsive classic light presentation.
-- `data.js` – accurate packaged-skill/MCP/architecture metadata from source inspection.
-- `app.js` – client-side controls, sample data and browser hashing.
+The API is not a general Python sandbox, and isolated temp folders are not an
+OS container security boundary. Configure Vercel firewall/rate limits for
+high-traffic deployments; these local guards are not a distributed rate limit.
 
-This is intentionally not an authentication gateway or remote command runner. Do not send secrets to a public demo.
+## Browser Python Playground
 
+The second tab uses a pinned CDN copy of Pyodide v0.27.7, based on real
+CPython 3.12.7 compiled to WebAssembly. The browser downloads the engine only
+when Run is clicked, then executes code inside a Worker and returns genuine
+stdout/stderr/traceback. A worker watchdog stops execution after ten seconds;
+Stop / reset terminates the worker, erasing its in-memory Python state.
 
-## Real outcomes walkthrough (new default homepage)
+The user must have network access to jsDelivr on the first run. This runtime
+cannot access the website's server-side OmniForge installation or user device
+files. Do not paste private keys or execute code from untrusted sources.
+WebAssembly in a browser is not a replacement for a hardened Docker sandbox.
 
-The public Vercel page now opens **nine guided real-use-case stories** with input, controlled process, recorded CLI output or explicitly named E2E assertions, and before/after results.
+## Local development
 
-- `index.html` is the new walkthrough homepage. It loads `showcase.css`, `showcase.js` and `evidence.json` (synthetic project CLI trace recorded in GitHub Actions v1.3.0; paths anonymized).
-- `explorer.html` preserves the original nine-section technical explorer using `style.css`, `data.js` and `app.js`.
-- The built-in SHA-256 text editor performs a real client-side digest. This is **not** a remotely running Python hash-chain or live wallet.
-- Evidence: [packaged CLI preview run](https://github.com/muhdmunir961-byte/omniforge/actions/runs/40131838901), [real Docker/Playwright/model E2E](../tests/test_live_integrations.py), [disposable Anvil chain E2E](../tests/test_blockchain_evm.py).
+From the repository root:
 
-**Scope:** this is a static demo and replay of verified test evidence. It intentionally cannot read your project, run Docker, execute arbitrary CLI commands or sign transactions. Actual OmniForge execution remains local and permission-gated. Do not label archived v1.3.0 trace as a fresh v1.3.1 CLI run.
+    python -m pip install -e . pytest playwright
+    python web-preview/serve_local_demo.py
+
+Open http://127.0.0.1:8765/terminal.html . The development site binds loopback
+only and serves static pages plus the restricted real CLI API.
+
+Static-only mode (API unavailable):
+
+    python -m http.server 8765 --directory web-preview
+
+## Source code & test verification
+
+- Homepage: index.html, showcase.css, refinement.css, showcase.js
+- Technical explorer: explorer.html, style.css, data.js, app.js
+- Terminal UI: terminal.html, terminal.css, terminal.js
+- Python WebAssembly: py-worker.js
+- Vercel Python function: api/terminal.py
+- Dependency pinning: requirements.txt, vercel.json
+- Local example server: serve_local_demo.py
+- Tests: tests/test_live_terminal.py, tests/test_showcase_browser.py
+- Automation: .github/workflows/showcase-ui.yml
+
+GitHub Actions tests execute the real CLI commands, ensure dangerous inputs are
+rejected, verify SHA-256 provenance tampering, exercise desktop/mobile Chromium
+flows, and attempt to run actual browser Python through the pinned CDN.
+
+Original preview traces (v1.3.0):
+https://github.com/muhdmunir961-byte/omniforge/actions/runs/40131838901
+
+Repo:
+https://github.com/muhdmunir961-byte/omniforge
+
+These are educational public demos, not permission to run the user's actual
+project, sign transactions, read serial devices or autonomously modify files.
+Production OmniForge workflows stay on the user's computer with local approval.
