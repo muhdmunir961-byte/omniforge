@@ -1,0 +1,32 @@
+{
+  "mcpServers": {
+    "omniforge": {
+      "type": "stdio",
+      "command": "omniforge",
+      "args": [
+        "mcp"
+      ]
+    },
+    "blender": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--python",
+        "3.11",
+        "blender-mcp"
+      ],
+      "env": {
+        "BLENDER_HOST": "127.0.0.1",
+        "BLENDER_PORT": "9876",
+        "DISABLE_TELEMETRY": "true"
+      }
+    },
+    "freecad": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "freecad-mcp"
+      ]
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "omniforge": {
+      "command": "omniforge",
+      "args": [
+        "mcp"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    },
+    "blender": {
+      "command": "uvx",
+      "args": [
+        "--python",
+        "3.11",
+        "blender-mcp"
+      ],
+      "env": {
+        "BLENDER_HOST": "127.0.0.1",
+        "BLENDER_PORT": "9876",
+        "DISABLE_TELEMETRY": "true"
+      },
+      "disabled": true,
+      "autoApprove": []
+    },
+    "freecad": {
+      "command": "uvx",
+      "args": [
+        "freecad-mcp"
+      ],
+      "disabled": true,
+      "autoApprove": []
+    }
+  }
+}
