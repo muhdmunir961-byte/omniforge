@@ -63,7 +63,16 @@ const STORIES=[
     {title:'Capture visible evidence',stage:'RESULT',desc:'The real test inspects DOM text and confirms the screenshot exists, without claiming a production screenshot has been shared here.',command:'python -m pytest -q tests/test_live_integrations.py -k browser',display:'E2E asserts:\nresult["status"] == "completed"\nresult["title"] == "OmniForge Local E2E"\n"end-to-end confirmed" in result["text"]\nscreenshot.is_file() and screenshot.stat().st_size > 1000',note:'E2E VERIFIED RESULT',before:'Status = Initial',after:'Confirmed text + PNG file'}
   ]}
 ];
-let evidence={captures:[]};let selectedId='search',selectedStep=0,filter='all';
+let evidence={captures:[]};let selectedId='search',selectedStep=0,filter='all',caseQuery='';
+const visibleStories=()=>STORIES.filter(story=>{
+  if(filter!=='all'&&story.cat!==filter)return false;
+  if(!caseQuery)return true;
+  const haystack=[story.title,story.short,story.problem,story.outcome,story.tag,
+    ...story.steps.map(step=>[step.title,step.command,step.desc].join(' '))].join(' ').toLowerCase();
+  return haystack.includes(caseQuery);
+});
+const initialCase=new URLSearchParams(location.search).get('demo');
+if(STORIES.some(story=>story.id===initialCase))selectedId=initialCase;
 const CAPTURES=()=>new Map((evidence.captures||[]).map(e=>[e.label,e]));
 const evidenceBadge=story=>story.source==='ci'?'CAPTURED FROM CI':story.source==='e2e'?'ASSERTED BY E2E TEST':'CI RECORDING + E2E TEST';
 const indicator=story=>story.source==='ci'?'capture':'test';
@@ -71,26 +80,94 @@ const caseList=$('caseList'),caseWorkspace=$('caseWorkspace');
 let timer;
 function toast(message){const e=$('toast');e.textContent=message;e.classList.add('show');clearTimeout(timer);timer=setTimeout(()=>e.classList.remove('show'),2500)}
 async function copyCommand(data){try{await navigator.clipboard.writeText(data);toast('Command copied — run locally after reviewing permissions.')}catch{const input=document.createElement('textarea');input.value=data;document.body.append(input);input.select();document.execCommand('copy');input.remove();toast('Copied to clipboard')}}
-function renderMenu(){let selection=STORIES.filter(s=>filter==='all'||s.cat===filter);$('caseCount').textContent=`${selection.length} SCENARIOS`;if(!selection.some(s=>s.id===selectedId)) {selectedId=selection[0].id;selectedStep=0}caseList.replaceChildren(...selection.map(s=>{const button=document.createElement('button');button.className='case-item'+(s.id===selectedId?' active':'');button.setAttribute('role','option');button.setAttribute('aria-selected',String(s.id===selectedId));button.dataset.id=s.id;button.innerHTML=`<span class="index">${s.number}</span><span><strong>${safe(s.title)}</strong><small>${safe(s.short)}</small></span>`;return button}))}
-function renderStory(){const s=STORIES.find(s=>s.id===selectedId)||STORIES[0],step=s.steps[selectedStep],capture=step.trace?CAPTURES().get(step.trace):null;const isCaptured=!!capture;let output=step.display??(capture?capture.stdout||capture.stderr:'');if(capture&&capture.stderr&&!capture.stdout)output=capture.stderr;
+function renderMenu(){
+  const selection=visibleStories();
+  $('caseCount').textContent=`${selection.length} OF ${STORIES.length} EXAMPLES`;
+  if(!selection.some(story=>story.id===selectedId)){
+    selectedId=selection[0]?.id??null;selectedStep=0;
+  }
+  caseList.replaceChildren(...selection.map(story=>{
+    const button=document.createElement('button');
+    button.className='case-item'+(story.id===selectedId?' active':'');
+    button.type='button';button.setAttribute('role','option');
+    button.setAttribute('aria-selected',String(story.id===selectedId));
+    button.dataset.id=story.id;
+    button.innerHTML=`<span class="index">${story.number}</span><span><strong>${safe(story.title)}</strong><small>${safe(story.short)}</small></span>`;
+    return button;
+  }));
+  if(!selection.length){
+    caseWorkspace.innerHTML=`<div class="no-results"><div class="empty-symbol" aria-hidden="true">⌕</div><h3>No matching examples</h3><p>Try a broader search, switch the category to All examples, or clear the search field.</p><button type="button" class="action-main" id="clearCaseSearch">Clear search</button></div>`;
+    $('clearCaseSearch').addEventListener('click',()=>{
+      caseQuery='';$('caseSearch').value='';filter='all';
+      $('storyFilters').querySelectorAll('button').forEach(button=>button.classList.toggle('active',button.dataset.filter==='all'));
+      renderMenu();renderStory();$('caseSearch').focus();
+    });
+  }
+}
+function renderStory(){if(!visibleStories().length)return;const s=STORIES.find(s=>s.id===selectedId)||visibleStories()[0],step=s.steps[selectedStep],capture=step.trace?CAPTURES().get(step.trace):null;const isCaptured=!!capture;let output=step.display??(capture?capture.stdout||capture.stderr:'');if(capture&&capture.stderr&&!capture.stdout)output=capture.stderr;
 if(capture&&capture.label==='Real MCP stdio session')output=clip(capture.stdout).split('\n').filter(Boolean).slice(0,2).join('\n');
 const marker=isCaptured?'ACTUAL CLI STDOUT · v1.3.0':s.source==='e2e'||s.source==='mixed'?'TEST FIXTURE / CODE ASSERTIONS':'EXPLANATORY EXAMPLE';
 caseWorkspace.innerHTML=`<div class="case-labels"><span class="pill ${indicator(s)}">${safe(evidenceBadge(s))}</span><span class="pill">${safe(s.tag)}</span></div>
  <h3 class="case-title">${safe(s.title)}</h3><p class="case-problem">${safe(s.problem)}</p>
  <div class="case-outcome"><span class="outcome-mark">✓</span><div><strong>What you actually get</strong><br>${safe(s.outcome)}</div></div>
+ <div class="step-meter" aria-label="Walkthrough progress"><span class="meter-copy">STEP ${selectedStep+1} OF ${s.steps.length}</span><span class="meter-track"><span class="meter-fill" style="width:${100*(selectedStep+1)/s.steps.length}%"></span></span></div>
  <div class="stepper" role="group" aria-label="Process steps">${s.steps.map((x,i)=>`<button type="button" data-step="${i}" class="${selectedStep===i?'active':''}" aria-pressed="${selectedStep===i}"><span class="step-num">0${i+1} / 0${s.steps.length}</span><strong>${safe(x.title)}</strong></button>`).join('')}</div>
  <div class="step-content"><div class="step-main"><div class="step-topic">${safe(step.stage)} / STEP 0${selectedStep+1}</div><h3>${safe(step.title)}</h3><p class="step-copy">${safe(step.desc)}</p>
- <div class="terminal-frame ${isCaptured?'':'has-fixture'}"><div class="terminal-header"><span class="dots"><i></i><i></i><i></i></span><span>${safe(step.note)}</span></div><div class="terminal-command"><code>$ ${safe(step.command)}</code><button type="button" class="copy" data-copy="command">COPY</button></div><pre class="terminal-output">${safe(trunc(output,2400))}</pre><div class="terminal-footer"><span>${safe(marker)}</span><span class="${isCaptured?'':'fixture'}">${isCaptured?'CAPTURED ✓':'NOT A LIVE CLI SESSION'}</span></div></div></div>
+ <div class="terminal-frame ${isCaptured?'':'has-fixture'}"><div class="terminal-header"><span class="dots"><i></i><i></i><i></i></span><span>${safe(step.note)}</span></div><div class="terminal-command"><code>$ ${safe(step.command)}</code><button type="button" class="copy" data-copy="command" aria-label="Copy this OmniForge command">COPY</button></div><pre class="terminal-output">${safe(trunc(output,2400))}</pre><div class="terminal-footer"><span>${safe(marker)}</span><span class="${isCaptured?'':'fixture'}">${isCaptured?'CAPTURED ✓':'NOT A LIVE CLI SESSION'}</span></div></div></div>
  <aside class="step-aside"><span>BEFORE / AFTER</span><h4>What changes at this step?</h4><p>${safe(step.desc)}</p><div class="stage-before-after"><div class="change-block"><span>BEFORE</span><code>${safe(step.before||s.before)}</code></div><div class="change-block"><span>AFTER</span><code>${safe(step.after||s.after)}</code></div></div><a href="${safe(s.url)}" target="_blank" rel="noreferrer">Inspect original evidence ↗</a></aside></div>
  <div class="step-controls"><span>STEP ${selectedStep+1} OF ${s.steps.length} · ${safe(s.tag)}</span><div><button type="button" class="action-outline" id="prevStep" ${selectedStep===0?'disabled':''}>← Previous</button><button type="button" class="action-main" id="nextStep">${selectedStep===s.steps.length-1?'Next case':'Next step'} ↗</button></div></div>
  <div class="case-source-line">${isCaptured?'This output was captured by the actual installed Python CLI in CI.':'This step uses explanatory/test-fixture content—not a fabricated live CLI output.'} <a href="${safe(s.url)}" target="_blank" rel="noreferrer">Verify source ↗</a>. Public temporary paths were anonymized.</div>`;
 caseWorkspace.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{selectedStep=Number(button.dataset.step);renderStory()}));
 caseWorkspace.querySelector('[data-copy]').addEventListener('click',()=>copyCommand(step.command));
+  try{history.replaceState({},'',location.pathname+'?demo='+encodeURIComponent(s.id)+location.hash)}catch{}
 $('prevStep').addEventListener('click',()=>{selectedStep=Math.max(0,selectedStep-1);renderStory()});
-$('nextStep').addEventListener('click',()=>{if(selectedStep<s.steps.length-1)selectedStep++;else{const visible=STORIES.filter(s=>filter==='all'||s.cat===filter);selectedId=visible[(visible.findIndex(z=>z.id===s.id)+1)%visible.length].id;selectedStep=0;renderMenu()}renderStory()});}
+$('nextStep').addEventListener('click',()=>{if(selectedStep<s.steps.length-1)selectedStep++;else{const visible=visibleStories();selectedId=visible[(visible.findIndex(z=>z.id===s.id)+1)%visible.length].id;selectedStep=0;renderMenu()}renderStory()});}
 caseList.addEventListener('click',e=>{const btn=e.target.closest('button[data-id]');if(btn){selectedId=btn.dataset.id;selectedStep=0;renderMenu();renderStory()}});
 $('storyFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;filter=b.dataset.filter;$('storyFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));renderMenu();renderStory()});
-let digestBaseline=null,digestCurrent=null;const encoder=new TextEncoder();
+const caseSearch=$('caseSearch');
+caseSearch.addEventListener('input',()=>{
+  caseQuery=caseSearch.value.trim().toLocaleLowerCase();
+  renderMenu();renderStory();
+});
+document.addEventListener('keydown',event=>{
+  const inField=event.target?.matches('input,textarea,[contenteditable="true"]');
+  if(event.key==='/'&&!inField&&!event.ctrlKey&&!event.metaKey&&!event.altKey){
+    event.preventDefault();caseSearch.focus();caseSearch.select();
+  }
+  if(event.key==='Escape'&&document.activeElement===caseSearch){
+    caseSearch.value='';caseQuery='';renderMenu();renderStory();caseSearch.blur();
+  }
+});
+caseList.addEventListener('keydown',event=>{
+  if(!['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(event.key))return;
+  const buttons=[...caseList.querySelectorAll('button[data-id]')];
+  const current=buttons.findIndex(button=>button===document.activeElement);
+  if(current<0)return;
+  event.preventDefault();
+  const offset=['ArrowRight','ArrowDown'].includes(event.key)?1:-1;
+  const next=buttons[(current+offset+buttons.length)%buttons.length];
+  next?.focus();next?.click();
+});
+document.querySelectorAll('[data-open-case]').forEach(anchor=>anchor.addEventListener('click',()=>{
+  const target=anchor.dataset.openCase;
+  if(!STORIES.some(story=>story.id===target))return;
+  selectedId=target;selectedStep=0;caseQuery='';caseSearch.value='';filter='all';
+  $('storyFilters').querySelectorAll('button').forEach(button=>button.classList.toggle('active',button.dataset.filter==='all'));
+  renderMenu();renderStory();
+}));
+const pageProgress=$('pageProgress');
+let progressScheduled=false;
+window.addEventListener('scroll',()=>{
+  if(progressScheduled)return;
+  progressScheduled=true;
+  requestAnimationFrame(()=>{
+    const available=document.documentElement.scrollHeight-innerHeight;
+    pageProgress.style.transform='scaleX('+(available>0?Math.min(1,Math.max(0,scrollY/available)):0)+')';
+    progressScheduled=false;
+  });
+},{passive:true});
+let digestBaseline=null,digestCurrent=null,baselineContent=null;
+const initialSource=$('hashInput').value;const encoder=new TextEncoder();
 // The HTTPS deployment uses Web Crypto. Portable SHA-256 fallback keeps the
 // educational lab functional in file previews and restrictive test sandboxes.
 function sha256Fallback(bytes){
@@ -134,8 +211,12 @@ async function sha256(value){
   return sha256Fallback(bytes);
 }
 async function updateLab(){try{digestCurrent=await sha256($('hashInput').value);$('currentHash').textContent=digestCurrent;if(digestBaseline===null){$('labStatus').textContent='AWAITING SNAPSHOT';$('labResult').textContent='No baseline recorded';$('labDetail').textContent='Press Record baseline to begin.';$('labIndicator').parentElement.className='lab-state';return}const same=digestCurrent===digestBaseline;$('labStatus').textContent=same?'MATCH':'MODIFIED';$('labResult').textContent=same?'Integrity verified':'Change detected';$('labDetail').textContent=same?'Current file hash matches the stored baseline.':'Bytes differ from the recorded baseline; the SHA-256 no longer matches.';$('labIndicator').parentElement.className='lab-state '+(same?'match':'mismatch');$('labExplainer').textContent=same?'Your source is identical to the baseline. Edit even one character to see a mismatch.':'This illustrates how content hashing detects changed bytes. Revert text to restore a match.'}catch(err){$('labResult').textContent='Web Crypto unavailable';$('labDetail').textContent=err.message}}
-$('takeBaseline').addEventListener('click',async()=>{digestBaseline=await sha256($('hashInput').value);$('baselineHash').textContent=digestBaseline;await updateLab();toast('Baseline recorded in this browser session.')});
+$('takeBaseline').addEventListener('click',async()=>{baselineContent=$('hashInput').value;digestBaseline=await sha256($('hashInput').value);$('baselineHash').textContent=digestBaseline;await updateLab();toast('Baseline recorded in this browser session.')});
 $('verifySample').addEventListener('click',updateLab);
+$('resetSample').addEventListener('click',async()=>{
+  $('hashInput').value=baselineContent??initialSource;
+  await updateLab();toast(baselineContent===null?'Sample reset to initial source.':'Sample restored to your recorded baseline.');
+});
 $('editSample').addEventListener('click',async()=>{const original=$('hashInput').value;const value=original.includes('42')?original.replace('42','43'):original+'\n# changed by demo\n';$('hashInput').value=value;await updateLab();toast('Source changed. Current SHA-256 recalculated.')});
 let hashTimer;$('hashInput').addEventListener('input',()=>{clearTimeout(hashTimer);hashTimer=setTimeout(updateLab,100)});
 $('menuToggle').addEventListener('click',()=>{const n=document.querySelector('.site-head nav');n.classList.toggle('open');$('menuToggle').setAttribute('aria-expanded',String(n.classList.contains('open')))});
