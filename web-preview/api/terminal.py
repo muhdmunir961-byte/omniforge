@@ -18,6 +18,12 @@ from http.server import BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Any
 
+# Vercel's function bundles the exact canonical package under the site root.
+# Missing source must NOT be mistaken for a healthy CLI service.
+RUNTIME_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(RUNTIME_ROOT))
+from omniforge import __version__ as BUNDLED_VERSION
+
 MAX_REQUEST_BYTES = 1024
 MAX_COMMAND_CHARS = 240
 MAX_BATCH_COMMANDS = 4
@@ -122,6 +128,7 @@ def _run(argv: list[str], folder: Path, *, cwd: Path) -> dict[str, Any]:
     # credentials, Vercel env, proxy config, or API tokens reach the process.
     env = {
         "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+        "PYTHONPATH": str(RUNTIME_ROOT),
         "HOME": str(folder),
         "TMPDIR": str(folder),
         "PYTHONIOENCODING": "utf-8",
@@ -351,8 +358,19 @@ class handler(BaseHTTPRequestHandler):
         self.wfile.write(raw)
 
     def do_GET(self) -> None:
-        self._json(200, {
-            "ok": True, "engine": "OmniForge v1.3.1 / real Python subprocess",
+        # Health must run a real CLI subprocess, not merely report Python ready.
+        check = _run(
+            [sys.executable, "-m", "omniforge.cli", "--version"],
+            RUNTIME_ROOT, cwd=RUNTIME_ROOT,
+        )
+        ready = check["exit_code"] == 0 and BUNDLED_VERSION in (
+            check["stdout"] + check["stderr"]
+        )
+        self._json(200 if ready else 503, {
+            "ok": ready, "engine": "OmniForge v1.3.1 / real Python subprocess",
+            "package_version": BUNDLED_VERSION,
+            "package_source": "bundled-canonical-source",
+            "self_test": "PASS" if ready else "FAIL: CLI subprocess package import",
             "runtime": sys.version.split()[0],
             "scope": "strict allowlist + isolated temporary project per request; up to 4 commands share a single temporary batch project",
             "batch_max_commands": MAX_BATCH_COMMANDS,
