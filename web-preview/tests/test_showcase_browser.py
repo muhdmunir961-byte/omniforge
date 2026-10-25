@@ -1,4 +1,4 @@
-"""Browser smoke regression for OmniForge's public, static product showcase.
+"""Browser smoke regression for the OmniForge showcase and real CLI execution lab.
 
 Runs against an actual local HTTP server + headless Chromium. Verifies user
 flows and that we never mistake demo playback for hosted CLI execution.
@@ -6,6 +6,7 @@ flows and that we never mistake demo playback for hosted CLI execution.
 from __future__ import annotations
 
 import contextlib
+import importlib.util
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import threading
@@ -14,13 +15,28 @@ import pytest
 from playwright.sync_api import sync_playwright
 
 PUBLIC = Path(__file__).resolve().parents[1]
+spec = importlib.util.spec_from_file_location("omniforge_ui_test_backend", PUBLIC / "api" / "terminal.py")
+backend = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(backend)
 
 
 @contextlib.contextmanager
 def site():
     class Quiet(SimpleHTTPRequestHandler):
+        _json = backend.handler._json
+
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(PUBLIC), **kwargs)
+
+        def do_GET(self):
+            if self.path.split("?", 1)[0] == "/api/terminal":
+                return backend.handler.do_GET(self)
+            return super().do_GET()
+
+        def do_POST(self):
+            if self.path.split("?", 1)[0] == "/api/terminal":
+                return backend.handler.do_POST(self)
+            return self.send_error(404, "Unsupported API route")
 
         def log_message(self, *args):
             pass
@@ -118,6 +134,55 @@ def test_deeplink_and_no_remote_backend_claim(local_site):
         page.goto(local_site + "/?demo=install", wait_until="networkidle")
         assert "Install a skill" in page.locator(".case-title").inner_text()
         disclosure = page.locator(".integrity-disclosure").inner_text().lower()
-        assert "no python process" in disclosure
+        assert "strictly allowlisted" in disclosure
         assert page.locator(".proof-grid a").count() >= 3
+        browser.close()
+
+
+
+def test_real_cli_terminal_runs_installed_python_and_rejects_shell(local_site):
+    errors = []
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page(viewport={"width": 1300, "height": 850})
+        page.on("pageerror", lambda e: errors.append(str(e)))
+        response = page.goto(local_site + "/terminal.html", wait_until="networkidle")
+        assert response.status == 200
+        page.wait_for_function("document.getElementById('cliRuntimeStatus').textContent.includes('READY')", timeout=10000)
+
+        page.locator("#runCli").click()
+        page.wait_for_function("document.getElementById('cliExecutionLabel').textContent.includes('EXECUTED')", timeout=12000)
+        assert '"name": "OmniForge"' in page.locator("#cliOutput").inner_text()
+
+        page.locator("#commandInput").fill("python -c 'print(42)'")
+        page.locator("#runCli").click()
+        page.wait_for_function("document.getElementById('cliExecutionLabel').textContent.includes('REJECTED')", timeout=10000)
+        assert "public server does not run arbitrary Python" in page.locator("#cliOutput").inner_text()
+
+        page.locator('#cliExamples button[data-command="ofprov tamper-demo"]').click()
+        page.locator("#runCli").click()
+        page.wait_for_function("document.getElementById('cliExecutionLabel').textContent.includes('EXIT 1')", timeout=12000)
+        assert "tamper" in page.locator("#commandInput").input_value()
+        assert page.locator("#traceSteps .trace-row").count() == 3
+        assert page.locator("#pythonTab").is_visible()
+        page.locator("#pythonTab").click()
+        assert page.locator("#pythonPanel").is_visible()
+        assert page.locator("#cliPanel").is_hidden()
+        assert page.locator("#pythonInput").input_value().strip().startswith("import hashlib")
+        page.locator('[data-python="ast"]').click()
+        assert "import ast" in page.locator("#pythonInput").input_value()
+        assert not errors, errors
+        browser.close()
+
+
+def test_live_terminal_mobile_layout_no_horizontal_overflow(local_site):
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
+        page.goto(local_site + "/terminal.html", wait_until="networkidle")
+        assert page.locator("#cliTab").is_visible()
+        page.locator("#pythonTab").click()
+        assert page.locator("#pythonInput").is_visible()
+        overflow = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
+        assert overflow <= 2, f"Terminal mobile horizontal overflow: {overflow}px"
         browser.close()
