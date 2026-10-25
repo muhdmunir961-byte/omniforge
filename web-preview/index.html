@@ -9,21 +9,90 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%232b2d2a'/%3E%3Cpath d='M16 20 32 11 48 20v24l-16 9-16-9V20Zm16-9v21m16-12-16 12-16-12' fill='none' stroke='%23dba66f' stroke-width='3'/%3E%3C/svg%3E" />
 <link rel="stylesheet" href="/showcase.css" />
 <link rel="stylesheet" href="/refinement.css" />
+<link rel="stylesheet" href="/mesh-atelier.css" />
+<script defer src="/mesh-engine.js"></script>
 <script type="module" src="/showcase.js"></script>
 </head>
 <body>
 <div id="pageProgress" class="page-progress" aria-hidden="true"></div>
 <a class="skip" href="#main">Skip to main content</a>
 <div class="announcement"><span class="announce-led"></span><strong>OMNIFORGE</strong><span class="announcement-divider">/</span><span>INTERACTIVE PRODUCT WALKTHROUGH</span><a href="https://github.com/muhdmunir961-byte/omniforge" target="_blank" rel="noreferrer">View GitHub source ↗</a></div>
-<header class="site-head"><a class="mark" href="#top" aria-label="OmniForge home"><span class="mark-hex" aria-hidden="true">⬡</span><span>OMNIFORGE<span class="mark-sub">ENGINEERING WORKBENCH</span></span></a><nav aria-label="Main navigation"><a href="#use-cases">Real examples</a><a href="#live-lab">Try a lab</a><a href="#proof">Verification</a><a href="/terminal.html">Live Python</a><a class="nav-alt" href="/explorer.html">All features <span aria-hidden="true">↗</span></a></nav><button class="mobile-menu" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button></header>
+<header class="site-head"><a class="mark" href="#top" aria-label="OmniForge home"><span class="mark-hex" aria-hidden="true">⬡</span><span>OMNIFORGE<span class="mark-sub">ENGINEERING WORKBENCH</span></span></a><nav aria-label="Main navigation"><a href="#use-cases">Real examples</a><a href="#mesh-lab">3D studio</a><a href="#live-lab">Try a lab</a><a href="#proof">Verification</a><a href="/terminal.html">Live Python</a><a class="nav-alt" href="/explorer.html">All features <span aria-hidden="true">↗</span></a></nav><button class="mobile-menu" id="menuToggle" aria-label="Open menu" aria-expanded="false">☰</button></header>
 <main id="main">
-<section class="hero" id="top"><div class="hero-main"><div class="eyebrow"><span class="eyebrow-square"></span> A REALISTIC TOUR OF OMNIFORGE <span class="hero-ver">v1.3.1</span></div><h1>See the work.<br><em>Trust the result.</em></h1><p class="hero-deck">Nak tahu OmniForge boleh buat apa? Pilih satu masalah developer, tengok <strong>input → proses sebenar → JSON output → perubahan pada projek</strong>. Bukan sekadar feature list atau terminal yang berpura-pura.</p><div class="hero-actions"><a class="cta" href="/terminal.html">Run real Python <span>↗</span></a><a class="quiet-link" href="#use-cases">Explore verified examples ↗</a></div><div class="hero-foot"><span><i></i> Local-first Python CLI</span><span><i></i> 14 packaged skills</span><span><i></i> 10 MCP tools</span><span><i></i> No key or wallet needed for this tour</span></div></div><div class="hero-side" aria-label="Example flow"><div class="hero-side-top"><span>HOW IT WORKS</span><span>01 / 04</span></div><div class="how-flow"><div><b>01</b><span>THE PROBLEM</span><strong>"My Python API keeps failing"</strong></div><div class="flow-connector" aria-hidden="true"></div><div><b>02</b><span>FIND THE RIGHT SKILL</span><strong>omniforge search "API errors"</strong></div><div class="flow-connector" aria-hidden="true"></div><div><b>03</b><span>USE A CONTROLLED TOOL</span><strong>log-triage → load → approval</strong></div><div class="flow-connector" aria-hidden="true"></div><div><b>04</b><span>GET SOMETHING VERIFIABLE</span><strong>ranked JSON + test trace</strong></div></div><div class="side-note">Example captured by an installed CLI in GitHub Actions, not a chat-generated screenshot.</div></div></section>
-<section class="grounding-bar" aria-label="Evidence quality"><div><span>ACTUAL CLI CAPTURE</span><strong>32 commands</strong><small>Recorded in disposable CI project</small></div><div><span>ASSERTIONS</span><strong>37 checks</strong><small>Against installed Python wheel</small></div><div><span>SECURITY BOUNDARY</span><strong>No remote execution</strong><small>Browser playback ≠ running Python</small></div><div class="grounding-action"><a href="https://github.com/muhdmunir961-byte/omniforge/actions/runs/40131838901" target="_blank" rel="noreferrer">Open original GitHub Actions run <span>↗</span></a></div></section>
+<section class="hero" id="top"><div class="hero-main"><div class="eyebrow"><span class="eyebrow-square"></span> A REALISTIC TOUR OF OMNIFORGE <span class="hero-ver">v1.3.1</span></div><h1>See the work.<br><em>Trust the result.</em></h1><p class="hero-deck">Nak tahu OmniForge boleh buat apa? Pilih satu masalah developer, tengok <strong>input → proses sebenar → JSON output → perubahan pada projek</strong>. Bukan sekadar feature list atau terminal yang berpura-pura.</p><div class="hero-actions"><a class="cta" href="/terminal.html">Run real Python <span>↗</span></a><a class="quiet-link" href="#use-cases">Explore verified examples ↗</a></div><div class="hero-foot"><span><i></i> Local-first Python CLI</span><span><i></i> 14 packaged skills</span><span><i></i> 10 MCP tools</span><span><i></i> Interactive WebGL mesh</span></div></div><div class="hero-side mesh-hero" data-mesh-stage aria-label="Live interactive 3D topology">
+  <div class="mesh-hero-head">
+    <span><i class="mesh-beacon" aria-hidden="true"></i> OMNI / GEOMETRY ENGINE</span>
+    <small data-mesh-status>INITIALISING WEBGL</small>
+  </div>
+  <div class="mesh-hero-viewport">
+    <canvas id="heroMesh" data-mesh-canvas data-mesh-model="trefoil" data-mesh-palette="dark"
+      tabindex="0" aria-label="Interactive real WebGL trefoil knot mesh. Drag to rotate, or focus and use arrow keys."></canvas>
+    <div class="mesh-fallback" aria-hidden="true"><div class="fallback-ring"></div><span>TOPOLOGY / OMNI</span></div>
+    <div class="mesh-crosshair mesh-crosshair-top" aria-hidden="true">+</div>
+    <div class="mesh-crosshair mesh-crosshair-bottom" aria-hidden="true">+</div>
+    <div class="mesh-hero-marker" aria-hidden="true"><span>OBJ_001</span><span>PARAMETRIC / 3D</span></div>
+    <div class="mesh-hero-orbit" aria-hidden="true">X <span>↗</span> Y <span>↗</span> Z</div>
+  </div>
+  <div class="mesh-hero-details">
+    <div><span>LIVE MESH RENDER</span><strong>Geometry, not imagery.</strong></div>
+    <span class="mesh-hero-vertices"><b data-metric="vertices">—</b> VERTICES</span>
+  </div>
+  <div class="mesh-hero-foot"><span>01 / DISCOVER</span><i></i><span>02 / VALIDATE</span><i></i><span>03 / EXECUTE</span></div>
+  <a class="mesh-hero-link" href="#mesh-lab">Explore the 3D mesh studio <span aria-hidden="true">↗</span></a>
+</div></section>
+<section class="grounding-bar" aria-label="Evidence quality"><div><span>ACTUAL CLI CAPTURE</span><strong>32 commands</strong><small>Recorded in disposable CI project</small></div><div><span>ASSERTIONS</span><strong>37 checks</strong><small>Against installed Python wheel</small></div><div><span>SECURITY BOUNDARY</span><strong>Strict CLI allowlist</strong><small>Real Python runs only approved demo commands</small></div><div class="grounding-action"><a href="https://github.com/muhdmunir961-byte/omniforge/actions/runs/40131838901" target="_blank" rel="noreferrer">Open original GitHub Actions run <span>↗</span></a></div></section>
 <div class="experience-shortcuts" aria-label="Start with a real use case">
   <a href="#use-cases" data-open-case="search"><span class="shortcut-icon" aria-hidden="true">01</span><span><strong>Find your tools</strong><small>Search → rank → load a skill</small></span><span class="shortcut-arrow" aria-hidden="true">↗</span></a>
   <a href="#use-cases" data-open-case="workflow"><span class="shortcut-icon" aria-hidden="true">02</span><span><strong>See an agent workflow</strong><small>Dependency → approval → result</small></span><span class="shortcut-arrow" aria-hidden="true">↗</span></a>
   <a href="/terminal.html"><span class="shortcut-icon" aria-hidden="true">03</span><span><strong>Execute real Python</strong><small>Live CLI and browser code runner</small></span><span class="shortcut-arrow" aria-hidden="true">↗</span></a>
 </div>
+<section class="mesh-atelier section" id="mesh-lab" aria-labelledby="meshLabTitle">
+  <div class="mesh-atelier-heading">
+    <div><div class="kicker">00 / VISUAL SYSTEMS LAB</div><h2 id="meshLabTitle">Not an image. <em>Actual geometry.</em></h2>
+      <p>Rotate a procedural 3D topology with your finger or mouse. Switch mesh models, inspect vertex and triangle budgets, and see what the browser really renders. This is a self-contained WebGL demonstration—not a pretend interactive screenshot.</p>
+    </div>
+    <div class="mesh-atelier-label">OMNIFORGE LAB / WEBGL 01<br><strong>PARAMETRIC TOPOLOGY</strong></div>
+  </div>
+  <div class="mesh-lab-grid" data-mesh-stage>
+    <div class="mesh-lab-viewport">
+      <div class="mesh-viewport-header"><span><i class="mesh-beacon"></i> REALTIME / GPU SCENE</span><span data-mesh-status>INITIALISING</span></div>
+      <canvas id="studioMesh" data-mesh-canvas data-mesh-model="trefoil" tabindex="0"
+        aria-label="3D geometry viewer. Drag to rotate the mesh, or focus and use arrow keys to adjust orientation."></canvas>
+      <div class="mesh-fallback" aria-hidden="true"><div class="fallback-ring"></div><span>FALLBACK / WEBGL UNAVAILABLE</span></div>
+      <div class="mesh-coordinate" aria-hidden="true"><span>Y ↑</span><span>X →</span><span>Z ↗</span></div>
+      <div class="mesh-viewport-foot"><span>DRAG TO ORBIT · ARROWS TO ROTATE</span><span>RUNTIME / BROWSER GPU</span></div>
+    </div>
+    <div class="mesh-console">
+      <div class="mesh-console-head"><span>02 / TOPOLOGY CONTROL</span><span>INTERACTIVE</span></div>
+      <h3>Shape the system<span>.</span></h3>
+      <p class="mesh-console-copy">A real parametric mesh generated and animated in WebGL. Adjust the underlying geometry; the renderer rebuilds buffers and redraws the scene.</p>
+      <div class="mesh-controls-group"><div class="mesh-control-caption">MESH MODE <span>03 PRESETS</span></div>
+        <div class="mesh-preset-row">
+          <button type="button" data-mesh-model="trefoil" class="active" aria-pressed="true">01 <strong>Trefoil knot</strong></button>
+          <button type="button" data-mesh-model="orbital" aria-pressed="false">02 <strong>Orbit field</strong></button>
+          <button type="button" data-mesh-model="coil" aria-pressed="false">03 <strong>Helical coil</strong></button>
+        </div>
+      </div>
+      <div class="mesh-console-data"><div class="mesh-control-caption">LIVE MESH STATISTICS <span>WEBGL</span></div>
+        <div class="mesh-metric-grid">
+          <div><span>VERTICES</span><strong data-metric="vertices">—</strong></div>
+          <div><span>TRIANGLES</span><strong data-metric="triangles">—</strong></div>
+          <div><span>SEGMENTS</span><strong data-metric="segments">—</strong></div>
+          <div><span>RING DIVISIONS</span><strong data-metric="rings">—</strong></div>
+        </div>
+      </div>
+      <div class="mesh-controls-row">
+        <button type="button" data-mesh-pause aria-pressed="false">Pause motion</button>
+        <button type="button" data-mesh-wire aria-pressed="true">Wireframe ON</button>
+        <button type="button" data-mesh-reset>Reset orbit ↺</button>
+      </div>
+      <div class="mesh-console-foot"><span><i class="mesh-live-dot"></i> WEBGL · NO EXTERNAL LIBRARIES</span>
+        <span>Responsive GPU budget / Reduced-motion support</span>
+      </div>
+      <a class="mesh-console-source" href="https://github.com/muhdmunir961-byte/omniforge/blob/main/web-preview/mesh-engine.js" target="_blank" rel="noreferrer">Inspect renderer source <span>↗</span></a>
+    </div>
+  </div>
+</section>
 <section class="walkthrough section" id="use-cases"><div class="section-heading"><div class="kicker">01 / ACTUAL USE CASES</div><h2>Pick a job. <em>See it finish.</em></h2><p>Pilih masalah sebenar, kemudian lihat setiap langkah sehingga hasilnya. Output yang dirakam daripada CI ditanda <strong>Recorded CLI</strong>; contoh daripada ujian integrasi ditanda <strong>E2E fixture</strong>. Guna carian atau tekan <kbd>/</kbd> untuk cari fungsi.</p></div><div class="category-filters" id="storyFilters" role="group" aria-label="Filter examples"><button type="button" class="active" data-filter="all">All examples</button><button type="button" data-filter="discover">Discovery & setup</button><button type="button" data-filter="automate">Execution & AI</button><button type="button" data-filter="protect">Integrity & security</button>
   <div class="case-search">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" aria-hidden="true"><circle cx="10.9" cy="10.9" r="6.5"></circle><path d="m16 16 5 5"></path></svg>
