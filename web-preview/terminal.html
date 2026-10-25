@@ -41,10 +41,15 @@
     <div class="runtime-panel" id="cliPanel" role="tabpanel" aria-labelledby="cliTab">
       <div class="terminal-workspace">
         <div class="code-pane">
-          <div class="pane-head"><span><i class="dot"></i> TERMINAL <span class="pane-muted">/ allowlisted commands only</span></span><span id="cliRuntimeStatus" class="engine-state">Connecting…</span></div>
-          <label for="commandInput" class="pane-hint">Enter a supported OmniForge command</label>
-          <div class="command-line"><span class="prompt">➜</span><input id="commandInput" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" value="omniforge doctor" maxlength="240" aria-describedby="commandHelp"><button type="button" class="action-main execute-button" id="runCli">Run command ↗</button></div>
-          <p id="commandHelp" class="input-help">Runs the actual <code>omniforge</code> / <code>ofprov</code> Python module in a fresh example project. Commands involving shell execution, private paths, external providers, Docker or wallet operations are deliberately blocked.</p>
+          <div class="pane-head"><span><i class="dot"></i> TERMINAL <span class="pane-muted">/ real Python · safe batch</span></span><span id="cliRuntimeStatus" class="engine-state">Connecting…</span></div>
+          <label for="commandInput" class="pane-hint">Enter one command, or paste a batch of up to 6 commands</label>
+          <div class="command-line command-batch">
+  <span class="prompt" aria-hidden="true">➜</span>
+  <textarea id="commandInput" rows="4" spellcheck="false" autocomplete="off" autocapitalize="off" maxlength="1500" aria-describedby="commandHelp batchHint">omniforge doctor</textarea>
+  <div class="batch-actions"><button type="button" class="action-outline" id="loadFullDemo">Load 4-step demo</button><button type="button" class="action-main execute-button" id="runCli">▶ Run commands</button></div>
+</div>
+<div class="batch-hint" id="batchHint" role="status" aria-live="polite">1 command ready · Press Run or Ctrl/⌘ + Enter</div>
+          <p id="commandHelp" class="input-help"><strong>Paste multiple commands, one per line.</strong> If text from a chat gets joined on one line, the terminal will separate recognized OmniForge commands automatically. Each command executes independently against a <strong>fresh, disposable</strong> project; snapshots do not persist between commands. Arbitrary shell, server Python code, private paths, Docker and wallet actions remain blocked.</p>
           <div class="examples-label">QUICK COMMANDS <span>/ click to load</span></div>
           <div class="example-chips" id="cliExamples">
             <button data-command="omniforge doctor" type="button">System doctor</button>
@@ -56,7 +61,7 @@
             <button data-command="ofprov verify" type="button">Verify ledger</button>
             <button data-command="ofprov tamper-demo" type="button">Detect tamper</button>
           </div>
-          <div class="pane-foot"><span class="scope-dot"></span><span>Real subprocess · 5s per step · stateless project · max 16KB output</span></div>
+          <div class="pane-foot"><span class="scope-dot"></span><span>Up to 6 real commands · separate temporary project per command · 5s per subprocess</span></div>
         </div>
         <div class="output-pane">
           <div class="pane-head output-heading"><span><i class="dot output-dot"></i> EXECUTION OUTPUT <span class="pane-muted">/ fresh response</span></span><button type="button" class="clear-button" id="clearCli">Clear</button></div>
