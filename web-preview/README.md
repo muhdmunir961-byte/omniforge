@@ -6,7 +6,7 @@ Three experiences are provided:
 
 1. PRODUCT SHOWCASE (index.html): nine guided before/after cases with archived
    v1.3.0 CLI traces and separately identified E2E test fixtures.
-2. TECHNICAL EXPLORER (explorer.html): 14 skills, 10 MCP tools, the simulated
+2. TECHNICAL EXPLORER (explorer.html): 18 skills, 10 MCP tools, the simulated
    workflow DAG and browser SHA-256 educational controls.
 3. EXECUTABLE PYTHON TERMINAL (terminal.html): real OmniForge CLI processes
    executed in an allowlisted Vercel Python function, plus arbitrary Python
@@ -14,13 +14,15 @@ Three experiences are provided:
 
 ## Genuine hosted Python CLI
 
-The api/terminal.py route accepts a STRICT command allowlist. It imports the
-installed, pinned OmniForge v1.3.1 library and executes real Python subprocesses
+The api/terminal.py route accepts a STRICT command allowlist. It runs the byte-matched, locally bundled OmniForge v1.3.1 library and executes real Python subprocesses
 for these example commands:
 
     python --version
     omniforge doctor
     omniforge list
+    omniforge integrations list
+    omniforge integrations doctor
+    omniforge load realtime-3d-mesh
     omniforge search "API errors"
     omniforge related "python error"
     omniforge plan "debug python errors"
@@ -85,7 +87,7 @@ Static-only mode (API unavailable):
 - Terminal UI: terminal.html, terminal.css, terminal.js
 - Python WebAssembly: py-worker.js
 - Vercel Python function: api/terminal.py
-- Dependency pinning: requirements.txt, vercel.json
+- Exact Python source bundling: omniforge/, requirements.txt, vercel.json
 - Local example server: serve_local_demo.py
 - Tests: tests/test_live_terminal.py, tests/test_showcase_browser.py
 - Automation: .github/workflows/showcase-ui.yml
