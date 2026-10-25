@@ -31,6 +31,9 @@ jobs:
           node --check web-preview/data.js
           node --check web-preview/showcase.js
           node --check web-preview/terminal.js
+          node --check web-preview/cli-batch.js
+          node --check web-preview/tests/test_cli_batch.cjs
+          node web-preview/tests/test_cli_batch.cjs
           node --check web-preview/py-worker.js
       - name: Test real Python API allowlist and subprocess behavior
         run: python -m pytest -vv web-preview/tests/test_live_terminal.py
