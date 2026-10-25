@@ -20,6 +20,7 @@ from typing import Any
 
 MAX_REQUEST_BYTES = 1024
 MAX_COMMAND_CHARS = 240
+MAX_BATCH_COMMANDS = 4
 MAX_OUTPUT_BYTES = 16_000
 SUBPROCESS_TIMEOUT_SECONDS = 5
 ALLOWED_SKILLS = frozenset({
@@ -225,6 +226,117 @@ def execute(command: str) -> dict[str, Any]:
         }
 
 
+def execute_batch(commands: list[str]) -> dict[str, Any]:
+    """Run up to four prevalidated commands in ONE ephemeral sample project.
+
+    An entire batch is checked against _parse before any command executes.
+    Every CLI operation is a real Python subprocess, never a shell command.
+    """
+    if (not isinstance(commands, list) or not 1 <= len(commands) <= MAX_BATCH_COMMANDS
+            or any(not isinstance(c, str) for c in commands)):
+        raise DemoError("Supply 1 to 4 separate command lines.")
+    validated = [_parse(command) for command in commands]
+    started = time.perf_counter()
+    with tempfile.TemporaryDirectory(prefix="omniforge-batch-demo-") as directory:
+        root = Path(directory)
+        project = root / "sample"
+        project.mkdir()
+        (project / "app.py").write_text(
+            "from hashlib import sha256\n"
+            "def greet(name: str) -> str:\n"
+            "    return f'Hello, {name}'\n"
+            "print(greet('OmniForge'))\n", encoding="utf-8",
+        )
+        (project / "pyproject.toml").write_text(
+            '[project]\nname = "sample-demo"\nversion = "0.0.1"\n', encoding="utf-8",
+        )
+        (project / "errors.log").write_text(
+            "2026-10-25 ERROR TimeoutError: demo upstream timed out\n", encoding="utf-8",
+        )
+        completed: list[dict[str, Any]] = []
+        for command, (argv, kind) in zip(commands, validated, strict=True):
+            intermediate: list[dict[str, Any]] = []
+            action = argv[0] if kind == "provenance" else ""
+            if kind == "provenance":
+                ledger_dir = project / ".of-provenance"
+                if action != "init" and not ledger_dir.exists():
+                    initial = _run(
+                        [sys.executable, "-m", "omniforge.provenance_v2_cli",
+                         "init", "--project", str(project)], root, cwd=project,
+                    )
+                    intermediate.append({"command": "ofprov init", **initial})
+                    if initial["exit_code"]:
+                        completed.append({
+                            "command": command, "ok": False, "expected_tamper": False,
+                            "stdout": "", "stderr": initial["stderr"],
+                            "exit_code": initial["exit_code"],
+                            "duration_ms": initial["duration_ms"],
+                            "subprocesses": intermediate,
+                        })
+                        continue
+                chain = project / ".of-provenance" / "chain.jsonl"
+                if (action in ("verify", "audit", "proof", "tamper-demo")
+                        and chain.is_file() and chain.stat().st_size == 0):
+                    sampled = _run(
+                        [sys.executable, "-m", "omniforge.provenance_v2_cli",
+                         "snapshot", "--project", str(project)], root, cwd=project,
+                    )
+                    intermediate.append({"command": "ofprov snapshot", **sampled})
+                    if sampled["exit_code"]:
+                        completed.append({
+                            "command": command, "ok": False, "expected_tamper": False,
+                            "stdout": "", "stderr": sampled["stderr"],
+                            "exit_code": sampled["exit_code"],
+                            "duration_ms": sampled["duration_ms"],
+                            "subprocesses": intermediate,
+                        })
+                        continue
+                if action == "tamper-demo":
+                    (project / "app.py").write_text(
+                        "print('changed AFTER snapshot')\n", encoding="utf-8",
+                    )
+                    intermediate.append({
+                        "command": "# change sample app.py after snapshot",
+                        "stdout": "Changed sample bytes; no real user files accessed.",
+                        "stderr": "", "exit_code": 0,
+                        "status": "fixture-change", "duration_ms": 0,
+                    })
+                    action = "verify"
+                argv = [sys.executable, "-m", "omniforge.provenance_v2_cli",
+                        action, "--project", str(project)]
+                if action == "verify":
+                    argv.append("--check-files")
+            elif kind == "inspect":
+                argv = [*argv, str(project)]
+            final = _run(argv, root, cwd=project)
+            tamper_expected = False
+            if kind == "provenance" and command == "ofprov tamper-demo":
+                try:
+                    result_json = json.loads(final["stdout"])
+                    tamper_expected = (
+                        final["exit_code"] == 1 and isinstance(result_json, dict)
+                        and result_json.get("ok") is False
+                    )
+                except (ValueError, TypeError):
+                    pass
+            completed.append({
+                "command": command, "ok": final["exit_code"] == 0 or tamper_expected,
+                "expected_tamper": tamper_expected,
+                "stdout": final["stdout"], "stderr": final["stderr"],
+                "exit_code": final["exit_code"], "duration_ms": final["duration_ms"],
+                "subprocesses": intermediate,
+            })
+        return {
+            "ok": all(result["ok"] for result in completed),
+            "mode": "server-python-actual-cli-batch",
+            "commands": len(completed), "results": completed,
+            "duration_ms": round((time.perf_counter() - started) * 1000),
+            "disclaimer": "All lines share one disposable sample project for "
+                "this request only. State is destroyed afterwards. "
+                "Every line must pass a strict allowlist; no shell commands.",
+        }
+
+
 class handler(BaseHTTPRequestHandler):
     """Vercel Python Functions entrypoint, reachable at /api/terminal."""
 
@@ -242,7 +354,8 @@ class handler(BaseHTTPRequestHandler):
         self._json(200, {
             "ok": True, "engine": "OmniForge v1.3.1 / real Python subprocess",
             "runtime": sys.version.split()[0],
-            "scope": "strict allowlist + isolated temporary project per request",
+            "scope": "strict allowlist + isolated temporary project per request; up to 4 commands share a single temporary batch project",
+            "batch_max_commands": MAX_BATCH_COMMANDS,
             "samples": [
                 "python --version", "omniforge doctor",
                 'omniforge search "API errors"',
@@ -280,9 +393,15 @@ class handler(BaseHTTPRequestHandler):
             return
         try:
             payload = json.loads(self.rfile.read(size).decode("utf-8"))
-            if not isinstance(payload, dict) or set(payload) != {"command"}:
-                raise DemoError('Request format: {"command":"omniforge doctor"}')
-            response = execute(payload["command"])
+            if not isinstance(payload, dict):
+                raise DemoError("Expected JSON object.")
+            if set(payload) == {"command"}:
+                response = execute(payload["command"])
+            elif set(payload) == {"commands"}:
+                response = execute_batch(payload["commands"])
+            else:
+                raise DemoError('Request format: {"command":"omniforge doctor"} or '
+                                '{"commands":["omniforge doctor","ofprov verify"]}')
         except (DemoError, ValueError, UnicodeError) as exc:
             self._json(400, {"ok": False, "error": str(exc), "usage": USAGE})
             return
