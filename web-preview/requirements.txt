@@ -1,1 +1,3 @@
-omniforge-agent @ git+https://github.com/muhdmunir961-byte/omniforge.git@a2bac84dc90129c0d80d1bb31a1f70bbab1ddfdb
+# No external Python packages required for the restricted public demo.
+# Exact OmniForge canonical sources are bundled under web-preview/omniforge/.
+# Do not use a Git/PyPI dependency here: it may be unavailable at Vercel runtime.
