@@ -186,3 +186,31 @@ def test_live_terminal_mobile_layout_no_horizontal_overflow(local_site):
         overflow = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
         assert overflow <= 2, f"Terminal mobile horizontal overflow: {overflow}px"
         browser.close()
+
+
+
+def test_real_browser_python_wasm_worker_executes_code(local_site):
+    """Run the *real pinned Pyodide engine*, not a mocked JS output.
+
+    A failing CDN, worker, or Python interpreter should fail this test rather
+    than display a simulated result.
+    """
+    errors = []
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True)
+        page = browser.new_page(viewport={"width": 1280, "height": 800})
+        page.on("pageerror", lambda err: errors.append(str(err)))
+        page.goto(local_site + "/terminal.html", wait_until="domcontentloaded")
+        page.locator("#pythonTab").click()
+        page.locator('[data-python="hello"]').click()
+        page.locator("#runPython").click()
+        page.wait_for_function(
+            "document.getElementById('pyExecutionLabel').textContent.includes('COMPLETED')",
+            timeout=85000,
+        )
+        output = page.locator("#pythonOutput").inner_text()
+        assert "Hello from actual Python." in output
+        assert "1² = 1" in output
+        assert page.locator("#pyVersion").inner_text().startswith("PYTHON 3.12.")
+        assert not errors, errors
+        browser.close()
