@@ -5,7 +5,7 @@ export const META = Object.freeze({
   sourceCommit: '6de32a84c6331b14bb1eadd5bf28ef267c649a5f',
   verifiedAt: '2026-10-25',
   python: '3.11+',
-  nativeSkills: 10,
+  nativeSkills: 14,
   adapters: 4,
   researchCandidates: 112
 });
@@ -17,6 +17,10 @@ export const SKILLS = [
   {name:'esptool-chip',type:'adapter',category:'Hardware',description:'Read chip identification from an explicitly selected ESP32 serial port using installed esptool.',need:'esptool + selected serial port',example:'omniforge load esptool-chip'},
   {name:'firmware-preflight',type:'builtin',category:'Hardware',description:'Check local ESP32 firmware tooling availability and device-port enumeration without flashing or changing hardware.',need:'Python standard library',example:'omniforge load firmware-preflight'},
   {name:'git-diff-review',type:'builtin',category:'Git',description:'Review local Git diff statistics and changed files without modifying the repository or showing secret contents.',need:'Git available locally',example:'omniforge load git-diff-review'},
+  {name:'interface-craft',type:'builtin',category:'Design',description:'Plan premium responsive UI/UX with art direction, accessibility, working product states and reviewable source changes.',need:'Coding client for actual implementation',example:'omniforge load interface-craft'},
+  {name:'motion-interaction',type:'builtin',category:'Design',description:'Plan meaningful interface animation and Three.js camera movement with reduced-motion and performance considerations.',need:'Frontend runtime for implementation',example:'omniforge load motion-interaction'},
+  {name:'realtime-3d-mesh',type:'builtin',category:'3D',description:'Guide genuine Three.js or React Three Fiber meshes, glTF assets, lighting and mobile performance, not fabricated 3D renders.',need:'Three.js / React Three Fiber application',example:'omniforge load realtime-3d-mesh'},
+  {name:'visual-qa',type:'builtin',category:'Quality',description:'Audit layouts and 3D browser experiences for broken assets, interactions, accessibility and WebGL runtime errors.',need:'Real browser test runner for full QA',example:'omniforge load visual-qa'},
   {name:'kicad-drc',type:'adapter',category:'Hardware',description:'Check PCB design-rule violations using the installed KiCad kicad-cli command.',need:'Installed KiCad CLI',example:'omniforge load kicad-drc'},
   {name:'log-triage',type:'builtin',category:'Observability',description:'Triage application logs offline, redact basic secrets and identify recurring error signatures and severity patterns.',need:'Python standard library',example:'omniforge load log-triage'},
   {name:'openapi-inventory',type:'builtin',category:'Networking',description:'Summarize endpoints, request methods, and response codes in an existing local OpenAPI JSON file without network calls.',need:'Python standard library',example:'omniforge load openapi-inventory'},
