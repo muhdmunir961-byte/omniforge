@@ -99,7 +99,7 @@ def test_mobile_navigation_focus_and_zero_horizontal_overflow(local_site):
         assert page.locator(".site-head nav").is_visible()
         page.locator('.site-head nav a[href="#live-lab"]').click()
         assert page.locator("#menuToggle").get_attribute("aria-expanded") == "false"
-        page.locator("#caseSearch").fill("sqlite")
+        page.locator("#caseSearch").fill("workflow")
         assert page.locator(".case-item").count() > 0
         page.locator("#caseSearch").fill("")
         assert page.locator(".case-item").count() == 9
