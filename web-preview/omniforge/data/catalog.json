@@ -1,0 +1,898 @@
+[
+  {
+    "id": "prometheus",
+    "name": "prometheus",
+    "category": "devops",
+    "github": "https://github.com/prometheus/prometheus",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "grafana",
+    "name": "grafana",
+    "category": "devops",
+    "github": "https://github.com/grafana/grafana",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "loki",
+    "name": "loki",
+    "category": "devops",
+    "github": "https://github.com/grafana/loki",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "tempo",
+    "name": "tempo",
+    "category": "devops",
+    "github": "https://github.com/grafana/tempo",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "opentelemetry-collector",
+    "name": "opentelemetry-collector",
+    "category": "devops",
+    "github": "https://github.com/open-telemetry/opentelemetry-collector",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "healthchecks",
+    "name": "healthchecks",
+    "category": "devops",
+    "github": "https://github.com/healthchecks/healthchecks",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "netdata",
+    "name": "netdata",
+    "category": "devops",
+    "github": "https://github.com/netdata/netdata",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "sentry",
+    "name": "sentry",
+    "category": "devops",
+    "github": "https://github.com/getsentry/sentry",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "hyperdx",
+    "name": "hyperdx",
+    "category": "devops",
+    "github": "https://github.com/hyperdxio/hyperdx",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "trivy",
+    "name": "trivy",
+    "category": "devops",
+    "github": "https://github.com/aquasecurity/trivy",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "syft",
+    "name": "syft",
+    "category": "devops",
+    "github": "https://github.com/anchore/syft",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "grype",
+    "name": "grype",
+    "category": "devops",
+    "github": "https://github.com/anchore/grype",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "cosign",
+    "name": "cosign",
+    "category": "devops",
+    "github": "https://github.com/sigstore/cosign",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "falco",
+    "name": "falco",
+    "category": "devops",
+    "github": "https://github.com/falcosecurity/falco",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "kubernetes",
+    "name": "kubernetes",
+    "category": "devops",
+    "github": "https://github.com/kubernetes/kubernetes",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "helm",
+    "name": "helm",
+    "category": "devops",
+    "github": "https://github.com/helm/helm",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "argo-cd",
+    "name": "argo-cd",
+    "category": "devops",
+    "github": "https://github.com/argoproj/argo-cd",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "flux2",
+    "name": "flux2",
+    "category": "devops",
+    "github": "https://github.com/fluxcd/flux2",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "pulumi",
+    "name": "pulumi",
+    "category": "devops",
+    "github": "https://github.com/pulumi/pulumi",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "terraform",
+    "name": "terraform",
+    "category": "devops",
+    "github": "https://github.com/hashicorp/terraform",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "ast-grep",
+    "name": "ast-grep",
+    "category": "code",
+    "github": "https://github.com/ast-grep/ast-grep",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "semgrep",
+    "name": "semgrep",
+    "category": "code",
+    "github": "https://github.com/semgrep/semgrep",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "tree-sitter",
+    "name": "tree-sitter",
+    "category": "code",
+    "github": "https://github.com/tree-sitter/tree-sitter",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "jscodeshift",
+    "name": "jscodeshift",
+    "category": "code",
+    "github": "https://github.com/facebook/jscodeshift",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "rewrite",
+    "name": "rewrite",
+    "category": "code",
+    "github": "https://github.com/openrewrite/rewrite",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "osv-scanner",
+    "name": "osv-scanner",
+    "category": "code",
+    "github": "https://github.com/google/osv-scanner",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "gitleaks",
+    "name": "gitleaks",
+    "category": "code",
+    "github": "https://github.com/gitleaks/gitleaks",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "truffle",
+    "name": "truffle",
+    "category": "code",
+    "github": "https://github.com/trufflesuite/truffle",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "monaco-editor",
+    "name": "monaco-editor",
+    "category": "code",
+    "github": "https://github.com/microsoft/monaco-editor",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "scip",
+    "name": "scip",
+    "category": "code",
+    "github": "https://github.com/sourcegraph/scip",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "delta",
+    "name": "delta",
+    "category": "code",
+    "github": "https://github.com/dandavison/delta",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "bat",
+    "name": "bat",
+    "category": "code",
+    "github": "https://github.com/sharkdp/bat",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "ripgrep",
+    "name": "ripgrep",
+    "category": "code",
+    "github": "https://github.com/BurntSushi/ripgrep",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "act",
+    "name": "act",
+    "category": "code",
+    "github": "https://github.com/nektos/act",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "vhs",
+    "name": "vhs",
+    "category": "code",
+    "github": "https://github.com/charmbracelet/vhs",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "gum",
+    "name": "gum",
+    "category": "code",
+    "github": "https://github.com/charmbracelet/gum",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "mitmproxy",
+    "name": "mitmproxy",
+    "category": "network",
+    "github": "https://github.com/mitmproxy/mitmproxy",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "httpx",
+    "name": "httpx",
+    "category": "network",
+    "github": "https://github.com/projectdiscovery/httpx",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "nuclei",
+    "name": "nuclei",
+    "category": "network",
+    "github": "https://github.com/projectdiscovery/nuclei",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "schemathesis",
+    "name": "schemathesis",
+    "category": "network",
+    "github": "https://github.com/schemathesis/schemathesis",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "playwright",
+    "name": "playwright",
+    "category": "network",
+    "github": "https://github.com/microsoft/playwright",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "puppeteer",
+    "name": "puppeteer",
+    "category": "network",
+    "github": "https://github.com/puppeteer/puppeteer",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "cli",
+    "name": "cli",
+    "category": "network",
+    "github": "https://github.com/httpie/cli",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "curl",
+    "name": "curl",
+    "category": "network",
+    "github": "https://github.com/curl/curl",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "grpcurl",
+    "name": "grpcurl",
+    "category": "network",
+    "github": "https://github.com/grpc/grpcurl",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "fq",
+    "name": "fq",
+    "category": "network",
+    "github": "https://github.com/wader/fq",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "wireshark",
+    "name": "wireshark",
+    "category": "network",
+    "github": "https://github.com/wireshark/wireshark",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "amass",
+    "name": "amass",
+    "category": "network",
+    "github": "https://github.com/owasp-amass/amass",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "duckdb",
+    "name": "duckdb",
+    "category": "data",
+    "github": "https://github.com/duckdb/duckdb",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "dolt",
+    "name": "dolt",
+    "category": "data",
+    "github": "https://github.com/dolt/dolt",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "sqlite",
+    "name": "sqlite",
+    "category": "data",
+    "github": "https://github.com/sqlite/sqlite",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "litestream",
+    "name": "litestream",
+    "category": "data",
+    "github": "https://github.com/litestream/litestream",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "meilisearch",
+    "name": "meilisearch",
+    "category": "data",
+    "github": "https://github.com/meilisearch/meilisearch",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "qdrant",
+    "name": "qdrant",
+    "category": "data",
+    "github": "https://github.com/qdrant/qdrant",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "chroma",
+    "name": "chroma",
+    "category": "data",
+    "github": "https://github.com/chroma-core/chroma",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "milvus",
+    "name": "milvus",
+    "category": "data",
+    "github": "https://github.com/milvus-io/milvus",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "arrow",
+    "name": "arrow",
+    "category": "data",
+    "github": "https://github.com/apache/arrow",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "airflow",
+    "name": "airflow",
+    "category": "data",
+    "github": "https://github.com/apache/airflow",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "dbt-core",
+    "name": "dbt-core",
+    "category": "data",
+    "github": "https://github.com/dbt-labs/dbt-core",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "datasette",
+    "name": "datasette",
+    "category": "data",
+    "github": "https://github.com/datasette/datasette",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "mindsdb",
+    "name": "mindsdb",
+    "category": "data",
+    "github": "https://github.com/mindsdb/mindsdb",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "bpftrace",
+    "name": "bpftrace",
+    "category": "observability",
+    "github": "https://github.com/bpftrace/bpftrace",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "rr",
+    "name": "rr",
+    "category": "observability",
+    "github": "https://github.com/rr-debugger/rr",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "strace",
+    "name": "strace",
+    "category": "observability",
+    "github": "https://github.com/strace/strace",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "bcc",
+    "name": "bcc",
+    "category": "observability",
+    "github": "https://github.com/iovisor/bcc",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "flamegraph",
+    "name": "FlameGraph",
+    "category": "observability",
+    "github": "https://github.com/brendangregg/FlameGraph",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "pprof",
+    "name": "pprof",
+    "category": "observability",
+    "github": "https://github.com/google/pprof",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "procmon-for-linux",
+    "name": "ProcMon-for-Linux",
+    "category": "observability",
+    "github": "https://github.com/microsoft/ProcMon-for-Linux",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "opentelemetry-python",
+    "name": "opentelemetry-python",
+    "category": "observability",
+    "github": "https://github.com/open-telemetry/opentelemetry-python",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "esptool",
+    "name": "esptool",
+    "category": "hardware",
+    "github": "https://github.com/espressif/esptool",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "esp-idf",
+    "name": "esp-idf",
+    "category": "hardware",
+    "github": "https://github.com/espressif/esp-idf",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "platformio-core",
+    "name": "platformio-core",
+    "category": "hardware",
+    "github": "https://github.com/platformio/platformio-core",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "kicad-source-mirror",
+    "name": "kicad-source-mirror",
+    "category": "hardware",
+    "github": "https://github.com/KiCad/kicad-source-mirror",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "libsigrok",
+    "name": "libsigrok",
+    "category": "hardware",
+    "github": "https://github.com/sigrokproject/libsigrok",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "logic2-automation",
+    "name": "logic2-automation",
+    "category": "hardware",
+    "github": "https://github.com/Saleae/logic2-automation",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "adafruit-circuitpython-bundle",
+    "name": "Adafruit_CircuitPython_Bundle",
+    "category": "hardware",
+    "github": "https://github.com/adafruit/Adafruit_CircuitPython_Bundle",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "pyserial",
+    "name": "pyserial",
+    "category": "hardware",
+    "github": "https://github.com/pyserial/pyserial",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "esphome",
+    "name": "esphome",
+    "category": "hardware",
+    "github": "https://github.com/esphome/esphome",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "zephyr",
+    "name": "zephyr",
+    "category": "hardware",
+    "github": "https://github.com/zephyrproject-rtos/zephyr",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "arduino-cli",
+    "name": "arduino-cli",
+    "category": "hardware",
+    "github": "https://github.com/arduino/arduino-cli",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "changedetection-io",
+    "name": "changedetection.io",
+    "category": "automation",
+    "github": "https://github.com/dgtlmoon/changedetection.io",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "n8n",
+    "name": "n8n",
+    "category": "automation",
+    "github": "https://github.com/n8n-io/n8n",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "activepieces",
+    "name": "activepieces",
+    "category": "automation",
+    "github": "https://github.com/activepieces/activepieces",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "huginn",
+    "name": "huginn",
+    "category": "automation",
+    "github": "https://github.com/huginn/huginn",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "automatisch",
+    "name": "automatisch",
+    "category": "automation",
+    "github": "https://github.com/automatisch/automatisch",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "windmill",
+    "name": "windmill",
+    "category": "automation",
+    "github": "https://github.com/windmill-labs/windmill",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "temporal",
+    "name": "temporal",
+    "category": "automation",
+    "github": "https://github.com/temporalio/temporal",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "skywalking",
+    "name": "skywalking",
+    "category": "automation",
+    "github": "https://github.com/apache/skywalking",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "prefect",
+    "name": "prefect",
+    "category": "automation",
+    "github": "https://github.com/PrefectHQ/prefect",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "dagster",
+    "name": "dagster",
+    "category": "automation",
+    "github": "https://github.com/dagster-io/dagster",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "ffmpeg",
+    "name": "FFmpeg",
+    "category": "media",
+    "github": "https://github.com/FFmpeg/FFmpeg",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "yt-dlp",
+    "name": "yt-dlp",
+    "category": "media",
+    "github": "https://github.com/yt-dlp/yt-dlp",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "imagemagick",
+    "name": "ImageMagick",
+    "category": "media",
+    "github": "https://github.com/ImageMagick/ImageMagick",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "paddleocr",
+    "name": "PaddleOCR",
+    "category": "media",
+    "github": "https://github.com/PaddlePaddle/PaddleOCR",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "tesseract",
+    "name": "tesseract",
+    "category": "media",
+    "github": "https://github.com/tesseract-ocr/tesseract",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "markitdown",
+    "name": "markitdown",
+    "category": "media",
+    "github": "https://github.com/microsoft/markitdown",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "docling",
+    "name": "docling",
+    "category": "media",
+    "github": "https://github.com/docling-project/docling",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "glow",
+    "name": "glow",
+    "category": "media",
+    "github": "https://github.com/charmbracelet/glow",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "mermaid",
+    "name": "mermaid",
+    "category": "media",
+    "github": "https://github.com/mermaid-js/mermaid",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "servers",
+    "name": "servers",
+    "category": "ai",
+    "github": "https://github.com/modelcontextprotocol/servers",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "langfuse",
+    "name": "langfuse",
+    "category": "ai",
+    "github": "https://github.com/langfuse/langfuse",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "litellm",
+    "name": "litellm",
+    "category": "ai",
+    "github": "https://github.com/BerriAI/litellm",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "ollama",
+    "name": "ollama",
+    "category": "ai",
+    "github": "https://github.com/ollama/ollama",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "vllm",
+    "name": "vllm",
+    "category": "ai",
+    "github": "https://github.com/vllm-project/vllm",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "transformers",
+    "name": "transformers",
+    "category": "ai",
+    "github": "https://github.com/huggingface/transformers",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "text-generation-inference",
+    "name": "text-generation-inference",
+    "category": "ai",
+    "github": "https://github.com/huggingface/text-generation-inference",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "open-webui",
+    "name": "open-webui",
+    "category": "ai",
+    "github": "https://github.com/open-webui/open-webui",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "langgraph",
+    "name": "langgraph",
+    "category": "ai",
+    "github": "https://github.com/langchain-ai/langgraph",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "crewai",
+    "name": "crewAI",
+    "category": "ai",
+    "github": "https://github.com/crewAIInc/crewAI",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "autogen",
+    "name": "autogen",
+    "category": "ai",
+    "github": "https://github.com/microsoft/autogen",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "pydantic-ai",
+    "name": "pydantic-ai",
+    "category": "ai",
+    "github": "https://github.com/pydantic/pydantic-ai",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  },
+  {
+    "id": "llama-index",
+    "name": "llama_index",
+    "category": "ai",
+    "github": "https://github.com/run-llama/llama_index",
+    "status": "candidate",
+    "integration": "not-yet-implemented"
+  }
+]
