@@ -4,6 +4,18 @@ const $ = id => document.getElementById(id);
 const BASE='https://github.com/muhdmunir961-byte/omniforge';
 const E2E=`${BASE}/blob/main/tests/test_live_integrations.py`;
 const EVM=`${BASE}/blob/main/tests/test_blockchain_evm.py`;
+const LIVE_DEMO_COMMANDS={
+  search:'omniforge search "API errors"',
+  install:'omniforge load log-triage',
+  workflow:'omniforge plan "debug python errors"',
+  integrity:'ofprov tamper-demo',
+  mcp:'omniforge doctor',
+  patch:'omniforge load python-symbols',
+  docker:'omniforge list',
+  anchor:'ofprov proof',
+  browser:'omniforge search "browser screenshot"',
+};
+
 const clip = text => String(text??'');
 function safe(value){return clip(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function trunc(value,limit=2400){const text=clip(value).trim();return text.length<=limit?text:text.slice(0,limit)+'\n… [output clipped; inspect CI trace for the full recording]' }
@@ -116,7 +128,7 @@ caseWorkspace.innerHTML=`<div class="case-labels"><span class="pill ${indicator(
  <div class="terminal-frame ${isCaptured?'':'has-fixture'}"><div class="terminal-header"><span class="dots"><i></i><i></i><i></i></span><span>${safe(step.note)}</span></div><div class="terminal-command"><code>$ ${safe(step.command)}</code><button type="button" class="copy" data-copy="command" aria-label="Copy this OmniForge command">COPY</button></div><pre class="terminal-output">${safe(trunc(output,2400))}</pre><div class="terminal-footer"><span>${safe(marker)}</span><span class="${isCaptured?'':'fixture'}">${isCaptured?'CAPTURED ✓':'NOT A LIVE CLI SESSION'}</span></div></div></div>
  <aside class="step-aside"><span>BEFORE / AFTER</span><h4>What changes at this step?</h4><p>${safe(step.desc)}</p><div class="stage-before-after"><div class="change-block"><span>BEFORE</span><code>${safe(step.before||s.before)}</code></div><div class="change-block"><span>AFTER</span><code>${safe(step.after||s.after)}</code></div></div><a href="${safe(s.url)}" target="_blank" rel="noreferrer">Inspect original evidence ↗</a></aside></div>
  <div class="step-controls"><span>STEP ${selectedStep+1} OF ${s.steps.length} · ${safe(s.tag)}</span><div><button type="button" class="action-outline" id="prevStep" ${selectedStep===0?'disabled':''}>← Previous</button><button type="button" class="action-main" id="nextStep">${selectedStep===s.steps.length-1?'Next case':'Next step'} ↗</button></div></div>
- <div class="case-source-line">${isCaptured?'This output was captured by the actual installed Python CLI in CI.':'This step uses explanatory/test-fixture content—not a fabricated live CLI output.'} <a href="${safe(s.url)}" target="_blank" rel="noreferrer">Verify source ↗</a>. Public temporary paths were anonymized.</div>`;
+ <div class="case-source-line">${isCaptured?'This output was captured by the actual installed Python CLI in CI.':'This step uses explanatory/test-fixture content—not a fabricated live CLI output.'} <a href="${safe(s.url)}" target="_blank" rel="noreferrer">Verify source ↗</a>. Public temporary paths were anonymized.<span style="display:block;margin-top:12px"><a class="action-main" href="/terminal.html?cmd=${encodeURIComponent(LIVE_DEMO_COMMANDS[s.id]||'omniforge doctor')}" style="display:inline-flex;color:#fff;text-decoration:none;padding:9px 15px">Run related command in live Python ↗</a></span></div>`;
 caseWorkspace.querySelectorAll('[data-step]').forEach(button=>button.addEventListener('click',()=>{selectedStep=Number(button.dataset.step);renderStory()}));
 caseWorkspace.querySelector('[data-copy]').addEventListener('click',()=>copyCommand(step.command));
   try{history.replaceState({},'',location.pathname+'?demo='+encodeURIComponent(s.id)+location.hash)}catch{}
