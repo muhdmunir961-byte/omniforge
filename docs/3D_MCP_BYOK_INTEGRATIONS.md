@@ -27,6 +27,8 @@ Cline, Claude Code and Claude Desktop use an `mcpServers` object. Native VS Code
 Check client versions before use, as configuration schemas can change.
 
 Blender reference: https://github.com/ahujasid/mcp-for-blender
+
+**Package consistency:** The client example files under `examples/mcp/` use the same `uvx mcp-for-blender` entry point as the generated recipes. No untested FreeCAD server is enabled or auto-launched.
 Cline reference: https://github.com/cline/cline/blob/main/docs/mcp/mcp-overview.mdx
 
 ## Blender setup
@@ -43,6 +45,10 @@ Blender addons can modify a scene, filesystem or host environment. Never expose 
 OmniForge does not currently proxy Blender MCP through its own ten MCP tools.
 
 ## 3D websites
+
+The public OmniForge showcase also includes a [standalone real WebGL2 viewer](https://omniforge-explorer.vercel.app/3d.html) with geometry switching, orbit/zoom, wireframe and real OBJ export. It demonstrates genuine GPU geometry; it is not a remotely controlled Blender session.
+
+For a production site, use React Three Fiber / Three.js and licensed GLB assets, and test actual mobile browser GPU support and fallback.
 
 Use ordinary coding agents (Cline/Claude Code) to write Three.js, React Three Fiber or WebGL code.
 Create models in Blender, then export glTF/GLB, review file sizes, mobile frame rate, lighting and loading fallbacks.
@@ -78,3 +84,31 @@ omniforge integrations doctor --blender
 ```
 
 Passing configuration tests proves generated JSON shape, not successful 3D scene automation.
+
+## Combining BYOK + Cline + OmniForge MCP + Blender MCP
+
+These connections happen in **two independent clients**, not a universal gateway.
+
+1. Configure Cline's own AI provider settings (OpenAI-compatible base URL, chosen model and API key), or use Claude Code's supported provider settings. Do not put API keys in any MCP JSON committed to Git.
+2. Install the OmniForge Python package locally and validate `omniforge doctor` and `omniforge mcp`.
+3. Add the OmniForge MCP server via your editor's server configuration. For Cline, use the `mcpServers` format. For Claude Code, add a local stdio server with `claude mcp add omniforge -- python -m omniforge.mcp` or use a reviewed project `.mcp.json`.
+4. If Blender is installed, separately install the *third-party* `mcp-for-blender` server and enable its Blender addon on loopback. Inspect the tools before allowing modifications, and use a disposable `.blend` file.
+5. The model invokes the Blender server **directly through Cline/Claude Code**, not by tunnelling arbitrary code through OmniForge's read-only MCP tools.
+
+**Capability distinction:** The OmniForge BYOK patch command is an optional separate OpenAI-compatible *chat-completions* caller that proposes source file edits. It does **not** expose a universal tool-calling conversational backend, Cline provider gateway, token metering router or Blender tool execution engine.
+
+**CAD caution:** AutoCAD, FreeCAD and OpenSCAD require independently installed, version-matched desktop integrations. OBJ mesh rendering does not make a model dimensionally constrained or manufacturable. Convert/edit within approved CAD software and verify units, tolerances and geometry.
+
+## Verify an actual installation
+
+From the project environment (not the public Vercel terminal):
+
+```bash
+python -m pip install -e .
+omniforge doctor
+omniforge integrations list
+omniforge integrations doctor --blender
+omniforge integrations config --client cline --blender
+```
+
+The doctor only verifies whether local binaries are on PATH. It **does not prove the Blender addon handshake**; test the MCP tool list inside your actual client. The website's Python execution API intentionally does not install Blender or run third-party MCP servers.
