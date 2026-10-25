@@ -258,7 +258,9 @@ class handler(BaseHTTPRequestHandler):
         origin = self.headers.get("Origin", "")
         host = self.headers.get("X-Forwarded-Host") or self.headers.get("Host", "")
         if origin and not (
-            origin.startswith("https://") or origin.startswith("http://localhost:")
+            origin.startswith("https://")
+            or origin.startswith("http://localhost:")
+            or origin.startswith("http://127.0.0.1:")
         ):
             self._json(403, {"ok": False, "error": "Invalid origin."})
             return
