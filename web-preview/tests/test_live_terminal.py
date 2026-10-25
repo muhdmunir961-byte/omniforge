@@ -163,10 +163,16 @@ def test_bundled_runtime_sources_match_canonical_src():
     repo_root = Path(__file__).resolve().parents[2]
     canonical = repo_root / "src" / "omniforge"
     vendor = repo_root / "web-preview" / "omniforge"
+    # Python/pytest generate ephemeral bytecode during tests. Only compare
+    # shipped source/assets; never compare runtime __pycache__ files.
     expected = {path.relative_to(canonical): path.read_bytes()
-                for path in canonical.rglob("*") if path.is_file()}
+                for path in canonical.rglob("*")
+                if path.is_file() and "__pycache__" not in path.parts
+                and path.suffix != ".pyc"}
     observed = {path.relative_to(vendor): path.read_bytes()
-                for path in vendor.rglob("*") if path.is_file()}
+                for path in vendor.rglob("*")
+                if path.is_file() and "__pycache__" not in path.parts
+                and path.suffix != ".pyc"}
     assert len(expected) >= 49
     assert observed == expected, "Bundled web-preview/omniforge drifted from core package"
 
