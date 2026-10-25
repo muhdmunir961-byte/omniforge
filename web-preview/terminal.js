@@ -5,6 +5,9 @@
   const cliInput=$("commandInput"),cliOutput=$("cliOutput"),cliRun=$("runCli");
   const cliStatus=$("cliRuntimeStatus"),pyOutput=$("pythonOutput"),pyInput=$("pythonInput");
   const pyRun=$("runPython"),pyStatus=$("pyVersion"),MAX_VISIBLE=24000;
+  const batchParser=globalThis.OmniForgeBatch;
+  const stopCli=$("stopCli");
+  let currentCliController=null, cancelCliRequested=false;
   let apiReady=false,requestRunning=false,worker=null,pythonBusy=false,pythonLoading=false;
   let workerGeneration=0,pyStart=0,pyTimer=null,workerLoadTimer=null,pythonOutputBytes=0;
   const cliHistory=[];let historyPosition=-1;
@@ -56,17 +59,46 @@
   function setCommand(command){
     cliInput.value=command;cliInput.focus();
     cliInput.setSelectionRange(command.length,command.length);
+    updateBatchHint();
   }
+  const FULL_DEMO=[
+    "omniforge doctor",
+    'omniforge search "API errors"',
+    "ofprov snapshot",
+    "ofprov tamper-demo",
+  ];
+  function updateBatchHint(){
+    const status=$("batchHint");
+    try{
+      const list=batchParser.parse(cliInput.value);
+      status.textContent=list.length+" command"+(list.length===1?"":"s")+" ready · "+(
+        list.length>1?"Each runs in a fresh temporary project · ":"")+"Ctrl / ⌘ + Enter to execute";
+      status.classList.remove("invalid");
+    }catch(error){
+      status.textContent=String(error.message);
+      status.classList.add("invalid");
+    }
+  }
+  $("loadFullDemo").addEventListener("click",()=>{
+    setCommand(FULL_DEMO.join("\n"));
+    $("batchHint").textContent="4-command demo loaded · press Run commands once to execute all four";
+  });
+  cliInput.addEventListener("input",updateBatchHint);
   document.querySelectorAll("[data-command]").forEach(el=>
     el.addEventListener("click",()=>setCommand(el.dataset.command||"omniforge doctor")));
-  cliInput.addEventListener("keydown",ev=>{
-    if(ev.key==="Enter"){ev.preventDefault();runCli()}
-    else if(ev.key==="ArrowUp"&&cliHistory.length){
-      ev.preventDefault();historyPosition=Math.min(cliHistory.length-1,historyPosition+1);
+  cliInput.addEventListener("keydown",event=>{
+    // Enter inserts a NEW LINE like a terminal script editor. Keyboard shortcuts
+    // for running are handled once by the existing global Ctrl/Cmd+Enter hook.
+    if(event.altKey&&event.key==="ArrowUp"&&cliHistory.length){
+      event.preventDefault();
+      historyPosition=Math.min(cliHistory.length-1,historyPosition+1);
       cliInput.value=cliHistory[cliHistory.length-1-historyPosition];
-    }else if(ev.key==="ArrowDown"&&cliHistory.length){
-      ev.preventDefault();historyPosition=Math.max(-1,historyPosition-1);
+      updateBatchHint();
+    }else if(event.altKey&&event.key==="ArrowDown"&&cliHistory.length){
+      event.preventDefault();
+      historyPosition=Math.max(-1,historyPosition-1);
       cliInput.value=historyPosition<0?"":cliHistory[cliHistory.length-1-historyPosition];
+      updateBatchHint();
     }
   });
   function renderTrace(steps){
@@ -104,52 +136,150 @@
   }
   async function runCli(){
     if(requestRunning)return;
-    const command=cliInput.value.trim();
-    if(!command||command.length>240){cliOutput.textContent="Enter one command (max 240 characters).";return}
-    if(!apiReady){await checkServer();if(!apiReady)return}
-    requestRunning=true;cliRun.disabled=true;cliRun.textContent="Running…";
-    cliHistory.push(command);if(cliHistory.length>25)cliHistory.shift();historyPosition=-1;
-    setLabel("cliExecutionLabel","EXECUTING · SERVER PYTHON");setLabel("cliDuration","…");
-    cliOutput.textContent="$ "+command+"\n\nRunning actual Python…";renderTrace([]);
-    const ctl=new AbortController(),timer=setTimeout(()=>ctl.abort(),22000);
-    const started=performance.now();
+    let commands;
     try{
-      const response=await fetch("/api/terminal",{
-        method:"POST",headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({command}),cache:"no-store",signal:ctl.signal,
-      });
-      const data=await response.json();
-      if(!response.ok){
-        cliOutput.textContent="$ "+command+"\n\n[REJECTED / "+response.status+"]\n"+
-          pretty(data.error||"Unknown error")+(data.usage?"\n\n"+data.usage:"");
-        setLabel("cliExecutionLabel","REJECTED · ALLOWLIST",true);
-        setLabel("cliDuration",Math.round(performance.now()-started)+" ms");return;
+      if(!batchParser)throw Error("Command parser failed to load. Refresh the page.");
+      commands=batchParser.parse(cliInput.value);
+    }catch(error){
+      cliOutput.textContent="[INPUT ERROR]\n"+error.message+
+        "\n\nPaste one OmniForge command per line or press Load 4-step demo.";
+      setLabel("cliExecutionLabel","INPUT FORMAT ERROR",true);
+      setLabel("cliDuration","—");updateBatchHint();return;
+    }
+    if(!apiReady){await checkServer();if(!apiReady)return}
+    requestRunning=true;cancelCliRequested=false;
+    cliRun.disabled=true;cliRun.textContent="Executing…";
+    stopCli.hidden=false;
+    cliHistory.push(cliInput.value);
+    if(cliHistory.length>25)cliHistory.shift();historyPosition=-1;
+    const total=commands.length;
+    const startTime=performance.now();
+    const outputLines=[
+      "# OMNIFORGE / LIVE PYTHON",
+      "# "+total+" command"+(total===1?"":"s")+" queued",
+      "# Each command has a NEW disposable project; state is not shared.",
+      "",
+    ];
+    let executed=0,verified=0,tamperDetections=0,stoppedByError=false;
+    const traceRows=[];
+    const renderOutput=()=>{
+      cliOutput.textContent=pretty(outputLines.join("\n"));
+      cliOutput.scrollTop=cliOutput.scrollHeight;
+      renderTrace(traceRows);
+    };
+    setLabel("cliExecutionLabel","STARTING "+total+" COMMAND"+(total===1?"":"S"));
+    setLabel("cliDuration","0 / "+total);
+    renderTrace([]);
+    renderOutput();
+    for(let index=0;index<total;index++){
+      if(cancelCliRequested)break;
+      const command=commands[index];
+      outputLines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+      outputLines.push("["+String(index+1)+"/"+total+"] $ "+command);
+      outputLines.push("");
+      setLabel("cliExecutionLabel","RUNNING "+(index+1)+"/"+total+" · REAL PYTHON");
+      setLabel("cliDuration",Math.round(performance.now()-startTime)+" ms");
+      outputLines.push("Running real Python subprocess…");
+      renderOutput();
+      outputLines.pop();
+      const controller=new AbortController();
+      currentCliController=controller;
+      const timeout=setTimeout(()=>controller.abort(),22000);
+      try{
+        const response=await fetch("/api/terminal",{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({command}),
+          cache:"no-store",
+          signal:controller.signal,
+        });
+        const data=await response.json();
+        if(!response.ok){
+          outputLines.push("[REJECTED / HTTP "+response.status+"]");
+          outputLines.push(data.error||"The CLI server rejected this command.");
+          outputLines.push("");
+          if(data.usage)outputLines.push(data.usage);
+          setLabel("cliExecutionLabel","REJECTED · ALLOWLIST",true);
+          stoppedByError=true;
+          renderOutput();
+          break;
+        }
+        executed++;
+        const expectedTamper=command==="ofprov tamper-demo" &&
+          data.exit_code===1 && data.steps?.some(step=>step.status==="fixture-change");
+        if(data.exit_code===0 || expectedTamper)verified++;
+        if(expectedTamper)tamperDetections++;
+        outputLines.push(expectedTamper?
+          "[✓ TAMPERING DETECTED · EXPECTED EXIT 1]":
+          data.exit_code===0?"[✓ SUCCESS · EXIT 0]":"[ERROR · EXIT "+data.exit_code+"]");
+        outputLines.push(data.stdout||"(No stdout)");
+        if(data.stderr)outputLines.push("[stderr]\n"+data.stderr);
+        if(expectedTamper){
+          outputLines.push("# Modified bytes were detected by real provenance verification.");
+          outputLines.push("# Exit code 1 is expected when verification detects changed files.");
+        }
+        if(Array.isArray(data.steps)&&data.steps.length){
+          outputLines.push("# See underlying Python subprocess steps below.");
+          for(const step of data.steps){
+            traceRows.push({ ...step,command:"["+String(index+1)+"/"+total+"] "+step.command });
+          }
+        }
+        outputLines.push("");
+        if(data.exit_code!==0&&!expectedTamper){
+          stoppedByError=true;
+          setLabel("cliExecutionLabel","STOPPED · COMMAND ERROR",true);
+          renderOutput();
+          break;
+        }
+        renderOutput();
+      }catch(error){
+        if(cancelCliRequested){
+          outputLines.push("[QUEUE STOPPED BY USER]");
+          setLabel("cliExecutionLabel","QUEUE STOPPED");
+        }else{
+          outputLines.push("[NETWORK OR PYTHON ERROR] "+error.message);
+          outputLines.push("# No fake output was substituted.");
+          setLabel("cliExecutionLabel","NETWORK OR RUNTIME ERROR",true);
+          stoppedByError=true;
+        }
+        renderOutput();
+        break;
+      }finally{
+        clearTimeout(timeout);
+        currentCliController=null;
       }
-      const lines=["$ "+command,"",data.stdout||"(No stdout)"];
-      if(data.stderr)lines.push("","[stderr]",data.stderr);
-      if(data.steps?.length)lines.push("","# See prerequisite Python processes below.");
-      const expectedTamper=command==="ofprov tamper-demo"&&data.exit_code===1&&
-        data.steps?.some(step=>step.status==="fixture-change");
-      if(expectedTamper){
-        lines.push("","# ✓ SOURCE TAMPERING DETECTED");
-        lines.push("# Exit code 1 is expected when verification detects changed files.");
-      }else if(data.exit_code!==0)lines.push("","# Exit code: "+data.exit_code);
-      cliOutput.textContent=pretty(lines.join("\n"));
-      setLabel("cliExecutionLabel",expectedTamper?"TAMPER DETECTED · EXPECTED":
-        data.exit_code===0?"EXECUTED · REAL PYTHON":"RETURNED EXIT "+data.exit_code,
-        data.exit_code!==0&&!expectedTamper);
-      setLabel("cliDuration",(data.duration_ms??"?")+" ms");
-      renderTrace(data.steps);
-    }catch(err){
-      cliOutput.textContent="Real API execution failed: "+err.message+
-        "\nNo prerecorded output was substituted.";
-      setLabel("cliExecutionLabel","NETWORK OR RUNTIME ERROR",true);
-      setLabel("cliDuration",Math.round(performance.now()-started)+" ms");
-    }finally{clearTimeout(timer);requestRunning=false;cliRun.disabled=false;cliRun.textContent="Run command ↗"}
+    }
+    const elapsed=Math.round(performance.now()-startTime);
+    if(cancelCliRequested){
+      setLabel("cliExecutionLabel","QUEUE STOPPED · "+executed+"/"+total);
+    }else if(!stoppedByError){
+      if(total===1 && tamperDetections===1)setLabel("cliExecutionLabel","TAMPER DETECTED · EXPECTED");
+      else if(total===1)setLabel("cliExecutionLabel","EXECUTED · REAL PYTHON");
+      else setLabel("cliExecutionLabel",verified+"/"+total+" EXECUTED"+
+        (tamperDetections?" · "+tamperDetections+" TAMPER DETECTED":""));
+    }
+    outputLines.push("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+    outputLines.push("# "+executed+"/"+total+" commands returned · "+
+      verified+" expected result"+(verified===1?"":"s")+
+      " · "+elapsed+" ms total");
+    outputLines.push("# Each command had its own temporary project. No data persists.");
+    renderOutput();
+    setLabel("cliDuration",elapsed+" ms");
+    stopCli.hidden=true;requestRunning=false;cancelCliRequested=false;
+    cliRun.disabled=false;cliRun.textContent="▶ Run commands";
   }
+  stopCli.addEventListener("click",()=>{
+    if(!requestRunning)return;
+    cancelCliRequested=true;
+    if(currentCliController)currentCliController.abort();
+    stopCli.disabled=true;stopCli.textContent="Stopping…";
+    // Abort stops the browser queue. Vercel may finish the current short
+    // bounded subprocess server-side; no API cancellation is claimed.
+    setTimeout(()=>{stopCli.disabled=false;stopCli.textContent="Stop queue";},500);
+  });
   cliRun.addEventListener("click",runCli);
   $("clearCli").addEventListener("click",()=>{
-    cliOutput.textContent="# Output cleared.\n# Run a supported command.";
+    cliOutput.textContent="# Output cleared.\n# Type commands on separate lines, or load the 4-step demo.";
     renderTrace([]);setLabel("cliExecutionLabel","READY TO EXECUTE");setLabel("cliDuration","—");
   });
 
@@ -258,5 +388,6 @@
       document.querySelector(".site-head nav").classList.remove("open");
       $("menuToggle").setAttribute("aria-expanded","false");
     }));
+  updateBatchHint();
   checkServer();
 })();
