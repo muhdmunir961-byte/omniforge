@@ -30,3 +30,15 @@ Run `python -m http.server 8765 --directory web-preview` in the repo root and op
 - `app.js` – client-side controls, sample data and browser hashing.
 
 This is intentionally not an authentication gateway or remote command runner. Do not send secrets to a public demo.
+
+
+## Real outcomes walkthrough (new default homepage)
+
+The public Vercel page now opens **nine guided real-use-case stories** with input, controlled process, recorded CLI output or explicitly named E2E assertions, and before/after results.
+
+- `index.html` is the new walkthrough homepage. It loads `showcase.css`, `showcase.js` and `evidence.json` (synthetic project CLI trace recorded in GitHub Actions v1.3.0; paths anonymized).
+- `explorer.html` preserves the original nine-section technical explorer using `style.css`, `data.js` and `app.js`.
+- The built-in SHA-256 text editor performs a real client-side digest. This is **not** a remotely running Python hash-chain or live wallet.
+- Evidence: [packaged CLI preview run](https://github.com/muhdmunir961-byte/omniforge/actions/runs/40131838901), [real Docker/Playwright/model E2E](../tests/test_live_integrations.py), [disposable Anvil chain E2E](../tests/test_blockchain_evm.py).
+
+**Scope:** this is a static demo and replay of verified test evidence. It intentionally cannot read your project, run Docker, execute arbitrary CLI commands or sign transactions. Actual OmniForge execution remains local and permission-gated. Do not label archived v1.3.0 trace as a fresh v1.3.1 CLI run.

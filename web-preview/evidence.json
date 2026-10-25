@@ -1,0 +1,203 @@
+{
+  "source": "GitHub Actions packaged CLI preview",
+  "workflow": "https://github.com/muhdmunir961-byte/omniforge/actions/runs/40131838901",
+  "recorded_at": "2026-10-24T20:54:15.015264+00:00",
+  "tested_version": "1.3.0",
+  "scenarios": 32,
+  "assertions": 37,
+  "privacy": "All sample files created temporarily by CI; paths anonymized for public display.",
+  "captures": [
+    {
+      "label": "CLI version",
+      "command": "omniforge --version",
+      "stdout": "OmniForge 1.3.0\n",
+      "stderr": ""
+    },
+    {
+      "label": "Diagnostics",
+      "command": "omniforge doctor",
+      "stdout": "{\n  \"name\": \"OmniForge\",\n  \"version\": \"1.3.0\",\n  \"python\": \"3.13.16\",\n  \"skills\": [\n    \"api-probe\",\n    \"browser-snapshot\",\n    \"dependency-inventory\",\n    \"esptool-chip\",\n    \"firmware-preflight\",\n    \"git-diff-review\",\n    \"kicad-drc\",\n    \"log-triage\",\n    \"openapi-inventory\",\n    \"python-symbols\",\n    \"repo-recon\",\n    \"secret-hygiene\",\n    \"sqlite-inspector\",\n    \"trivy-scan\"\n  ],\n  \"candidates\": 112,\n  \"agents\": [\n    \"claude\",\n    \"codex\",\n    \"copilot\",\n    \"cursor\",\n    \"gemini\",\n    \"opencode\",\n    \"universal\"\n  ],\n  \"executable\": \"/home/runner/work/_temp/omniforge-preview-venv/bin/omniforge\",\n  \"mode\": \"core works locally without keys; optional code command uses BYOK endpoint\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Bundled skills",
+      "command": "omniforge list",
+      "stdout": "[\n  {\n    \"name\": \"api-probe\",\n    \"description\": \"Probe a URL explicitly authorized by the user, reporting response status, headers and timing without leaking credentials.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/api-probe\"\n  },\n  {\n    \"name\": \"browser-snapshot\",\n    \"description\": \"Capture a browser snapshot or interact with approved pages using optional local Playwright.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/browser-snapshot\"\n  },\n  {\n    \"name\": \"dependency-inventory\",\n    \"description\": \"Inventory declared Python and Node.js dependencies in a local project without installing or executing packages.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/dependency-inventory\"\n  },\n  {\n    \"name\": \"esptool-chip\",\n    \"description\": \"Read chip identification from an explicitly selected ESP32 serial port using installed esptool.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/esptool-chip\"\n  },\n  {\n    \"name\": \"firmware-preflight\",\n    \"description\": \"Check local ESP32 firmware tooling availability and device-port enumeration without flashing or changing hardware.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/firmware-preflight\"\n  },\n  {\n    \"name\": \"git-diff-review\",\n    \"description\": \"Review local Git diff statistics and changed files without modifying the repository or showing secret contents.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/git-diff-review\"\n  },\n  {\n    \"name\": \"kicad-drc\",\n    \"description\": \"Check PCB design-rule violations using the installed KiCad kicad-cli command.\",\n    \"path\": \"/home/runner/work/_temp/omniforge-preview-venv/lib/python3.13/site-",
+      "stderr": ""
+    },
+    {
+      "label": "Hybrid search",
+      "command": "omniforge search API errors",
+      "stdout": "[\n  {\n    \"name\": \"log-triage\",\n    \"description\": \"Triage application logs offline, redact basic secrets and identify recurring error signatures and severity patterns.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/log-triage\",\n    \"score\": 8.32972,\n    \"method\": \"local-hybrid\"\n  },\n  {\n    \"name\": \"api-probe\",\n    \"description\": \"Probe a URL explicitly authorized by the user, reporting response status, headers and timing without leaking credentials.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/api-probe\",\n    \"score\": 8.32738,\n    \"method\": \"local-hybrid\"\n  },\n  {\n    \"name\": \"openapi-inventory\",\n    \"description\": \"Summarize endpoints, request methods, and response codes in an existing local OpenAPI JSON file without network calls.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/openapi-inventory\",\n    \"score\": 4.17037,\n    \"method\": \"local-hybrid\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "label": "Offline related search",
+      "command": "omniforge related database",
+      "stdout": "[\n  {\n    \"name\": \"sqlite-inspector\",\n    \"description\": \"Inspect SQLite schemas and table row-count estimates using read-only queries without altering local databases.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/sqlite-inspector\",\n    \"score\": 3.5919\n  },\n  {\n    \"name\": \"trivy-scan\",\n    \"description\": \"Scan a local project for vulnerabilities or secrets using installed Trivy; requires opt-in for database downloads.\",\n    \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/trivy-scan\",\n    \"score\": 3.2646\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "label": "Workflow plan",
+      "command": "omniforge plan debug ESP32 firmware",
+      "stdout": "{\n  \"task\": \"debug ESP32 firmware\",\n  \"mode\": \"dry-run\",\n  \"requires_human_approval\": true,\n  \"steps\": [\n    {\n      \"step\": 1,\n      \"skill\": \"log-triage\",\n      \"action\": \"review SKILL.md and approve any script execution\",\n      \"reason\": \"Triage application logs offline, redact basic secrets and identify recurring error signatures and severity patterns.\"\n    },\n    {\n      \"step\": 2,\n      \"skill\": \"esptool-chip\",\n      \"action\": \"review SKILL.md and approve any script execution\",\n      \"reason\": \"Read chip identification from an explicitly selected ESP32 serial port using installed esptool.\"\n    },\n    {\n      \"step\": 3,\n      \"skill\": \"firmware-preflight\",\n      \"action\": \"review SKILL.md and approve any script execution\",\n      \"reason\": \"Check local ESP32 firmware tooling availability and device-port enumeration without flashing or changing hardware.\"\n    }\n  ],\n  \"note\": \"A deterministic skill plan, not autonomous multi-agent execution.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Token estimate",
+      "command": "omniforge budget --selected log-triage",
+      "stdout": "{\n  \"skill_count\": 14,\n  \"metadata_estimated_tokens\": 443,\n  \"load_everything_estimated_tokens\": 3034,\n  \"on_demand_estimated_tokens\": 709,\n  \"selected\": \"log-triage\",\n  \"notice\": \"Approximate character heuristic, not measured model usage. VS Code/client may add context independently.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Lazy load SKILL.md",
+      "command": "omniforge load log-triage",
+      "stdout": "{\n  \"name\": \"log-triage\",\n  \"content\": \"---\\nname: log-triage\\ndescription: \\\"Triage application logs offline, redact basic secrets and identify recurring error signatures and severity patterns.\\\"\\n---\\n\\n# log-triage\\n\\nUse this skill when the user needs: triage application logs offline, redact basic secrets and identify recurring error signatures and severity patterns.\\n\\n## Workflow\\n\\n1. Confirm the project path, file or target belongs to the user or is authorized.\\n2. Review `scripts/log_triage.py` before first use; it is bundled Python standard-library code.\\n3. Run `python scripts/log_triage.py --help` from this skill directory to see supported arguments.\\n4. Run with the minimum required permissions and pass an explicit target path or URL.\\n5. Interpret the JSON output, check limitations, and report only observed results.\\n6. Ask before any changes, package installs, or privileged operations (this script does not require them).\\n\\n## Limitations\\n\\nThis is a targeted operational helper, not a general-purpose agent or a security guarantee.\\nFor network probes, use only endpoints that the user authorizes.\\n\",\n  \"characters\": 1066,\n  \"estimated_tokens\": 267\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Project detection",
+      "command": "omniforge inspect <SANDBOX>/project",
+      "stdout": "{\n  \"project\": \"<SANDBOX>/project\",\n  \"detected\": [\n    \"python\"\n  ],\n  \"top_level\": [\n    \".env\",\n    \"app.py\",\n    \"pyproject.toml\"\n  ],\n  \"suggestions\": [\n    {\n      \"name\": \"python-symbols\",\n      \"description\": \"Inspect Python source file classes, functions, imports, and asynchronous definitions using safe AST parsing.\",\n      \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/python-symbols\",\n      \"score\": 2.138\n    },\n    {\n      \"name\": \"dependency-inventory\",\n      \"description\": \"Inventory declared Python and Node.js dependencies in a local project without installing or executing packages.\",\n      \"path\": \"<INSTALLED-PACKAGE>/omniforge/data/skills/dependency-inventory\",\n      \"score\": 0.832\n    }\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Install skill",
+      "command": "omniforge install log-triage --agent codex --project <SANDBOX>/project",
+      "stdout": "{\n  \"installed\": \"<SANDBOX>/project/.agents/skills/log-triage\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "VS Code setup",
+      "command": "omniforge setup-vscode --project <SANDBOX>/project",
+      "stdout": "{\n  \"written\": [\n    \"<SANDBOX>/project/.vscode/mcp.json\",\n    \"<SANDBOX>/project/.github/instructions/omniforge.instructions.md\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "SHA-256 manifest",
+      "command": "omniforge manifest --project <SANDBOX>/project --out <SANDBOX>/manifest.json",
+      "stdout": "{\n  \"created\": \"<SANDBOX>/manifest.json\",\n  \"count\": 7\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Verify manifest",
+      "command": "omniforge manifest --project <SANDBOX>/project --out <SANDBOX>/manifest.json --verify",
+      "stdout": "{\n  \"ok\": true,\n  \"checked\": 7,\n  \"changed\": [],\n  \"missing\": [],\n  \"signed\": false,\n  \"note\": \"Hash integrity check, not cryptographic identity or provenance certification.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "DAG orchestration preview",
+      "command": "omniforge orchestrate <SANDBOX>/workflow.json --project <SANDBOX>/project",
+      "stdout": "{\n  \"workflow\": \"<SANDBOX>/workflow.json\",\n  \"approved\": false,\n  \"tasks\": [\n    {\n      \"id\": \"inspect\",\n      \"skill\": \"python-symbols\",\n      \"mode\": \"docker-isolated\",\n      \"network\": false,\n      \"project\": \"<SANDBOX>/project\",\n      \"timeout\": 60,\n      \"command\": [\n        \"/usr/bin/docker\",\n        \"run\",\n        \"--rm\",\n        \"--pull=never\",\n        \"--init\",\n        \"--read-only\",\n        \"--cap-drop=ALL\",\n        \"--security-opt=no-new-privileges\",\n        \"--user\",\n        \"1001:1001\",\n        \"--pids-limit=64\",\n        \"--memory=256m\",\n        \"--cpus=1\",\n        \"--tmpfs\",\n        \"/tmp:rw,noexec,nosuid,size=32m\",\n        \"--network\",\n        \"none\",\n        \"--mount\",\n        \"type=bind,src=<SANDBOX>/project,dst=/workspace,readonly\",\n        \"--mount\",\n        \"type=bind,src=<INSTALLED-PACKAGE>/omniforge/data/skills/python-symbols/scripts/python_symbols.py,dst=/opt/skill.py,readonly\",\n        \"--workdir\",\n        \"/workspace\",\n        \"python:3.13-alpine\",\n        \"python\",\n        \"/opt/skill.py\",\n        \"app.py\"\n      ],\n      \"approved\": false,\n      \"status\": \"preview-only\",\n      \"note\": \"No command executed; pass --approve to run\"\n    },\n    {\n      \"id\": \"review\",\n      \"skill\": \"python-symbols\",\n      \"mode\": \"docker-isolated\",\n      \"network\": false,\n      \"project\": \"<SANDBOX>/project\",\n      \"timeout\": 60,\n      \"command\": [\n        \"/usr/bin/docker\",\n        \"run\",\n        \"--rm\",\n        \"--pull=never\",\n        \"--init\",\n        \"--read-only\",\n        \"--cap-drop=ALL\",\n        \"--security-opt=no-new-privileges\",\n        \"--user\",\n        \"1001:1001\",\n        \"--pids-limit=64\",\n        \"--memory=256m\",\n        \"--cpus=1\",\n        \"--tmpfs\",\n        \"/tmp:rw,noexec,nosuid,size=32m\",\n        \"--network\",\n        \"none\",\n        \"--mount\",\n        \"type=bind,src=<SANDBOX>/pro",
+      "stderr": ""
+    },
+    {
+      "label": "Initialize provenance v2",
+      "command": "ofprov init --project <SANDBOX>/project",
+      "stdout": "{\n  \"legacy_ref\": null,\n  \"project_id\": \"50ab0891-b00d-47c5-b5e9-de40299f4fb5\",\n  \"status\": \"initialized\",\n  \"version\": 2\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Create snapshot",
+      "command": "ofprov snapshot --project <SANDBOX>/project",
+      "stdout": "{\n  \"entry_hash\": \"ffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd\",\n  \"files\": 6,\n  \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n  \"seq\": 0,\n  \"snapshot_hash\": \"9dc519c35233b996b4a3cd4fae1811b49381ff4e399d02c8b24f29c1a54619c5\",\n  \"status\": \"recorded\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Verify snapshot and trusted checkpoint",
+      "command": "ofprov verify --project <SANDBOX>/project --check-files --expected-head ffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd --expected-seq 0",
+      "stdout": "{\n  \"anchor_evidence_events\": 0,\n  \"anchor_evidence_note\": \"Historical untrusted RPC claims only; re-verify on chain.\",\n  \"entries\": 1,\n  \"files\": {\n    \"added\": [],\n    \"missing\": [],\n    \"modified\": []\n  },\n  \"head\": \"ffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd\",\n  \"ok\": true,\n  \"policy_changed\": false,\n  \"policy_history\": [\n    {\n      \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n      \"seq\": 0\n    }\n  ],\n  \"project_id\": \"50ab0891-b00d-47c5-b5e9-de40299f4fb5\",\n  \"seq\": 0,\n  \"trusted_checkpoint\": true,\n  \"warning\": \"Full local history can be rewritten without an external trusted head.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Audit provenance policy",
+      "command": "ofprov audit --project <SANDBOX>/project",
+      "stdout": "{\n  \"anchor_evidence_events\": 0,\n  \"anchor_evidence_note\": \"Historical untrusted RPC claims only; re-verify on chain.\",\n  \"audit_scope\": \"hash-chain, policy, current files, trusted head\",\n  \"entries\": 1,\n  \"files\": {\n    \"added\": [],\n    \"missing\": [],\n    \"modified\": []\n  },\n  \"head\": \"ffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd\",\n  \"ok\": true,\n  \"policy_changed\": false,\n  \"policy_history\": [\n    {\n      \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n      \"seq\": 0\n    }\n  ],\n  \"project_id\": \"50ab0891-b00d-47c5-b5e9-de40299f4fb5\",\n  \"seq\": 0,\n  \"snapshot_scope\": {\n    \"excluded_directories\": [\n      \".git\",\n      \".of-provenance\",\n      \".omniforge\",\n      \".venv\",\n      \"node_modules\",\n      \"__pycache__\",\n      \".pytest_cache\"\n    ],\n    \"excluded_files\": [\n      \".env\",\n      \".env.*\"\n    ],\n    \"files_included\": 6,\n    \"policy_version\": 1\n  },\n  \"trusted_checkpoint\": false,\n  \"warning\": \"Full local history can be rewritten without an external trusted head.\",\n  \"warnings\": [\n    \"Ledger setempat boleh diubah oleh sesiapa yang ada akses fail.\",\n    \"Anchoring ke EVM tidak membuktikan pemilikan atau keselamatan kod.\",\n    \"Jangan masukkan rahsia dalam nota anchor.\",\n    \"Data on-chain kekal kelihatan selama-lamanya.\",\n    \"Integrity hashes are not malware checks or digital signatures.\"\n  ]\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Real MCP stdio session",
+      "command": "omniforge mcp",
+      "stdout": "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"protocolVersion\":\"2025-06-18\",\"capabilities\":{\"tools\":{\"listChanged\":false}},\"serverInfo\":{\"name\":\"omniforge\",\"version\":\"1.3.0\"}}}\n{\"jsonrpc\":\"2.0\",\"id\":2,\"result\":{\"tools\":[{\"name\":\"omniforge_search\",\"description\":\"Search local agent skills with hybrid local text ranking. Returns metadata only.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\",\"description\":\"Short task description\"},\"limit\":{\"type\":\"integer\",\"minimum\":1,\"maximum\":20,\"default\":5}},\"required\":[\"query\"]}},{\"name\":\"omniforge_load\",\"description\":\"Load the full SKILL.md for one explicitly selected skill, on demand.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"}},\"required\":[\"name\"]}},{\"name\":\"omniforge_run\",\"description\":\"Preview a bundled skill execution. Execution is disabled via MCP; use the local CLI for manually approved actions.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"name\":{\"type\":\"string\"},\"args\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}},\"project\":{\"type\":\"string\"}},\"required\":[\"name\",\"project\"]}},{\"name\":\"omniforge_browser\",\"description\":\"Preview a browser navigation. Navigation is disabled via MCP; use the local CLI for manually approved actions.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"url\":{\"type\":\"string\"},\"project\":{\"type\":\"string\"}},\"required\":[\"url\",\"project\"]}},{\"name\":\"omniforge_chain_verify\",\"description\":\"Read-only verification of a local OmniForge blockchain provenance ledger and optional current project snapshot.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},\"check_current\":{\"type\":\"boolean\",\"default\":false}},\"required\":[\"project\"]}},{\"name\":\"omniforge_chain_proof\",\"description\":\"Read-only access to one previously recorded local provenance block hash. No wallet or network access.\",\"inputSchema\":{\"type\":\"object\",\"properties\":{\"project\":{\"type\":\"string\"},\"height\":{\"type\":\"integer\",\"minimum\":0}},\"required\":[\"project\"]}},{\"name\":\"omniforge_provenance_verify\",\"descrip",
+      "stderr": ""
+    },
+    {
+      "label": "Unsigned EVM anchor preview",
+      "command": "ofprov anchor --project <SANDBOX>/project --seq 0 --wallet 0x1111111111111111111111111111111111111111 --chain-id 1337 --prepare --ack-public-data",
+      "stdout": "{\n  \"entry_hash\": \"ffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd\",\n  \"seq\": 0,\n  \"status\": \"wallet-approval-required\",\n  \"unsigned_transaction\": {\n    \"chainId\": \"0x539\",\n    \"data\": \"0xffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd\",\n    \"from\": \"0x1111111111111111111111111111111111111111\",\n    \"to\": \"0x1111111111111111111111111111111111111111\",\n    \"value\": \"0x0\"\n  },\n  \"warning\": \"NO transaction was sent or signed. Your wallet will require explicit approval and may charge gas. Public on-chain data is permanent.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Anchor consent enforced",
+      "command": "ofprov anchor --project <SANDBOX>/project --wallet 0x1111111111111111111111111111111111111111 --chain-id 1337 --prepare",
+      "stdout": "",
+      "stderr": "ofprov: Explicit --ack-public-data required to prepare public calldata\n"
+    },
+    {
+      "label": "Detect modified file",
+      "command": "ofprov verify --project <SANDBOX>/project --check-files",
+      "stdout": "{\n  \"anchor_evidence_events\": 0,\n  \"anchor_evidence_note\": \"Historical untrusted RPC claims only; re-verify on chain.\",\n  \"entries\": 1,\n  \"files\": {\n    \"added\": [],\n    \"missing\": [],\n    \"modified\": [\n      \"app.py\"\n    ]\n  },\n  \"head\": \"ffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd\",\n  \"ok\": false,\n  \"policy_changed\": false,\n  \"policy_history\": [\n    {\n      \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n      \"seq\": 0\n    }\n  ],\n  \"project_id\": \"50ab0891-b00d-47c5-b5e9-de40299f4fb5\",\n  \"reason\": \"files-or-policy-changed\",\n  \"seq\": 0,\n  \"trusted_checkpoint\": false,\n  \"warning\": \"Full local history can be rewritten without an external trusted head.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Append new snapshot",
+      "command": "ofprov snapshot --project <SANDBOX>/project --expected-head ffe01e0bcde202eeb28dfdf0480326aa4dec9fb783aac68b4af9f77df7d18bdd",
+      "stdout": "{\n  \"entry_hash\": \"deae6df74f1596566f4843a92cbc059b2e088a82df71689b98a055ec3cce75c7\",\n  \"files\": 6,\n  \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n  \"seq\": 1,\n  \"snapshot_hash\": \"cc711a53b82fb8944cefb71fffb130e7464fe86160f2596e75e2ae97326b0b07\",\n  \"status\": \"recorded\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Verify new snapshot",
+      "command": "ofprov verify --project <SANDBOX>/project --check-files",
+      "stdout": "{\n  \"anchor_evidence_events\": 0,\n  \"anchor_evidence_note\": \"Historical untrusted RPC claims only; re-verify on chain.\",\n  \"entries\": 2,\n  \"files\": {\n    \"added\": [],\n    \"missing\": [],\n    \"modified\": []\n  },\n  \"head\": \"deae6df74f1596566f4843a92cbc059b2e088a82df71689b98a055ec3cce75c7\",\n  \"ok\": true,\n  \"policy_changed\": false,\n  \"policy_history\": [\n    {\n      \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n      \"seq\": 0\n    },\n    {\n      \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n      \"seq\": 1\n    }\n  ],\n  \"project_id\": \"50ab0891-b00d-47c5-b5e9-de40299f4fb5\",\n  \"seq\": 1,\n  \"trusted_checkpoint\": false,\n  \"warning\": \"Full local history can be rewritten without an external trusted head.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "External backup + checkpoint",
+      "command": "ofprov backup --project <SANDBOX>/project --out <SANDBOX>/exported-backup",
+      "stdout": "{\n  \"directory\": \"<SANDBOX>/exported-backup\",\n  \"files\": [\n    {\n      \"file\": \"config.json\",\n      \"sha256\": \"c1bde69316c7b3d7cc87cf1ad7d9515e48778fe0dfc31decab7c1db56dc58855\"\n    },\n    {\n      \"file\": \"chain.jsonl\",\n      \"sha256\": \"5cd9a597fb445f938a3dee47b75e403c2fe36d9cf431fb06b913afa5adfbed65\"\n    },\n    {\n      \"file\": \"anchors.jsonl\",\n      \"sha256\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\"\n    }\n  ],\n  \"head\": \"deae6df74f1596566f4843a92cbc059b2e088a82df71689b98a055ec3cce75c7\",\n  \"project_id\": \"50ab0891-b00d-47c5-b5e9-de40299f4fb5\",\n  \"seq\": 1,\n  \"status\": \"exported\",\n  \"timestamp\": \"2026-10-24T20:54:14.340326Z\",\n  \"warning\": \"Store this OUTSIDE the project on independently trusted storage.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Legacy v1 record",
+      "command": "omniforge blockchain record --project <SANDBOX>/legacy",
+      "stdout": "{\n  \"version\": 1,\n  \"height\": 0,\n  \"timestamp\": \"2026-10-24T20:54:14.445726+00:00\",\n  \"previous\": \"0000000000000000000000000000000000000000000000000000000000000000\",\n  \"snapshot\": \"2fb5c5baf92e02ba833aa29cede6bf77adc97c861783a62fe92310fab5e6f1f6\",\n  \"files\": 1,\n  \"note\": \"\",\n  \"hash\": \"2f5b5242db5a0b5ecb06f3155f7a96eff74433f946e8eaa7844892257a727660\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "v1 migration preview",
+      "command": "ofprov migrate --project <SANDBOX>/legacy",
+      "stdout": "{\n  \"legacy_ref\": {\n    \"anchors_sha256\": null,\n    \"entries\": 1,\n    \"head\": \"2f5b5242db5a0b5ecb06f3155f7a96eff74433f946e8eaa7844892257a727660\",\n    \"ledger_sha256\": \"337b962c55afbf1ceadc472b715364ef1bdbaef42edb022167dc3e1799fc7f1d\"\n  },\n  \"note\": \"Copy-only; old files remain intact\",\n  \"requires_approval\": true,\n  \"status\": \"preview-only\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "v1 copy-only migration",
+      "command": "ofprov migrate --project <SANDBOX>/legacy --approve",
+      "stdout": "{\n  \"legacy_ref\": {\n    \"anchors_sha256\": null,\n    \"entries\": 1,\n    \"head\": \"2f5b5242db5a0b5ecb06f3155f7a96eff74433f946e8eaa7844892257a727660\",\n    \"ledger_sha256\": \"337b962c55afbf1ceadc472b715364ef1bdbaef42edb022167dc3e1799fc7f1d\"\n  },\n  \"note\": \"Use snapshot to create a new v2 genesis linking the v1 head\",\n  \"project_id\": \"f7f9a8e5-9408-413b-8aaa-b79c2d8da9c8\",\n  \"status\": \"migrated\",\n  \"version\": 2\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Link legacy to v2 genesis",
+      "command": "ofprov snapshot --project <SANDBOX>/legacy",
+      "stdout": "{\n  \"entry_hash\": \"5a7c753446d0057e418cdf62297a64a3c2ed214add269e4a7f91298219488b57\",\n  \"files\": 1,\n  \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n  \"seq\": 0,\n  \"snapshot_hash\": \"8e45e6b24e2066d1af35ef3de769a25e1694e30ee4fc8c62ef9965bbbba12e21\",\n  \"status\": \"recorded\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Verify original v1 after migration",
+      "command": "omniforge blockchain verify --project <SANDBOX>/legacy --check-current",
+      "stdout": "{\n  \"ok\": true,\n  \"entries\": 1,\n  \"height\": 0,\n  \"head\": \"2f5b5242db5a0b5ecb06f3155f7a96eff74433f946e8eaa7844892257a727660\",\n  \"local_only\": true,\n  \"note\": \"A rewritable local hash-chain is NOT a decentralized or signed blockchain.\",\n  \"current_snapshot_match\": true\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Verify migrated v2",
+      "command": "ofprov verify --project <SANDBOX>/legacy --check-files",
+      "stdout": "{\n  \"anchor_evidence_events\": 0,\n  \"anchor_evidence_note\": \"Historical untrusted RPC claims only; re-verify on chain.\",\n  \"entries\": 1,\n  \"files\": {\n    \"added\": [],\n    \"missing\": [],\n    \"modified\": []\n  },\n  \"head\": \"5a7c753446d0057e418cdf62297a64a3c2ed214add269e4a7f91298219488b57\",\n  \"ok\": true,\n  \"policy_changed\": false,\n  \"policy_history\": [\n    {\n      \"policy_hash\": \"98fa410d569b68e26d90a05fd514bb50bdc08db285bdc93392ccaaea9eeea682\",\n      \"seq\": 0\n    }\n  ],\n  \"project_id\": \"f7f9a8e5-9408-413b-8aaa-b79c2d8da9c8\",\n  \"seq\": 0,\n  \"trusted_checkpoint\": false,\n  \"warning\": \"Full local history can be rewritten without an external trusted head.\"\n}\n",
+      "stderr": ""
+    },
+    {
+      "label": "Detect modified immutable ledger",
+      "command": "ofprov verify --project <SANDBOX>/project",
+      "stdout": "{\n  \"error\": \"Invalid ledger metadata at seq=0\",\n  \"ok\": false,\n  \"reason\": \"verification-error\"\n}\n",
+      "stderr": ""
+    }
+  ]
+}
