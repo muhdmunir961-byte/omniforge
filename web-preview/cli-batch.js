@@ -17,6 +17,7 @@
     /^(?:omniforge|oforge) (?:load|catalog) .+$/,
     /^(?:omniforge|oforge) budget(?: --selected [a-z][a-z0-9-]*)?$/,
     /^ofprov (?:init|snapshot|verify|audit|proof|tamper-demo)$/,
+    /^(?:omniforge|oforge) integrations (?:list|doctor)$/,
     /^python --version$/,
   ];
   function looksComplete(previous) {
