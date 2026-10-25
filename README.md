@@ -29,9 +29,9 @@ For development: `python -m pip install -e . -r requirements-dev.txt && python -
 
 ## Interactive Vercel system explorer
 
-**[Open the live OmniForge feature explorer](https://omniforge-explorer.vercel.app)** to inspect all 18 packaged skills, the 10 MCP tool contracts, sample CLI commands, an editable workflow DAG, the SHA-256 provenance demonstration, permission rules, source architecture and linked GitHub CI evidence.
+**[Open the live OmniForge feature explorer](https://omniforge-explorer.vercel.app)** or the **[real Python terminal](https://omniforge-explorer.vercel.app/terminal.html)** to inspect all 18 packaged skills, the 10 MCP tool contracts, sample CLI commands, an editable workflow DAG, the SHA-256 provenance demonstration, permission rules, source architecture and linked GitHub CI evidence.
 
-This website is an **educational browser demo**, not a hosted Python CLI, Docker execution service, real MCP server or wallet. The provenance lab hashes **demo text in your own browser**, while real OmniForge runs locally. See [the web preview source](web-preview/README.md).
+The website contains educational walkthroughs **and a real restricted Python CLI**. The public terminal runs only allowlisted commands inside disposable projects, not a general shell, Docker executor, Blender instance, or wallet. The Python Playground runs WebAssembly locally in the browser. Full project execution remains local and requires approval. See [the web preview source](web-preview/README.md).
 
 ## What it does
 
