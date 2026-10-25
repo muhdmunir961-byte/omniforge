@@ -128,6 +128,9 @@ def test_http_real_status_json_body_and_same_origin_enforcement():
             obj = json.load(response)
             assert obj["ok"] is True
             assert obj["samples"] and "real Python" in obj["engine"]
+            assert obj["self_test"] == "PASS"
+            assert obj["package_version"] == "1.3.1"
+            assert obj["package_source"] == "bundled-canonical-source"
 
         payload = json.dumps({"command": "python --version"}).encode()
         request = Request(base, data=payload, headers={"Content-Type": "application/json"}, method="POST")
@@ -153,3 +156,62 @@ def test_http_real_status_json_body_and_same_origin_enforcement():
         srv.shutdown()
         srv.server_close()
         thread.join(timeout=2)
+
+ 
+def test_bundled_runtime_sources_match_canonical_src():
+    """Do not silently ship stale / modified OmniForge core to Vercel."""
+    repo_root = Path(__file__).resolve().parents[2]
+    canonical = repo_root / "src" / "omniforge"
+    vendor = repo_root / "web-preview" / "omniforge"
+    expected = {path.relative_to(canonical): path.read_bytes()
+                for path in canonical.rglob("*") if path.is_file()}
+    observed = {path.relative_to(vendor): path.read_bytes()
+                for path in vendor.rglob("*") if path.is_file()}
+    assert len(expected) >= 49
+    assert observed == expected, "Bundled web-preview/omniforge drifted from core package"
+
+
+def test_clean_python_uses_bundled_cli_without_pip_install(tmp_path):
+    """Emulate Vercel subprocess: cwd=sample, stripped Python site packages."""
+    import os
+    import subprocess
+    import sys
+    import json
+
+    root = Path(__file__).resolve().parents[1]
+    env = {
+        "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+        "PYTHONPATH": str(root),
+        "PYTHONIOENCODING": "utf-8",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "HOME": str(tmp_path),
+        "TMPDIR": str(tmp_path),
+        "LANG": "C.UTF-8",
+    }
+
+    def run(*args):
+        return subprocess.run(
+            [sys.executable, "-S", "-m", *args], cwd=tmp_path, env=env,
+            capture_output=True, text=True, timeout=6, check=True
+        ).stdout
+
+    doctor = json.loads(run("omniforge.cli", "doctor"))
+    assert doctor["version"] == "1.3.1"
+    assert len(doctor["skills"]) == 14
+    search = run("omniforge.cli", "search", "API errors")
+    assert "log-triage" in search
+
+    (tmp_path / "app.py").write_text("value = 42\\n", encoding="utf-8")
+    initialized = json.loads(run(
+        "omniforge.provenance_v2_cli", "init", "--project", str(tmp_path)
+    ))
+    assert initialized.get("ok", True) is True
+    snapshot = json.loads(run(
+        "omniforge.provenance_v2_cli", "snapshot", "--project", str(tmp_path)
+    ))
+    assert snapshot.get("ok", True) is True
+    verified = json.loads(run(
+        "omniforge.provenance_v2_cli", "verify", "--project", str(tmp_path),
+        "--check-files"
+    ))
+    assert verified["ok"]
