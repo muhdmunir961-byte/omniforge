@@ -11,22 +11,12 @@
       "type": "stdio",
       "command": "uvx",
       "args": [
-        "--python",
-        "3.11",
-        "blender-mcp"
+        "mcp-for-blender"
       ],
       "env": {
         "BLENDER_HOST": "127.0.0.1",
-        "BLENDER_PORT": "9876",
-        "DISABLE_TELEMETRY": "true"
+        "BLENDER_PORT": "9876"
       }
-    },
-    "freecad": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": [
-        "freecad-mcp"
-      ]
     }
   }
 }
