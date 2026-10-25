@@ -1,0 +1,194 @@
+/* OMNIFORGE — Mesh Atelier / editorial WebGL design
+ * UI uses accessible HTML controls; depth and topology are genuine WebGL.
+ * No glow overload, glassmorphism, external fonts or expensive filters.
+ */
+:root{--mesh-gold:#dba776;--mesh-paper:#f3f1e9;--mesh-forest:#202e27;--mesh-line:#465348}
+.mesh-beacon,.mesh-live-dot{
+  width:6px;height:6px;display:inline-block;flex:none;
+  background:#d7ae76;border-radius:50%;margin-right:9px;
+  box-shadow:0 0 0 4px rgba(215,174,118,.12)
+}
+.mesh-fallback{display:grid;place-items:center;position:absolute;inset:0;pointer-events:none;color:#dcad82}
+.mesh-fallback[hidden]{display:none}
+.mesh-fallback span{font:600 10px var(--mono,monospace);letter-spacing:.2em;position:absolute;bottom:19%;color:#caaa86}
+.fallback-ring{height:195px;width:195px;border:1px solid rgba(221,173,121,.38);border-radius:44%;transform:rotate(-24deg) skew(16deg);box-shadow:34px -13px 0 -32px #dfb688,-27px 25px 0 -26px #dfb688}
+.mesh-ready .mesh-fallback{display:none}
+.mesh-hero{
+  background:radial-gradient(circle at 49% 40%,#33453a 0%,#202f28 51%,#192720 100%);
+  min-height:564px;padding:24px 26px 22px;
+  border-radius:10px;color:#f4eee2;border:1px solid #455347;
+  box-shadow:0 22px 62px rgba(20,31,24,.2);
+  display:flex;flex-direction:column
+}
+.mesh-hero::before{background-image:linear-gradient(to right,rgba(245,213,169,.026) 1px,transparent 1px),linear-gradient(to bottom,rgba(245,213,169,.026) 1px,transparent 1px);background-size:31px 31px;mask-image:none}
+.mesh-hero::after{display:none}
+.mesh-hero-head{
+  display:flex;justify-content:space-between;align-items:center;gap:12px;
+  position:relative;z-index:2;font:600 9px var(--mono,monospace);
+  color:#d1d0bb;letter-spacing:.1em
+}
+.mesh-hero-head>span{display:flex;align-items:center}
+.mesh-hero-head small{font:500 8px var(--mono,monospace);letter-spacing:.07em;color:#9fac9d}
+.mesh-hero-viewport{
+  position:relative;z-index:2;flex:1;min-height:330px;overflow:hidden;
+  touch-action:pan-y;border:1px solid rgba(216,202,170,.10);
+  border-radius:5px;margin:19px 0 15px;
+  background:radial-gradient(ellipse 55% 55% at 50% 50%,rgba(154,168,118,.14),transparent 79%)
+}
+.mesh-hero-viewport canvas{
+  display:block;position:absolute;inset:0;height:100%;width:100%;
+  cursor:grab;touch-action:pan-y;outline-offset:-5px
+}
+.mesh-hero-viewport canvas:active{cursor:grabbing}
+.mesh-crosshair{position:absolute;font:15px var(--mono,monospace);color:#8da48c;opacity:.7;pointer-events:none}
+.mesh-crosshair-top{left:14px;top:8px}.mesh-crosshair-bottom{right:14px;bottom:8px}
+.mesh-hero-marker{position:absolute;left:17px;top:18px;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.mesh-hero-marker span:first-child{font:700 9px var(--mono,monospace);color:#e0b88e;letter-spacing:.13em}
+.mesh-hero-marker span:last-child{font:500 8px var(--mono,monospace);color:#8fa595;letter-spacing:.09em}
+.mesh-hero-orbit{position:absolute;right:20px;bottom:16px;font:600 10px var(--mono,monospace);letter-spacing:.1em;color:#94a894;pointer-events:none}
+.mesh-hero-orbit span{color:#d5a473}
+.mesh-hero-details{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:2;gap:12px;padding:3px 0 16px}
+.mesh-hero-details>div span{display:block;font:700 9px var(--mono,monospace);color:#b39c7e;letter-spacing:.12em}
+.mesh-hero-details>div strong{display:block;color:#f2f4e9;font-size:18px;font-weight:610;letter-spacing:-.035em;margin-top:5px}
+.mesh-hero-vertices{text-align:right;color:#a9b6a7;font:500 9px var(--mono,monospace)}
+.mesh-hero-vertices b{display:block;font-size:20px;font-weight:650;color:#e1b791;letter-spacing:-.02em;margin-bottom:1px}
+.mesh-hero-foot{border-top:1px solid #526052;display:flex;align-items:center;justify-content:space-between;padding:15px 0 9px;gap:9px;position:relative;z-index:2}
+.mesh-hero-foot span{font:700 8px var(--mono,monospace);color:#c3cbb7;letter-spacing:.07em}
+.mesh-hero-foot i{height:1px;width:24px;background:#6b806e;opacity:.9}
+.mesh-hero-link{position:relative;z-index:2;display:flex;justify-content:space-between;color:#e0b48b;text-decoration:none;border-bottom:1px solid rgba(226,178,137,.3);padding:7px 0 4px;font:600 11px var(--mono,monospace)}
+.mesh-hero-link:hover{color:#f9dbb7;border-bottom-color:#f9dbb7}
+.mesh-atelier{padding-top:93px;padding-bottom:91px;border-bottom:1px solid #dadecf}
+.mesh-atelier-heading{
+  display:flex;justify-content:space-between;align-items:flex-end;gap:40px;margin-bottom:37px
+}
+.mesh-atelier-heading>div:first-child{max-width:760px}
+.mesh-atelier-heading h2{
+  margin:18px 0 13px;font-size:clamp(37px,4.8vw,67px);font-weight:670;
+  letter-spacing:-.066em;line-height:1.09;text-wrap:balance
+}
+.mesh-atelier-heading h2 em{font-weight:430;font-family:var(--serif,Georgia,serif);color:#a95f38;white-space:nowrap}
+.mesh-atelier-heading p{color:#69746a;max-width:710px;font-size:14px;line-height:1.84;margin:0}
+.mesh-atelier-label{
+  border-left:1px solid #bfcabc;padding-left:19px;color:#8b9588;
+  font:600 10px/1.95 var(--mono,monospace);letter-spacing:.075em;
+  white-space:nowrap;align-self:flex-end;margin-bottom:10px
+}
+.mesh-atelier-label strong{color:#32493a;font-size:11px}
+.mesh-lab-grid{
+  display:grid;grid-template-columns:minmax(0,1.18fr) minmax(355px,.82fr);
+  align-items:stretch;border:1px solid #d4dbd0;border-radius:10px;overflow:hidden;
+  box-shadow:0 21px 54px rgba(35,46,35,.085);background:#fffcf8
+}
+.mesh-lab-viewport{
+  min-height:636px;position:relative;overflow:hidden;background:
+  radial-gradient(ellipse 48% 43% at 50% 50%,rgba(109,135,99,.18),transparent 85%),
+  repeating-linear-gradient(90deg,transparent 0,transparent 43px,rgba(183,199,168,.04) 44px),
+  repeating-linear-gradient(0deg,transparent 0,transparent 43px,rgba(183,199,168,.04) 44px),#17251e
+}
+.mesh-lab-viewport::before{content:"";position:absolute;inset:27px;border:1px solid rgba(177,202,171,.10);pointer-events:none}
+.mesh-viewport-header{
+  z-index:2;position:absolute;top:22px;left:24px;right:24px;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;
+  font:700 9px var(--mono,monospace);letter-spacing:.075em;color:#d9d9bf
+}
+.mesh-viewport-header span:last-child{color:#89a18b;font-size:8px;white-space:nowrap}
+.mesh-lab-viewport canvas{
+  width:100%;height:100%;position:absolute;inset:0;display:block;
+  outline-offset:-3px;cursor:grab;touch-action:pan-y
+}
+.mesh-lab-viewport canvas:active{cursor:grabbing}
+.mesh-lab-viewport .mesh-fallback{color:#e6ad7e}
+.mesh-coordinate{position:absolute;left:44px;bottom:65px;display:flex;flex-direction:column;gap:7px;color:#8dac91;font:700 10px var(--mono,monospace);pointer-events:none}
+.mesh-coordinate span:nth-child(2){color:#cc9b76}
+.mesh-coordinate span:nth-child(3){color:#798c92}
+.mesh-viewport-foot{
+  position:absolute;bottom:25px;left:24px;right:24px;
+  z-index:2;display:flex;justify-content:space-between;gap:10px;
+  font:600 9px var(--mono,monospace);letter-spacing:.075em;color:#a0b2a0
+}
+.mesh-console{display:flex;flex-direction:column;background:#fffcf7;padding:34px 33px 26px}
+.mesh-console-head,.mesh-control-caption{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  font:700 10px var(--mono,monospace);color:#68806b;letter-spacing:.07em
+}
+.mesh-console-head>span:last-child{color:#a96639;font-size:9px}
+.mesh-console h3{font-size:39px;line-height:1.11;letter-spacing:-.065em;font-weight:690;margin:26px 0 14px}
+.mesh-console h3 span{color:#b7693a}
+.mesh-console-copy{font-size:13px;line-height:1.82;color:#6b766d;max-width:440px;margin:0}
+.mesh-controls-group{margin-top:40px}
+.mesh-control-caption{font-size:9px;color:#687e6d}
+.mesh-control-caption span{color:#a1a69b}
+.mesh-preset-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:14px}
+.mesh-preset-row button{
+  background:#f4f4ed;border:1px solid #dfe4da;border-radius:5px;
+  text-align:left;padding:15px 12px;min-height:72px;
+  color:#a2a89e;font:700 10px var(--mono,monospace);cursor:pointer;
+  transition:background .14s,border-color .14s,transform .14s
+}
+.mesh-preset-row button strong{display:block;color:#475b4d;font-size:11px;font-weight:720;margin-top:10px;line-height:1.3}
+.mesh-preset-row button:hover{border-color:#b6c8b4;transform:translateY(-1px)}
+.mesh-preset-row button.active{background:#24382b;color:#cda47d;border-color:#24382b}
+.mesh-preset-row button.active strong{color:#fff}
+.mesh-console-data{margin-top:35px}
+.mesh-metric-grid{display:grid;grid-template-columns:1fr 1fr;margin-top:15px;border-top:1px solid #dce2d8;border-left:1px solid #dce2d8}
+.mesh-metric-grid>div{padding:14px 15px;border-right:1px solid #dce2d8;border-bottom:1px solid #dce2d8;min-height:85px}
+.mesh-metric-grid span{display:block;color:#8a9689;font:700 9px var(--mono,monospace);letter-spacing:.07em}
+.mesh-metric-grid strong{font-size:23px;letter-spacing:-.055em;font-weight:690;margin-top:8px;display:block;color:#2c4030}
+.mesh-controls-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+.mesh-controls-row button{background:#f4f3ed;border:1px solid #d9ded5;border-radius:4px;font:700 10px var(--mono,monospace);padding:11px 12px;color:#475b4b;transition:background .15s}
+.mesh-controls-row button:hover{background:#e6eee4}
+.mesh-console-foot{margin-top:auto;padding-top:30px;display:flex;flex-direction:column;gap:7px}
+.mesh-console-foot span:first-child{color:#487557;font:700 9px var(--mono,monospace);letter-spacing:.06em}
+.mesh-console-foot span:last-child{font-size:10px;color:#879287}
+.mesh-console-source{margin-top:21px;padding-top:14px;display:flex;justify-content:space-between;text-decoration:none;border-top:1px solid #d9dfd4;color:#935935;font:700 11px var(--mono,monospace)}
+.mesh-console-source:hover{color:#5f7b63}
+.mesh-unavailable canvas{display:none}
+.mesh-unavailable .mesh-fallback{display:grid}
+@media(max-width:1190px){
+ .mesh-lab-grid{grid-template-columns:minmax(0,1.06fr) minmax(340px,.94fr)}
+ .mesh-console{padding:28px 23px}
+ .mesh-lab-viewport{min-height:575px}
+ .mesh-preset-row button{padding:12px 9px}
+}
+@media(max-width:850px){
+ .mesh-hero{min-height:470px}
+ .mesh-hero-viewport{min-height:265px}
+ .mesh-atelier{padding-top:69px;padding-bottom:68px}
+ .mesh-lab-grid{grid-template-columns:minmax(0,1fr)}
+ .mesh-lab-viewport{min-height:500px}
+ .mesh-console{padding:30px}
+ .mesh-atelier-heading{align-items:flex-start;flex-direction:column;gap:11px}
+ .mesh-atelier-label{align-self:flex-start;margin:0}
+ .mesh-hero-viewport{touch-action:pan-y}
+}
+@media(max-width:560px){
+ .mesh-hero{min-height:425px;padding:18px 17px}
+ .mesh-hero-head{font-size:8px}
+ .mesh-hero-viewport{min-height:235px;margin:14px 0 12px}
+ .mesh-hero-details>div strong{font-size:15px}
+ .mesh-hero-vertices b{font-size:15px}
+ .mesh-hero-foot span{font-size:7px}
+ .mesh-hero-foot i{width:11px}
+ .mesh-atelier{padding-top:57px;padding-bottom:55px}
+ .mesh-atelier-heading{margin-bottom:22px}
+ .mesh-atelier-heading h2{font-size:clamp(37px,9.6vw,50px)}
+ .mesh-atelier-heading h2 em{white-space:normal}
+ .mesh-atelier-heading p{font-size:12px}
+ .mesh-atelier-label{font-size:9px}
+ .mesh-lab-viewport{min-height:350px}
+ .mesh-lab-viewport::before{inset:13px}
+ .mesh-viewport-header{left:16px;right:16px;top:16px;font-size:8px}
+ .mesh-viewport-header span:last-child{font-size:7px}
+ .mesh-viewport-foot{left:16px;right:16px;bottom:16px;line-height:1.5;font-size:7px}
+ .mesh-coordinate{left:25px;bottom:57px;font-size:8px}
+ .mesh-console{padding:24px 19px}
+ .mesh-console h3{font-size:33px;margin:22px 0 10px}
+ .mesh-console-copy{font-size:12px}
+ .mesh-controls-group{margin-top:24px}
+ .mesh-preset-row{gap:5px}
+ .mesh-preset-row button{min-height:67px;padding:11px 8px;font-size:9px}
+ .mesh-preset-row button strong{font-size:10px}
+ .mesh-console-data{margin-top:24px}
+ .mesh-controls-row button{flex:1}
+}
+@media(prefers-reduced-motion:reduce){.mesh-hero-link,.mesh-preset-row button{transition:none!important}}
