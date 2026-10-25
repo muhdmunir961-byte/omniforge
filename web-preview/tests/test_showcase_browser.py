@@ -290,3 +290,34 @@ def test_batch_button_and_multiline_keyboard_input(local_site):
         assert "INPUT ERROR" in page.locator("#cliOutput").inner_text()
         assert page.locator("#cliExecutionLabel").inner_text() == "INPUT FORMAT ERROR"
         browser.close()
+
+
+
+def test_standalone_webgl_geometry_export_and_mobile_controls(local_site):
+    """A real GPU canvas and real OBJ faces, not a CSS-only 3D mockup."""
+    with sync_playwright() as pw:
+        browser = pw.chromium.launch(headless=True, args=["--enable-webgl", "--use-gl=angle", "--use-angle=swiftshader"])
+        page = browser.new_page(viewport={"width": 1300, "height": 850}, accept_downloads=True)
+        errors = []
+        page.on("pageerror", lambda err: errors.append(str(err)))
+        response = page.goto(local_site + "/3d.html", wait_until="load")
+        assert response.status == 200
+        page.wait_for_function("Number(document.getElementById('tris').textContent.replaceAll(',', '')) > 0")
+        assert page.locator("#gl").evaluate("el => !!el.getContext('webgl2')")
+        assert page.locator("#sceneLabel").inner_text().startswith("TORUS")
+        before = page.locator("#tris").inner_text()
+        page.locator("#cube").click()
+        assert page.locator("#tris").inner_text() == "12"
+        assert before != "12"
+        page.locator("#wire").click()
+        assert "active" in (page.locator("#wire").get_attribute("class") or "")
+        with page.expect_download() as download:
+            page.locator("#download").click()
+        result = download.value
+        assert result.suggested_filename == "omniforge-cube.obj"
+        path = result.path()
+        data = path.read_text()
+        assert "\nv " in data and "\nvn " in data and "\nf " in data
+        assert sum(1 for line in data.splitlines() if line.startswith("f ")) == 12
+        assert not errors, errors
+        browser.close()
