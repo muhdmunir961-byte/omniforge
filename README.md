@@ -40,6 +40,7 @@ This website is an **educational browser demo**, not a hosted Python CLI, Docker
 | Task-aware skill search | `omniforge search "API errors"` | Local hybrid retrieval; optional neural embeddings require an already-installed model |
 | Lazy skill load | `omniforge load log-triage` | Loads only one SKILL.md on request |
 | VS Code MCP integration | `omniforge setup-vscode --project .` | Configures project-local `.vscode/mcp.json` |
+| Multi-client MCP recipes | `omniforge integrations config --client cline --blender` | JSON only; third-party Blender install and local consent required |
 | Local VS Code extension source | Open `vscode-extension/` and press F5 | Development Host only; not a published Marketplace extension |
 | MCP bridge | `omniforge mcp` | Search, load, budget and read-only execution/browser previews |
 | Skill installation | `omniforge install log-triage --agent codex --project .` | No overwrite without `--force` |
@@ -62,6 +63,21 @@ This website is an **educational browser demo**, not a hosted Python CLI, Docker
 
 **Optional upstream tool adapters:** `trivy-scan`, `kicad-drc`, `esptool-chip`, `browser-snapshot`. Their check scripts work without downloading the upstream tools; actual integration depends on installation and system capabilities. Each adapter documents the upstream project. No upstream proprietary files or code are bundled.
 
+## Cline, Claude Code, Blender, CAD and BYOK integration
+
+Generate a local MCP client configuration without modifying any settings:
+
+```bash
+omniforge integrations list
+omniforge integrations doctor --blender
+omniforge integrations config --client cline --blender
+omniforge integrations config --client claude-code --blender
+omniforge integrations config --client vscode --blender
+```
+
+The generated JSON runs **OmniForge's real stdio MCP server** on your machine. The optional Blender definition points to a **separate third-party Blender MCP server**: it must be installed, started and authorized locally. OmniForge does not itself create Blender objects or execute Blender MCP tools. FreeCAD, OpenSCAD and AutoCAD are **not** native integrations. For web 3D use a coding client with Three.js or React Three Fiber; for OpenAI-compatible BYOK code proposals, use `omniforge code` with reviewed diffs.
+
+See the [tested configuration generator and setup matrix](docs/3D_MCP_BYOK_INTEGRATIONS.md).
 ## Controlled execution
 
 Preview a bundled skill run (no process started):
