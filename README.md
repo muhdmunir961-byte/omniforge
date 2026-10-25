@@ -58,6 +58,8 @@ This website is an **educational browser demo**, not a hosted Python CLI, Docker
 
 **Built-in scripts:** `repo-recon`, `log-triage`, `dependency-inventory`, `sqlite-inspector`, `firmware-preflight`, `api-probe`, `python-symbols`, `git-diff-review`, `openapi-inventory`, `secret-hygiene`.
 
+**3D / CAD / BYOK interoperability:** The repository includes [tested-format Cline/Claude Code MCP example configurations](examples/mcp/) and a [3D, Blender, FreeCAD, AutoCAD and BYOK setup guide](docs/3D_AND_BYOK_INTEGRATION.md). Blender and FreeCAD require their own locally installed MCP addons; OmniForge currently does not execute their tools or connect them automatically. Autodesk's AutoCAD/Civil 3D local MCP Tech Preview currently supports Autodesk Assistant as its only client. Do not confuse OmniForge's OpenAI-compatible single-pass code editor with a full multi-provider agent/MCP client.
+
 **Optional upstream tool adapters:** `trivy-scan`, `kicad-drc`, `esptool-chip`, `browser-snapshot`. Their check scripts work without downloading the upstream tools; actual integration depends on installation and system capabilities. Each adapter documents the upstream project. No upstream proprietary files or code are bundled.
 
 ## Controlled execution
