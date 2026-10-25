@@ -57,27 +57,14 @@ def generate(shape: str, rings: int, segments: int, radius: float,
                 faces.append((i, j, i + 1))
                 faces.append((i + 1, j, j + 1))
             else:
-                if seg != 0 and ring == -1:
-                    raise AssertionError("Unreachable")
-                if seg == -1:
-                    raise AssertionError("Unreachable")
-                # Avoid spherical cap degeneracy with triangle selection.
-                if seg > 0:
-                    faces.append((i, i + 1, j))
-                    faces.append((i + 1, j + 1, j))
-    if shape == "uv-sphere":
-        # A full UV sphere spans longitude around rings and latitude over segments.
-        # The above seg > 0 prevents the upper pole strip degeneracy, but
-        # the lower pole strip also needs one triangle per cell.
-        faces.clear()
-        for ring in range(rings):
-            for seg in range(segments):
-                i = ring * stride + seg + 1
-                j = i + stride
-                if seg != 0:
-                    faces.append((i, j, i + 1))
+                # Sphere parameter u=longitude, v=colatitude. Triangles
+                # reverse torus winding because d/du x d/dv points inward.
+                # At the poles the latitude row collapses to one point:
+                # emit one triangle per cell instead of a zero-area quad.
                 if seg != segments - 1:
-                    faces.append((i + 1, j, j + 1))
+                    faces.append((i, i + 1, j + 1))
+                if seg != 0:
+                    faces.append((i, j + 1, j))
     return positions, texcoords, normals, faces
 
 
