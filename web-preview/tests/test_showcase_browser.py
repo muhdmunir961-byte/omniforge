@@ -161,8 +161,9 @@ def test_real_cli_terminal_runs_installed_python_and_rejects_shell(local_site):
 
         page.locator('#cliExamples button[data-command="ofprov tamper-demo"]').click()
         page.locator("#runCli").click()
-        page.wait_for_function("document.getElementById('cliExecutionLabel').textContent.includes('EXIT 1')", timeout=12000)
+        page.wait_for_function("document.getElementById('cliExecutionLabel').textContent.includes('TAMPER DETECTED')", timeout=12000)
         assert "tamper" in page.locator("#commandInput").input_value()
+        assert "Exit code 1 is expected" in page.locator("#cliOutput").inner_text()
         assert page.locator("#traceSteps .trace-row").count() == 3
         assert page.locator("#pythonTab").is_visible()
         page.locator("#pythonTab").click()
