@@ -128,9 +128,16 @@
       const lines=["$ "+command,"",data.stdout||"(No stdout)"];
       if(data.stderr)lines.push("","[stderr]",data.stderr);
       if(data.steps?.length)lines.push("","# See prerequisite Python processes below.");
-      if(data.exit_code!==0)lines.push("","# Exit code: "+data.exit_code);
+      const expectedTamper=command==="ofprov tamper-demo"&&data.exit_code===1&&
+        data.steps?.some(step=>step.status==="fixture-change");
+      if(expectedTamper){
+        lines.push("","# ✓ SOURCE TAMPERING DETECTED");
+        lines.push("# Exit code 1 is expected when verification detects changed files.");
+      }else if(data.exit_code!==0)lines.push("","# Exit code: "+data.exit_code);
       cliOutput.textContent=pretty(lines.join("\n"));
-      setLabel("cliExecutionLabel",data.exit_code===0?"EXECUTED · REAL PYTHON":"RETURNED EXIT "+data.exit_code,data.exit_code!==0);
+      setLabel("cliExecutionLabel",expectedTamper?"TAMPER DETECTED · EXPECTED":
+        data.exit_code===0?"EXECUTED · REAL PYTHON":"RETURNED EXIT "+data.exit_code,
+        data.exit_code!==0&&!expectedTamper);
       setLabel("cliDuration",(data.duration_ms??"?")+" ms");
       renderTrace(data.steps);
     }catch(err){
