@@ -18,6 +18,7 @@ from .runtime import prepare_run, execute_run
 from .agents import execute_workflow
 from .browser import browser_session, load_actions
 from .autocode import request_edits, apply_proposal
+from .integrations import recipe as integration_recipe, inventory as integration_inventory, doctor as integration_doctor
 from .provenance import build_manifest, check_manifest
 from .blockchain import record as chain_record, verify as chain_verify, proof as chain_proof, anchor_payload
 from .evm import verify_anchor
@@ -75,6 +76,16 @@ def parser() -> argparse.ArgumentParser:
     f = sub.add_parser("forge", help="generate non-executable skill scaffold for trusted CLI")
     f.add_argument("name"); f.add_argument("--description", required=True)
     f.add_argument("--command", required=True); f.add_argument("--output", type=Path, default=Path.cwd())
+    adapters = sub.add_parser("integrations", help="generate local MCP client recipes (configuration only)")
+    adapters_sub = adapters.add_subparsers(dest="integration_action", required=True)
+    adapters_sub.add_parser("list", help="list available client and optional 3D integration status")
+    adapter_config = adapters_sub.add_parser("config", help="print safe MCP JSON; never write client settings")
+    adapter_config.add_argument("--client", required=True,
+                                choices=["cline", "claude-code", "claude-desktop", "cursor", "vscode"])
+    adapter_config.add_argument("--blender", action="store_true",
+                                help="include optional third-party Blender MCP server (not connected)")
+    adapter_doctor = adapters_sub.add_parser("doctor", help="check installed executables, not live MCP connections")
+    adapter_doctor.add_argument("--blender", action="store_true")
     vs = sub.add_parser("setup-vscode", help="add VS Code MCP and short optional skill instructions")
     vs.add_argument("--project", type=Path, default=Path.cwd()); vs.add_argument("--force", action="store_true")
     rr = sub.add_parser("inspect", help="read-only local project reconnaissance")
@@ -156,6 +167,13 @@ def main(argv: list[str] | None = None) -> int:
                      "skills": bundled_names(), "candidates": len(catalog()),
                      "agents": sorted(AGENT_LOCATIONS), "executable": shutil.which("omniforge"),
                      "mode": "core works locally without keys; optional code command uses BYOK endpoint"})
+        elif args.action == "integrations":
+            if args.integration_action == "list":
+                as_json(integration_inventory())
+            elif args.integration_action == "config":
+                as_json(integration_recipe(args.client, blender=args.blender))
+            else:
+                as_json(integration_doctor(blender=args.blender))
         elif args.action == "list":
             as_json(index())
         elif args.action == "search":
