@@ -222,3 +222,6 @@ def serve(input_stream: TextIO | None = None, output_stream: TextIO | None = Non
         if response is not None:
             output_stream.write(json.dumps(response, separators=(",", ":"), ensure_ascii=False) + "\n")
             output_stream.flush()
+
+if __name__ == "__main__":
+    serve()
