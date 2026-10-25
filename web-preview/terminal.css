@@ -127,3 +127,109 @@
 @media(prefers-reduced-motion:reduce){
   *{transition:none!important}
 }
+
+
+/* Multi-command execution editor: independent subprocesses, not a shell. */
+.command-batch{
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:0;
+  padding:0;
+  overflow:hidden;
+  position:relative;
+  background:#fffefa;
+}
+.command-batch > .prompt{
+  position:absolute;
+  left:14px;
+  top:15px;
+  z-index:1;
+  font-size:22px;
+  color:#b16439;
+  pointer-events:none;
+}
+.command-batch #commandInput{
+  flex:none;
+  width:100%;
+  min-width:0;
+  min-height:125px;
+  max-height:290px;
+  resize:vertical;
+  border:0;
+  border-radius:0;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent;
+  color:#27382d;
+  padding:15px 16px 16px 42px;
+  font:12.5px/1.85 var(--mono);
+  tab-size:2;
+  white-space:pre;
+  overflow:auto;
+}
+.batch-actions{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+  border-top:1px solid #e2e6dd;
+  padding:10px;
+  background:#f4f6ef;
+}
+.batch-actions .action-outline{
+  min-height:39px;
+  font-size:11px;
+  white-space:nowrap;
+  background:#fffefa;
+  padding:9px 12px;
+}
+.batch-actions #runCli{min-height:40px;font-size:11px;margin-left:auto}
+.batch-actions .stop-queue{
+  border-color:#ccaa97;
+  background:#fcf2ea;
+  color:#925433;
+}
+.batch-actions .stop-queue[hidden]{display:none!important}
+.batch-hint{
+  margin-top:9px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+  color:#53735b;
+  font:600 10px/1.65 var(--mono);
+}
+.batch-hint::before{
+  content:"";
+  display:inline-block;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:#63a275;
+  flex:none;
+}
+.batch-hint.invalid{color:#a55032}
+.batch-hint.invalid::before{background:#c3633e}
+.command-batch:focus-within{border-color:#b47b51;box-shadow:0 0 0 3px #c0815320}
+.console-output{
+  scrollbar-width:thin;
+  scrollbar-color:#698575 #1b2a21;
+}
+@media(max-width:1120px){
+  .command-batch .execute-button{width:auto;margin-top:0}
+}
+@media(max-width:560px){
+  .command-batch #commandInput{
+    font-size:12px;
+    line-height:1.8;
+    min-height:145px;
+    padding-left:35px;
+  }
+  .command-batch>.prompt{left:11px;top:15px}
+  .batch-actions{padding:9px;gap:7px}
+  .batch-actions .action-outline{padding:9px 11px}
+  .batch-actions #runCli{min-width:118px;margin-top:0}
+  .batch-hint{font-size:10px;margin:10px 2px 0;line-height:1.55}
+  .console-output{font-size:12px;line-height:1.7}
+  .result-meta{gap:6px;flex-wrap:wrap}
+}
