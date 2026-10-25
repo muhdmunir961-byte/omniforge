@@ -15,13 +15,13 @@ from omniforge.cli import repo_recon, main
 
 
 def test_skill_package_valid():
-    assert len(bundled_names()) == 14
+    assert len(bundled_names()) == 18
     for name in bundled_names():
         assert not validate_skill(bundled_root() / name)
 
 
 def test_router_metadata_only_and_matching():
-    assert len(index()) == 14
+    assert len(index()) == 18
     assert search_skills("inspect sqlite database")[0]["name"] == "sqlite-inspector"
     assert search_skills("logs timeout connection")[0]["name"] == "log-triage"
     assert load_skill("log-triage")["content"].startswith("---")

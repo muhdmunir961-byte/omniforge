@@ -82,7 +82,7 @@ def test_live_omniforge_doctor_is_real_installed_package():
     assert output["ok"] is True, output
     result = json.loads(output["stdout"])
     assert result["name"] == "OmniForge"
-    assert len(result["skills"]) == 14
+    assert len(result["skills"]) == 18
     assert result["version"] == "1.3.1"
 
 
@@ -203,7 +203,7 @@ def test_clean_python_uses_bundled_cli_without_pip_install(tmp_path):
 
     doctor = json.loads(run("omniforge.cli", "doctor"))
     assert doctor["version"] == "1.3.1"
-    assert len(doctor["skills"]) == 14
+    assert len(doctor["skills"]) == 18
     search = run("omniforge.cli", "search", "API errors")
     assert "log-triage" in search
 

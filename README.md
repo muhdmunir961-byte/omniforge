@@ -29,7 +29,7 @@ For development: `python -m pip install -e . -r requirements-dev.txt && python -
 
 ## Interactive Vercel system explorer
 
-**[Open the live OmniForge feature explorer](https://omniforge-explorer.vercel.app)** to inspect all 14 packaged skills, the 10 MCP tool contracts, sample CLI commands, an editable workflow DAG, the SHA-256 provenance demonstration, permission rules, source architecture and linked GitHub CI evidence.
+**[Open the live OmniForge feature explorer](https://omniforge-explorer.vercel.app)** to inspect all 18 packaged skills, the 10 MCP tool contracts, sample CLI commands, an editable workflow DAG, the SHA-256 provenance demonstration, permission rules, source architecture and linked GitHub CI evidence.
 
 This website is an **educational browser demo**, not a hosted Python CLI, Docker execution service, real MCP server or wallet. The provenance lab hashes **demo text in your own browser**, while real OmniForge runs locally. See [the web preview source](web-preview/README.md).
 
@@ -54,7 +54,7 @@ This website is an **educational browser demo**, not a hosted Python CLI, Docker
 | Blockchain provenance | `omniforge blockchain record --project .` | Local hash-chain + optional EVM anchor; wallet required for real transactions |
 | Repo catalog | `omniforge catalog "firmware"` | 112 research candidates, not 112 integrated tools |
 
-## Packaged skills (14)
+## Packaged skills (18)
 
 **Built-in scripts:** `repo-recon`, `log-triage`, `dependency-inventory`, `sqlite-inspector`, `firmware-preflight`, `api-probe`, `python-symbols`, `git-diff-review`, `openapi-inventory`, `secret-hygiene`.
 

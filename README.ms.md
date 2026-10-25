@@ -48,7 +48,7 @@ Untuk test: `python -m pip install pytest && python -m pytest -q`.
 | Integriti fail | `omniforge manifest --project .` | SHA-256, **tidak ditandatangani secara digital** |
 | Repo catalog | `omniforge catalog "firmware"` | 112 calon kajian, **bukan** 112 integrasi aktif |
 
-## Skill yang disertakan (14 pakej)
+## Skill yang disertakan (18 pakej)
 
 **10 skrip terbina dalam:** `repo-recon`, `log-triage`, `dependency-inventory`, `sqlite-inspector`, `firmware-preflight`, `api-probe`, `python-symbols`, `git-diff-review`, `openapi-inventory` dan `secret-hygiene`.
 

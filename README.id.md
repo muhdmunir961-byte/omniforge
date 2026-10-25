@@ -48,7 +48,7 @@ Untuk menjalankan test: `python -m pip install pytest && python -m pytest -q`.
 | File integrity | `omniforge manifest --project .` | SHA-256, **tanpa tanda tangan digital** |
 | Repository catalog | `omniforge catalog "firmware"` | 112 kandidat riset, **bukan** 112 integrasi aktif |
 
-## Skill yang tersedia (14 paket)
+## Skill yang tersedia (18 paket)
 
 **10 script bawaan:** `repo-recon`, `log-triage`, `dependency-inventory`, `sqlite-inspector`, `firmware-preflight`, `api-probe`, `python-symbols`, `git-diff-review`, `openapi-inventory`, dan `secret-hygiene`.
 
