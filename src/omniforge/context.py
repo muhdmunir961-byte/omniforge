@@ -40,8 +40,8 @@ def read_context(project: Path, path: str, *, known_sha256: str | None = None,
         raise ValueError("max_lines must be 1..160")
     if type(max_chars) is not int or not 256 <= max_chars <= 12000:
         raise ValueError("max_chars must be 256..12000")
-    if not isinstance(path, str) or len(path) > 1024 or not path or "\\"
-        in path or "\x00" in path:
+    if (not isinstance(path, str) or len(path) > 1024 or not path
+            or "\\" in path or "\x00" in path):
         raise ValueError("Specify one safe relative source path")
     parts = path.split("/")
     if any(not part or part in {".", ".."} or part.startswith(".")
