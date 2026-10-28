@@ -1,6 +1,7 @@
 """Token-frugal router: select metadata first, open full skill only on demand."""
 from __future__ import annotations
 
+import hashlib
 import math
 import re
 from pathlib import Path
@@ -42,14 +43,22 @@ def search_skills(query: str, *, limit: int = 5, paths: list[Path] | None = None
     return [dict(info, score=round(score, 3)) for score, info in sorted(scored, key=lambda x: (-x[0], x[1]["name"]))[:limit]]
 
 
-def load_skill(name: str, *, max_chars: int = 12000) -> dict:
-    """Only the requested skill is expanded; never silently concatenate skills."""
+def load_skill(name: str, *, max_chars: int = 12000,
+               known_sha256: str | None = None) -> dict:
+    """Load one skill; a matching caller digest suppresses duplicate content."""
     if name not in bundled_names():
         raise ValueError(f"Unknown skill: {name}")
+    if known_sha256 is not None and not re.fullmatch(r"[0-9a-f]{64}", known_sha256):
+        raise ValueError("known_sha256 must be a lowercase SHA-256 digest")
     doc = (bundled_root() / name / "SKILL.md").read_text(encoding="utf-8")
     if len(doc) > max_chars:
         raise ValueError(f"Skill requires {len(doc)} characters, exceeds --max-chars {max_chars}")
-    return {"name": name, "content": doc, "characters": len(doc), "estimated_tokens": estimate_tokens(doc)}
+    digest = hashlib.sha256(doc.encode("utf-8")).hexdigest()
+    unchanged = digest == known_sha256
+    return {"name": name, "content": "" if unchanged else doc,
+            "sha256": digest, "status": "unchanged" if unchanged else "changed",
+            "characters": len(doc),
+            "estimated_tokens": 0 if unchanged else estimate_tokens(doc)}
 
 
 def estimate_tokens(text: str) -> int:
@@ -60,11 +69,13 @@ def estimate_tokens(text: str) -> int:
 def token_report(*, chosen: str | None = None) -> dict:
     summaries = index()
     compact = "\n".join(f'{s["name"]}: {s["description"]}' for s in summaries)
-    naive = "\n".join((bundled_root() / s["name"] / "SKILL.md").read_text(encoding="utf-8") for s in summaries)
+    # Estimate total bytes by filesystem metadata; do not re-open every SKILL.md.
+    # UTF-8 byte lengths can differ from character counts, hence only an estimate.
+    total_bytes = sum((bundled_root() / s["name"] / "SKILL.md").stat().st_size for s in summaries)
     loaded = load_skill(chosen)["content"] if chosen else ""
     return {
         "skill_count": len(summaries), "metadata_estimated_tokens": estimate_tokens(compact),
-        "load_everything_estimated_tokens": estimate_tokens(naive),
+        "load_everything_estimated_tokens": math.ceil((total_bytes + max(0, len(summaries) - 1)) / 4),
         "on_demand_estimated_tokens": estimate_tokens(compact + loaded),
-        "selected": chosen, "notice": "Approximate character heuristic, not measured model usage. VS Code/client may add context independently.",
+        "selected": chosen, "notice": "Approximate UTF-8 byte/character heuristic; not provider-billed tokens. No full-skill-content cache is maintained.",
     }

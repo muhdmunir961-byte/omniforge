@@ -29,7 +29,8 @@ TOOLS = [
         "name": "omniforge_load",
         "description": "Load the full SKILL.md for one explicitly selected skill, on demand.",
         "inputSchema": {"type": "object", "properties": {
-            "name": {"type": "string"}
+            "name": {"type": "string"},
+            "known_sha256": {"type": "string", "description": "SHA-256 of skill already seen; matching content is omitted"}
         }, "required": ["name"]},
     },
     {
@@ -142,7 +143,10 @@ def dispatch(message: dict) -> dict | None:
                 skill = args.get("name")
                 if not isinstance(skill, str):
                     raise ValueError("name must be a string")
-                outcome = tool_result(load_skill(skill))
+                digest = args.get("known_sha256")
+                if digest is not None and not isinstance(digest, str):
+                    raise ValueError("known_sha256 must be a string")
+                outcome = tool_result(load_skill(skill, known_sha256=digest))
             elif name == "omniforge_run":
                 name_arg, project = args.get("name"), args.get("project")
                 argv = args.get("args", [])

@@ -11,6 +11,7 @@ from . import __version__
 from .core import (AGENT_LOCATIONS, audit_skill, bundled_names, bundled_root, catalog,
                    forge_skill, install_skill, validate_skill)
 from .router import index, load_skill, search_skills, token_report
+from .context import read_context
 from .vscode import configure_vscode
 from .semantic import hybrid_search, embedding_search
 from .planner import related, plan
@@ -59,6 +60,14 @@ def parser() -> argparse.ArgumentParser:
     l = sub.add_parser("load", help="expand exactly one bundled SKILL.md")
     l.add_argument("name", choices=bundled_names())
     l.add_argument("--max-chars", type=int, default=12000)
+    l.add_argument("--known-sha256", help="omit unchanged skill content previously seen by this client")
+    ctx = sub.add_parser("context", help="bounded conditional source read (no persistent content cache)")
+    ctx.add_argument("path", help="one relative source file, not a glob or directory")
+    ctx.add_argument("--project", type=Path, default=Path.cwd())
+    ctx.add_argument("--known-sha256", help="omit content if source SHA-256 is unchanged")
+    ctx.add_argument("--start-line", type=int, default=1)
+    ctx.add_argument("--max-lines", type=int, default=100)
+    ctx.add_argument("--max-chars", type=int, default=6000)
     b = sub.add_parser("budget", help="rough estimate of lazy skill context consumption")
     b.add_argument("--selected", choices=bundled_names())
     c = sub.add_parser("catalog", help="search upstream GitHub tool candidates (not integrations)")
@@ -183,7 +192,14 @@ def main(argv: list[str] | None = None) -> int:
                     hybrid_search(args.query, limit=args.limit) if args.mode == "hybrid" else
                     embedding_search(args.query, model_path=args.model_path or "", limit=args.limit))
         elif args.action == "load":
-            as_json(load_skill(args.name, max_chars=args.max_chars))
+            as_json(load_skill(args.name, max_chars=args.max_chars,
+                               known_sha256=args.known_sha256))
+        elif args.action == "context":
+            as_json(read_context(args.project, args.path,
+                                 known_sha256=args.known_sha256,
+                                 start_line=args.start_line,
+                                 max_lines=args.max_lines,
+                                 max_chars=args.max_chars))
         elif args.action == "budget":
             as_json(token_report(chosen=args.selected))
         elif args.action == "catalog":
