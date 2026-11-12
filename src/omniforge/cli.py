@@ -202,6 +202,15 @@ def parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    # Python 3.11's argparse rejects "--" before a nargs="*" positional once
+    # options have been consumed, while 3.13 accepts it. Split the script
+    # arguments ourselves so "omniforge run SKILL [opts] -- ARG..." behaves
+    # identically on every supported interpreter.
+    script_args: list[str] = []
+    if argv[:1] == ["run"] and "--" in argv:
+        cut = argv.index("--")
+        argv, script_args = argv[:cut], argv[cut + 1:]
     args = parser().parse_args(argv)
     try:
         if args.action == "doctor":
@@ -254,10 +263,7 @@ def main(argv: list[str] | None = None) -> int:
         elif args.action == "inspect":
             as_json(repo_recon(args.project))
         elif args.action == "run":
-            # nargs="*" keeps --approve/--project usable on either side of the
-            # skill name; argparse already strips a "--" separator, so a
-            # leading "--" here is a literal script argument.
-            arguments = list(args.args)
+            arguments = script_args + list(args.args)
             if arguments[:1] == ["--"]:
                 arguments = arguments[1:]
             execution_plan = prepare_run(args.name, arguments, args.project,

@@ -24,6 +24,19 @@ def test_run_flags_after_skill_name_are_parsed(tmp_path):
                  "--project", str(tmp_path), "--", "app.py"]) == 0
 
 
+def test_run_separator_after_options_works_on_every_supported_python(tmp_path):
+    """Python 3.11's argparse rejects '--' before nargs="*" after options.
+
+    Python 3.13 accepts it. main() splits the separator itself so the same
+    command line works on both; this pins that behaviour.
+    """
+    (tmp_path / "app.py").write_text("value = 1\n")
+    assert main(["run", "python-symbols", "--unsafe-local", "--approve",
+                 "--project", str(tmp_path), "--", "app.py"]) == 0
+    assert main(["run", "python-symbols", "--unsafe-local",
+                 "--project", str(tmp_path), "--", "app.py"]) == 0
+
+
 def test_run_preview_keeps_script_arguments(tmp_path, capsys):
     (tmp_path / "app.py").write_text("value = 1\n")
     assert main(["run", "python-symbols", "--unsafe-local",
