@@ -1,4 +1,4 @@
-import argparse,json,re,tomllib
+import argparse,json,tomllib
 from pathlib import Path
 
 def main():
