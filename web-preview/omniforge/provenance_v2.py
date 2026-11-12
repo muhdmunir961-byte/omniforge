@@ -4,18 +4,30 @@ Separate from the backwards-compatible legacy blockchain command.
 No wallet keys, signing, broadcast or third-party network operations.
 """
 from __future__ import annotations
+
 import hashlib
 import os
 import re
 import stat
 import uuid
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+
 from .core import secure_project_path
 from .provenance_v2_policy import (
-    DEFAULT_POLICY, HEX64, MAX_LEDGER_BYTES, MAX_RECORDS, VERSION, ZERO,
-    canonical, hashed, parse_json, policy_digest, scan_project, snapshot_digest,
+    DEFAULT_POLICY,
+    HEX64,
+    MAX_LEDGER_BYTES,
+    MAX_RECORDS,
+    VERSION,
+    ZERO,
+    canonical,
+    hashed,
+    parse_json,
+    policy_digest,
+    scan_project,
+    snapshot_digest,
     validate_policy,
 )
 
@@ -31,7 +43,7 @@ LEGACY_KEYS = {"head", "ledger_sha256", "entries", "anchors_sha256"}
 
 
 def utc_now() -> str:
-    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+    return datetime.now(UTC).isoformat().replace("+00:00", "Z")
 
 
 def root_path(project: Path) -> Path:
@@ -453,10 +465,11 @@ def verify(project: Path, *, check_files: bool = False,
                 ],
                 "warning": "Full local history can be rewritten without an external trusted head.",
             }
-            if expected_head is not None:
-                if expected_seq >= len(items) or items[expected_seq]["entry_hash"] != expected_head:
-                    report.update({"ok": False, "reason": "trusted-checkpoint-mismatch"})
-                    return report
+            if expected_head is not None and (
+                    expected_seq >= len(items)
+                    or items[expected_seq]["entry_hash"] != expected_head):
+                report.update({"ok": False, "reason": "trusted-checkpoint-mismatch"})
+                return report
             if check_files:
                 diff = differences(tip["file_hashes"], scan_project(root, tip["policy"]))
                 changed = cfg["policy"] != tip["policy"]

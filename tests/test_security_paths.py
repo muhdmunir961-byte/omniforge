@@ -1,6 +1,8 @@
 """Regression tests for symlinked project-write destinations."""
 from pathlib import Path
+
 import pytest
+
 from omniforge.core import install_skill, secure_project_path
 from omniforge.vscode import configure_vscode
 

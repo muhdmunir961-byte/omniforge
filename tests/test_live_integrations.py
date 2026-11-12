@@ -11,11 +11,12 @@ import shutil
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import ClassVar
 
 import pytest
 
-from omniforge.autocode import apply_proposal, request_edits
 from omniforge.agents import execute_workflow
+from omniforge.autocode import apply_proposal, request_edits
 from omniforge.browser import browser_session
 from omniforge.runtime import execute_run, prepare_run
 
@@ -27,12 +28,12 @@ pytestmark = pytest.mark.skipif(
 class LocalWeb(BaseHTTPRequestHandler):
     def do_GET(self):
         html = (
-            '<!doctype html><html><head><title>OmniForge Local E2E</title></head>'
-            '<body><input id="entry" aria-label="entry">'
-            '<button id="go" onclick="document.getElementById(\'status\').textContent='
-            'document.getElementById(\'entry\').value">Submit</button>'
-            '<div id="status">Initial</div></body></html>'
-        ).encode("utf-8")
+            b'<!doctype html><html><head><title>OmniForge Local E2E</title></head>'
+            b'<body><input id="entry" aria-label="entry">'
+            b'<button id="go" onclick="document.getElementById(\'status\').textContent='
+            b'document.getElementById(\'entry\').value">Submit</button>'
+            b'<div id="status">Initial</div></body></html>'
+        )
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(html)))
@@ -44,7 +45,7 @@ class LocalWeb(BaseHTTPRequestHandler):
 
 
 class MockModel(BaseHTTPRequestHandler):
-    received = []
+    received: ClassVar[list] = []
 
     def do_POST(self):
         if self.path != "/v1/chat/completions":

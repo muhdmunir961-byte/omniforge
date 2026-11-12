@@ -2,18 +2,18 @@
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 from typing import Any, TextIO
+
 from . import __version__
-from .core import bundled_names
-from .router import search_skills, load_skill, token_report
-from .semantic import hybrid_search
-from .runtime import prepare_run, execute_run
-from .browser import browser_session
-from .blockchain import verify as verify_provenance_chain, proof as read_provenance_block
 from . import provenance_v2 as provenance2
+from .blockchain import proof as read_provenance_block
+from .blockchain import verify as verify_provenance_chain
+from .browser import browser_session
+from .router import load_skill, token_report
+from .runtime import execute_run, prepare_run
+from .semantic import hybrid_search
 
 PROTOCOL = "2025-06-18"
 TOOLS = [
@@ -45,7 +45,7 @@ TOOLS = [
         "description": "Preview a browser navigation. Navigation is disabled via MCP; use the local CLI for manually approved actions.",
         "inputSchema":{"type":"object","properties":{
             "url":{"type":"string"}, "project":{"type":"string"},
-            
+
         },"required":["url","project"]},
     },
     {
@@ -179,8 +179,8 @@ def dispatch(message: dict) -> dict | None:
                     outcome = tool_result(provenance2.proof(Path(project), seq))
                 else:
                     head, seq = args.get("expected_head"), args.get("expected_seq")
-                    if (head is not None and not isinstance(head, str)
-                        or seq is not None and (type(seq) is not int or seq < 0)):
+                    if ((head is not None and not isinstance(head, str))
+                        or (seq is not None and (type(seq) is not int or seq < 0))):
                         raise ValueError("Invalid trusted checkpoint")
                     if name == "omniforge_provenance_verify":
                         check = args.get("check_files", False)

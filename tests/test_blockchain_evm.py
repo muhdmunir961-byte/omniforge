@@ -41,7 +41,7 @@ def send_rpc(method: str, params: list) -> object:
 
 def await_receipt(txid: str) -> dict:
     """Anvil may mine asynchronously; never assume receipt is instant."""
-    for attempt in range(60):
+    for _attempt in range(60):
         receipt = send_rpc("eth_getTransactionReceipt", [txid])
         if receipt is not None:
             return receipt
@@ -98,7 +98,8 @@ def test_real_ethereum_compatible_anchor(tmp_path: Path):
 def test_real_v2_provenance_anchor_and_rpc_verification(tmp_path: Path):
     """Sign/broadcast ONLY with an unlocked disposable Anvil testing account."""
     from omniforge import provenance_v2 as v2
-    from omniforge.provenance_v2_evm import prepare as v2_prepare, check_tx
+    from omniforge.provenance_v2_evm import check_tx
+    from omniforge.provenance_v2_evm import prepare as v2_prepare
 
     accounts = send_rpc("eth_accounts", [])
     assert accounts and int(send_rpc("eth_chainId", []), 16) == 1337

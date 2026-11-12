@@ -2,10 +2,10 @@
 from __future__ import annotations
 
 import json
-import os
 import threading
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from typing import ClassVar
 
 import pytest
 
@@ -141,7 +141,7 @@ def test_concurrent_writers_are_serialized(tmp_path):
 
 
 class RpcHandler(BaseHTTPRequestHandler):
-    state = {}
+    state: ClassVar[dict] = {}
 
     def do_POST(self):
         size = int(self.headers["Content-Length"])
@@ -246,7 +246,7 @@ def test_cli_rpc_verify_exit_codes(tmp_path, rpc_server, capsys):
             "--tx-hash", TXHASH, "--rpc-url", rpc_server]
     assert main(argv) == 0
     assert json.loads(capsys.readouterr().out)["ok"]
-    assert main(argv + ["--min-confirmations", "4"]) == 1
+    assert main([*argv, "--min-confirmations", "4"]) == 1
     assert not json.loads(capsys.readouterr().out)["ok"]
 
 

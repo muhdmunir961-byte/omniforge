@@ -74,13 +74,15 @@ def validate_path(value: str) -> str:
 
 
 def _names(value: object, *, label: str) -> list[str]:
-    if not isinstance(value, list) or len(value) > 64 or len(value) != len(set(
-            x for x in value if isinstance(x, str))):
+    if not isinstance(value, list) or len(value) > 64 or len(value) != len(
+            {x for x in value if isinstance(x, str)}):
         raise ValueError("Invalid " + label)
     for x in value:
-        if not isinstance(x, str) or not x or len(x) > 100 or "/" in x or "\\" in x or x in (".", "..") or "*" in x:
-            if label != "exclude_files" or x != ".env.*":
-                raise ValueError("Invalid " + label + " item")
+        bad = (not isinstance(x, str) or not x or len(x) > 100 or "/" in x
+               or "\\" in x or x in (".", "..") or "*" in x)
+        # The default policy legitimately excludes dotenv files by glob.
+        if bad and not (label == "exclude_files" and x == ".env.*"):
+            raise ValueError("Invalid " + label + " item")
     return value
 
 
@@ -91,7 +93,7 @@ def validate_policy(obj: object) -> dict:
     } or type(obj["version"]) is not int or obj["version"] != 1:
         raise ValueError("Invalid snapshot policy schema")
     dirs = _names(obj["exclude_dirs"], label="exclude_dirs")
-    files = _names(obj["exclude_files"], label="exclude_files")
+    _names(obj["exclude_files"], label="exclude_files")
     if not set(MANDATORY_DIRS).issubset(dirs):
         raise ValueError("Mandatory provenance directories cannot be included in a snapshot")
     for key, upper in (("max_files", MAX_FILES), ("max_file_bytes", MAX_FILE_BYTES),

@@ -4,13 +4,14 @@ Inspects actual wheel and sdist, not only source tree. Also checks that
 mandatory runtime source and bundled skill data are present.
 """
 from __future__ import annotations
+
 import argparse
 import hashlib
 import json
-from pathlib import Path
 import re
 import tarfile
 import zipfile
+from pathlib import Path
 
 PACKAGE_FILES = {
     "omniforge/__init__.py",
@@ -52,7 +53,7 @@ def validate(wheel: Path, sdist: Path, expected_version: str) -> dict:
         if len(metadata) != 1:
             raise ValueError("Wheel metadata missing or ambiguous")
         body = archive.read(metadata[0]).decode("utf-8")
-        if f"Version: {expected_version}" not in body or "License-Expression: MIT" not in body and "License: MIT" not in body:
+        if f"Version: {expected_version}" not in body or ("License-Expression: MIT" not in body and "License: MIT" not in body):
             raise ValueError("Wheel version or license metadata incorrect")
     with tarfile.open(sdist, "r:gz") as archive:
         names = [entry.name for entry in archive.getmembers()]

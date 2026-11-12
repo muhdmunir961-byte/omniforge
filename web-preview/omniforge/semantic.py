@@ -8,6 +8,7 @@ from __future__ import annotations
 import math
 import re
 from collections import Counter
+
 from .router import index, tokens
 
 ALIASES = {
@@ -48,7 +49,7 @@ def hybrid_search(query: str, limit: int = 5) -> list[dict]:
     docs = [tokens(item['name'].replace('-', ' ') + ' ' + item['description']) for item in entries]
     document_freq = Counter(word for terms in docs for word in terms)
     ranked = []
-    for item, terms in zip(entries, docs):
+    for item, terms in zip(entries, docs, strict=True):
         overlap = qwords & terms
         weighted = sum(math.log(1 + (len(entries) + 1)/(document_freq[w] + 1)) for w in overlap)
         name_terms = tokens(item['name'].replace('-', ' '))
@@ -75,9 +76,9 @@ def embedding_search(query: str, *, model_path: str, limit: int = 5) -> list[dic
     model = SentenceTransformer(str(Path(model_path).expanduser().resolve()), local_files_only=True)
     entries = index()
     texts = [f"{entry['name']}: {entry['description']}" for entry in entries]
-    vectors = model.encode([query] + texts, normalize_embeddings=True)
+    vectors = model.encode([query, *texts], normalize_embeddings=True)
     scores = []
-    for item, vector in zip(entries, vectors[1:]):
-        score = float(sum(float(a)*float(b) for a, b in zip(vectors[0], vector)))
+    for item, vector in zip(entries, vectors[1:], strict=True):
+        score = float(sum(float(a) * float(b) for a, b in zip(vectors[0], vector, strict=True)))
         scores.append(dict(item, score=round(score, 5), method='local-embeddings'))
     return sorted(scores, key=lambda e: (-e['score'], e['name']))[:limit]

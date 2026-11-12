@@ -1,5 +1,6 @@
-from omniforge.planner import related, plan
 from omniforge.cli import main
+from omniforge.planner import plan, related
+
 
 def test_synonym_search_api():
     results = related("REST endpoint", limit=5)

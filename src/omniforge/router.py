@@ -4,9 +4,10 @@ from __future__ import annotations
 import math
 import re
 from pathlib import Path
-from .core import bundled_root, bundled_names, skill_info
 
-STOP = frozenset("a an and are at be by for from how i in is it of on or our the this to use we with you your my me do help can please yang dan untuk dari cara aku nak dalam buat guna pakai".split())
+from .core import bundled_names, bundled_root, skill_info
+
+STOP = frozenset(["a", "an", "and", "are", "at", "be", "by", "for", "from", "how", "i", "in", "is", "it", "of", "on", "or", "our", "the", "this", "to", "use", "we", "with", "you", "your", "my", "me", "do", "help", "can", "please", "yang", "dan", "untuk", "dari", "cara", "aku", "nak", "dalam", "buat", "guna", "pakai"])
 
 
 def tokens(text: str) -> set[str]:
@@ -33,7 +34,6 @@ def search_skills(query: str, *, limit: int = 5, paths: list[Path] | None = None
     for info in entries:
         title_words = tokens(info["name"].replace("-", " "))
         desc_words = tokens(info["description"])
-        overlap = words & (title_words | desc_words)
         score = 5 * len(words & title_words) + len(words & desc_words)
         if query.lower() in info["description"].lower():
             score += 2

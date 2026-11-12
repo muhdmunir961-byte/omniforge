@@ -5,8 +5,10 @@ Optional Blender/FreeCAD adapters are NEVER executed in CI.
 """
 import json
 import subprocess
-from omniforge.integrations import CLIENTS, recipe
+
 import pytest
+
+from omniforge.integrations import CLIENTS, recipe
 
 
 @pytest.mark.parametrize("client", CLIENTS)
@@ -24,7 +26,7 @@ def test_client_recipe_launches_real_mcp_server(client):
          "params":{"name":"omniforge_load","arguments":{"name":"realtime-3d-mesh"}}},
     ]
     proc=subprocess.run(command,input="\n".join(map(json.dumps,requests))+"\n",
-                        stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,
+                        capture_output=True,text=True,
                         timeout=12,check=False)
     assert proc.returncode==0,proc.stderr[-1200:]
     messages=[json.loads(line) for line in proc.stdout.splitlines() if line.strip()]

@@ -13,3 +13,5 @@ dist/
 
 # v2 local provenance, checkpoints and optional public wallet receipts
 .of-provenance/
+.coverage
+coverage.xml

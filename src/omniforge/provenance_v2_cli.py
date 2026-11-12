@@ -1,12 +1,14 @@
 """User-controlled OF-Provenance v2 CLI. Never signs or broadcasts EVM tx."""
 from __future__ import annotations
+
 import argparse
 import json
 import sys
 from pathlib import Path
+
 from . import __version__
 from . import provenance_v2 as ledger
-from .provenance_v2_evm import prepare, check_tx
+from .provenance_v2_evm import check_tx, prepare
 
 
 def build_parser() -> argparse.ArgumentParser:

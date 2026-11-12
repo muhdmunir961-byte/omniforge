@@ -25,7 +25,7 @@ omniforge list
 omniforge search "debug ESP32 errors"
 ```
 
-For development: `python -m pip install -e . -r requirements-dev.txt && python -m pytest -q`. See the [quickstart](examples/quickstart/README.md), [architecture](docs/ARCHITECTURE.md), [release process](docs/RELEASE_PROCESS.md) and [real CLI preview](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/preview.yml).
+For development: `python -m pip install -e . -r requirements-dev.txt && python -m pytest -q`, then `ruff check src tests scripts` for lint. `omniforge doctor` reports a `capabilities` block that distinguishes *installed* from *available*: Docker for isolated execution, Playwright for browser automation, `sentence-transformers` for local embeddings, and whether `OMNIFORGE_API_KEY` is set. It only probes for presence and never installs, imports or downloads anything. See the [quickstart](examples/quickstart/README.md), [architecture](docs/ARCHITECTURE.md), [release process](docs/RELEASE_PROCESS.md) and [real CLI preview](https://github.com/muhdmunir961-byte/omniforge/actions/workflows/preview.yml).
 
 ## Interactive Vercel system explorer
 

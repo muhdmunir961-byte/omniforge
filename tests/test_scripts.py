@@ -1,19 +1,20 @@
 """Functional smoke tests of bundled scripts, not just --help flags."""
 from __future__ import annotations
+
 import json
 import sqlite3
 import subprocess
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from pathlib import Path
+
 from omniforge.core import bundled_root
 
 
 def execute(name: str, *arguments: str) -> dict:
     script = next((bundled_root() / name / 'scripts').glob('*.py'))
     process = subprocess.run([sys.executable, str(script), *map(str, arguments)],
-                             capture_output=True, text=True, timeout=15)
+                             capture_output=True, text=True, timeout=15, check=False)
     assert process.returncode == 0, f'{name}: {process.stderr}'
     return json.loads(process.stdout)
 
@@ -50,7 +51,8 @@ def test_sqlite_inspector(tmp_path):
     conn = sqlite3.connect(path)
     conn.execute('create table things(id integer primary key)')
     conn.execute('insert into things values(1)')
-    conn.commit();conn.close()
+    conn.commit()
+    conn.close()
     result = execute('sqlite-inspector', path, '--count')
     assert result['objects'][0]['rows'] == 1
 
@@ -87,7 +89,9 @@ def test_git_diff_review(tmp_path):
 
 class Handler(BaseHTTPRequestHandler):
     def do_HEAD(self):
-        self.send_response(200);self.send_header('Content-Type','text/plain');self.end_headers()
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/plain')
+        self.end_headers()
     def log_message(self, *args):
         pass
 
@@ -100,4 +104,6 @@ def test_api_probe_localhost():
         result = execute('api-probe', f'http://127.0.0.1:{server.server_port}', '--timeout','3')
         assert result['status'] == 200
     finally:
-        server.shutdown();server.server_close();runner.join(timeout=3)
+        server.shutdown()
+        server.server_close()
+        runner.join(timeout=3)
