@@ -1,7 +1,10 @@
 """Pure integration recipe tests; never launch optional untrusted applications."""
 import json
+
 import pytest
+
 from omniforge import integrations
+
 
 @pytest.mark.parametrize("client,field", [
  ("cline","mcpServers"), ("claude-code","mcpServers"),

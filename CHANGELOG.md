@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+- `omniforge run <skill> --approve` no longer silently ignores its own flags. The `args` positional used `argparse.REMAINDER`, which consumed every option after the skill name, so the documented command returned a preview-only plan while appearing to accept the approval. Script arguments are now `nargs="*"` with an explicit `--` separator, and options work on either side of the skill name.
+- `omniforge orchestrate` reports a validation error instead of crashing with `KeyError: 'skill'` when a workflow task omits `skill`. Tasks are now checked for a present, known bundled skill (or an `executable` for `kind: agent`), and non-object JSON roots and malformed JSON produce clear errors rather than tracebacks.
+
+### Changed
+- `omniforge doctor` now includes a `capabilities` block separating *installed* from *available*: Docker (isolated execution), Playwright (browser automation), `sentence-transformers` (local embeddings) and whether `OMNIFORGE_API_KEY` is set. Detection uses `importlib.util.find_spec` only, so nothing is imported, installed or downloaded.
+- Added `ruff.toml` and a pinned `ruff==0.17.4` dev dependency; `ruff check src tests scripts` now runs as a CI step and the codebase passes cleanly. Bundled skill scripts keep their intentionally compact style via per-file ignores.
+
+### Added
+- Regression tests for CLI option parsing, workflow validation and capability reporting (`tests/test_cli_regressions.py`), covering the three defects above.
+
+
 ## 1.3.1 — Cross-platform reliability and release readiness (2026-10-25)
 
 - Added Linux/Windows/macOS CI for Python 3.11 and 3.13. Fixed actual Windows raw-byte hashing errors caused by OS text-mode CRLF/Control-Z conversion, and removed a Linux-only test assumption on macOS.

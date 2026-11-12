@@ -1,19 +1,24 @@
 """OF-Provenance v2 security and compatibility tests (no wallet/network needed)."""
 from __future__ import annotations
+
 import hashlib
 import json
 import os
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
+
 import pytest
 
 from omniforge import provenance_v2 as v2
-from omniforge.provenance_v2_policy import (
-    DEFAULT_POLICY, canonical, hashed, policy_digest, scan_project, snapshot_digest,
-)
+from omniforge.blockchain import record as legacy_record
+from omniforge.blockchain import verify as legacy_verify
 from omniforge.provenance_v2_cli import main
 from omniforge.provenance_v2_evm import prepare
-from omniforge.blockchain import record as legacy_record, verify as legacy_verify
+from omniforge.provenance_v2_policy import (
+    canonical,
+    hashed,
+    policy_digest,
+    snapshot_digest,
+)
 
 WALLET = "0x" + "11" * 20
 

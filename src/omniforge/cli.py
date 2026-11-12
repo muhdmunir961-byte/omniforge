@@ -2,30 +2,63 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import shutil
 import sys
 from pathlib import Path
+
 from . import __version__
-from .core import (AGENT_LOCATIONS, audit_skill, bundled_names, bundled_root, catalog,
-                   forge_skill, install_skill, validate_skill)
-from .router import index, load_skill, search_skills, token_report
-from .vscode import configure_vscode
-from .semantic import hybrid_search, embedding_search
-from .planner import related, plan
-from .runtime import prepare_run, execute_run
 from .agents import execute_workflow
+from .autocode import apply_proposal, request_edits
+from .blockchain import anchor_payload
+from .blockchain import proof as chain_proof
+from .blockchain import record as chain_record
+from .blockchain import verify as chain_verify
 from .browser import browser_session, load_actions
-from .autocode import request_edits, apply_proposal
-from .integrations import recipe as integration_recipe, inventory as integration_inventory, doctor as integration_doctor
-from .provenance import build_manifest, check_manifest
-from .blockchain import record as chain_record, verify as chain_verify, proof as chain_proof, anchor_payload
+from .core import AGENT_LOCATIONS, audit_skill, bundled_names, catalog, forge_skill, install_skill, validate_skill
 from .evm import verify_anchor
+from .integrations import doctor as integration_doctor
+from .integrations import inventory as integration_inventory
+from .integrations import recipe as integration_recipe
+from .planner import plan, related
+from .provenance import build_manifest, check_manifest
+from .router import index, load_skill, search_skills, token_report
+from .runtime import execute_run, prepare_run
+from .semantic import embedding_search, hybrid_search
+from .vscode import configure_vscode
 
 
 def as_json(value: object) -> None:
     print(json.dumps(value, ensure_ascii=False, indent=2))
+
+
+def local_capabilities() -> dict:
+    """Report what this machine can actually do, without installing anything.
+
+    Presence checks only: no process is started, no model is downloaded and no
+    network request is made. A ``False`` value means the optional dependency is
+    missing and the matching command will refuse to run rather than degrade
+    silently.
+    """
+    def present(module: str) -> bool:
+        try:
+            return importlib.util.find_spec(module) is not None
+        except (ImportError, ValueError):
+            return False
+
+    docker = shutil.which("docker")
+    return {
+        "docker": bool(docker),
+        "docker_path": docker,
+        "git": bool(shutil.which("git")),
+        "playwright": present("playwright"),
+        "sentence_transformers": present("sentence_transformers"),
+        "isolated_execution": "docker" if docker else "unavailable: use --unsafe-local on trusted code only",
+        "browser_automation": "playwright" if present("playwright") else "unavailable: pip install playwright && playwright install chromium",
+        "byok_endpoint_key": bool(os.environ.get("OMNIFORGE_API_KEY")),
+    }
 
 
 def repo_recon(repo: Path) -> dict:
@@ -53,19 +86,22 @@ def parser() -> argparse.ArgumentParser:
     sub.add_parser("doctor", help="inspect local capabilities")
     sub.add_parser("list", help="list compact bundled skill summaries")
     s = sub.add_parser("search", help="search bundled skills without reading their full bodies")
-    s.add_argument("query"); s.add_argument("--limit", type=int, default=5)
+    s.add_argument("query")
+    s.add_argument("--limit", type=int, default=5)
     s.add_argument("--mode", choices=("keyword", "hybrid", "embeddings"), default="hybrid")
     s.add_argument("--model-path", help="already-installed local sentence embedding model")
-    l = sub.add_parser("load", help="expand exactly one bundled SKILL.md")
-    l.add_argument("name", choices=bundled_names())
-    l.add_argument("--max-chars", type=int, default=12000)
+    load = sub.add_parser("load", help="expand exactly one bundled SKILL.md")
+    load.add_argument("name", choices=bundled_names())
+    load.add_argument("--max-chars", type=int, default=12000)
     b = sub.add_parser("budget", help="rough estimate of lazy skill context consumption")
     b.add_argument("--selected", choices=bundled_names())
     c = sub.add_parser("catalog", help="search upstream GitHub tool candidates (not integrations)")
     c.add_argument("query", nargs="?", default="")
-    c.add_argument("--category"); c.add_argument("--limit", type=int, default=25)
+    c.add_argument("--category")
+    c.add_argument("--limit", type=int, default=25)
     i = sub.add_parser("install", help="install an audited local skill into a coding agent")
-    i.add_argument("name"); i.add_argument("--agent", choices=sorted(AGENT_LOCATIONS), default="universal")
+    i.add_argument("name")
+    i.add_argument("--agent", choices=sorted(AGENT_LOCATIONS), default="universal")
     i.add_argument("--project", type=Path, default=Path.cwd())
     i.add_argument("--source", type=Path, help="optional local skill directory")
     i.add_argument("--force", action="store_true", help="replace same skill folder (destructive)")
@@ -74,8 +110,10 @@ def parser() -> argparse.ArgumentParser:
     v = sub.add_parser("validate", help="check portable SKILL.md metadata")
     v.add_argument("path", type=Path)
     f = sub.add_parser("forge", help="generate non-executable skill scaffold for trusted CLI")
-    f.add_argument("name"); f.add_argument("--description", required=True)
-    f.add_argument("--command", required=True); f.add_argument("--output", type=Path, default=Path.cwd())
+    f.add_argument("name")
+    f.add_argument("--description", required=True)
+    f.add_argument("--command", required=True)
+    f.add_argument("--output", type=Path, default=Path.cwd())
     adapters = sub.add_parser("integrations", help="generate local MCP client recipes (configuration only)")
     adapters_sub = adapters.add_subparsers(dest="integration_action", required=True)
     adapters_sub.add_parser("list", help="list available client and optional 3D integration status")
@@ -87,7 +125,8 @@ def parser() -> argparse.ArgumentParser:
     adapter_doctor = adapters_sub.add_parser("doctor", help="check installed executables, not live MCP connections")
     adapter_doctor.add_argument("--blender", action="store_true")
     vs = sub.add_parser("setup-vscode", help="add VS Code MCP and short optional skill instructions")
-    vs.add_argument("--project", type=Path, default=Path.cwd()); vs.add_argument("--force", action="store_true")
+    vs.add_argument("--project", type=Path, default=Path.cwd())
+    vs.add_argument("--force", action="store_true")
     rr = sub.add_parser("inspect", help="read-only local project reconnaissance")
     rr.add_argument("project", nargs="?", type=Path, default=Path.cwd())
     run = sub.add_parser("run", help="permission-gated bundled skill execution (Docker by default)")
@@ -97,7 +136,8 @@ def parser() -> argparse.ArgumentParser:
     run.add_argument("--allow-network", action="store_true")
     run.add_argument("--approve", action="store_true")
     run.add_argument("--timeout", type=int, default=30)
-    run.add_argument("args", nargs=argparse.REMAINDER, help="script args, after --")
+    run.add_argument("args", nargs="*",
+                     help="script args; use -- before flags meant for the script")
     ag = sub.add_parser("orchestrate", help="run a validated dependency-ordered skill/agent workflow")
     ag.add_argument("workflow", type=Path)
     ag.add_argument("--project", type=Path, default=Path.cwd())
@@ -126,9 +166,11 @@ def parser() -> argparse.ArgumentParser:
     man.add_argument("--out", type=Path, default=Path('omniforge-manifest.json'))
     man.add_argument("--verify", action="store_true")
     rel = sub.add_parser("related", help="synonym-aware offline skill search")
-    rel.add_argument("query"); rel.add_argument("--limit", type=int, default=5)
-    pl = sub.add_parser("plan", help="reviewable offline skill workflow")
-    pl.add_argument("task"); pl.add_argument("--limit", type=int, default=3)
+    rel.add_argument("query")
+    rel.add_argument("--limit", type=int, default=5)
+    plan_parser = sub.add_parser("plan", help="reviewable offline skill workflow")
+    plan_parser.add_argument("task")
+    plan_parser.add_argument("--limit", type=int, default=3)
     bc = sub.add_parser("blockchain", help="local hash-chain provenance and EVM transaction anchoring")
     bs = bc.add_subparsers(dest="chain_action", required=True)
     cr = bs.add_parser("record", help="append snapshot hash to the tamper-evident local ledger")
@@ -160,12 +202,22 @@ def parser() -> argparse.ArgumentParser:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    # Python 3.11's argparse rejects "--" before a nargs="*" positional once
+    # options have been consumed, while 3.13 accepts it. Split the script
+    # arguments ourselves so "omniforge run SKILL [opts] -- ARG..." behaves
+    # identically on every supported interpreter.
+    script_args: list[str] = []
+    if argv[:1] == ["run"] and "--" in argv:
+        cut = argv.index("--")
+        argv, script_args = argv[:cut], argv[cut + 1:]
     args = parser().parse_args(argv)
     try:
         if args.action == "doctor":
             as_json({"name": "OmniForge", "version": __version__, "python": sys.version.split()[0],
                      "skills": bundled_names(), "candidates": len(catalog()),
                      "agents": sorted(AGENT_LOCATIONS), "executable": shutil.which("omniforge"),
+                     "capabilities": local_capabilities(),
                      "mode": "core works locally without keys; optional code command uses BYOK endpoint"})
         elif args.action == "integrations":
             if args.integration_action == "list":
@@ -211,7 +263,9 @@ def main(argv: list[str] | None = None) -> int:
         elif args.action == "inspect":
             as_json(repo_recon(args.project))
         elif args.action == "run":
-            arguments = args.args[1:] if args.args and args.args[0] == "--" else args.args
+            arguments = script_args + list(args.args)
+            if arguments[:1] == ["--"]:
+                arguments = arguments[1:]
             execution_plan = prepare_run(args.name, arguments, args.project,
                                docker=not args.unsafe_local, allow_network=args.allow_network,
                                timeout=args.timeout)

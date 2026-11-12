@@ -3,9 +3,11 @@
 No external model, network calls or command execution.
 """
 from __future__ import annotations
+
 import math
 import re
 from collections import Counter
+
 from .router import index
 
 ALIASES = {
@@ -39,7 +41,7 @@ def related(query: str, limit: int = 5) -> list[dict]:
     def weight(t: str) -> float:
         return math.log((len(vocab) + 1) / (counts[t] + 1)) + 1
     ranked = []
-    for item, terms in zip(docs, vocab):
+    for item, terms in zip(docs, vocab, strict=True):
         common = q & terms
         if not common:
             continue

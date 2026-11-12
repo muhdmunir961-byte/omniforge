@@ -11,13 +11,20 @@ import shutil
 import subprocess
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-from .runtime import prepare_run, execute_run
+
+from .core import bundled_names
+from .runtime import execute_run, prepare_run
 
 MAX_TASKS = 24
 
 
 def read_workflow(path: Path) -> list[dict]:
-    data = json.loads(path.read_text(encoding='utf-8'))
+    try:
+        data = json.loads(path.read_text(encoding='utf-8'))
+    except (ValueError, UnicodeError) as exc:
+        raise ValueError(f'Workflow is not valid UTF-8 JSON: {exc}') from exc
+    if not isinstance(data, dict):
+        raise ValueError('Workflow root must be a JSON object')
     tasks = data.get('tasks')
     if not isinstance(tasks, list) or not 1 <= len(tasks) <= MAX_TASKS:
         raise ValueError('Workflow requires 1..24 tasks')
@@ -30,6 +37,14 @@ def read_workflow(path: Path) -> list[dict]:
         ids.add(task['id'])
         if task.get('kind', 'skill') not in ('skill', 'agent'):
             raise ValueError('Task kind must be skill or agent')
+        if task.get('kind', 'skill') == 'skill':
+            if not isinstance(task.get('skill'), str):
+                raise ValueError(f"Task {task['id']} requires a skill name")
+            if task['skill'] not in bundled_names():
+                raise ValueError(f"Task {task['id']} names an unknown bundled skill")
+        else:
+            if not isinstance(task.get('executable'), str):
+                raise ValueError(f"Task {task['id']} requires an executable name")
         if not isinstance(task.get('args', []), list) or not all(isinstance(x, str) for x in task.get('args', [])):
             raise ValueError('Task args must be strings')
         if not isinstance(task.get('depends_on', []), list):
@@ -84,6 +99,7 @@ def execute_workflow(path: Path, project: Path, *, approve: bool = False,
                 try:
                     finished = subprocess.run(command, cwd=project, timeout=timeout,
                                               capture_output=True, text=True, stdin=subprocess.DEVNULL,
+                                              check=False,
                                               env={'PATH': os.defpath, 'PYTHONIOENCODING':'utf-8'})
                     result = {'status': 'completed' if finished.returncode == 0 else 'failed',
                               'exit_code': finished.returncode,

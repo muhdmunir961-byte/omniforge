@@ -1,15 +1,13 @@
 """Upgrade-only security regressions; skipped until optional v1.1 modules ship."""
 import json
-from pathlib import Path
 from unittest.mock import patch
+
 import pytest
 
 
 def test_mcp_does_not_accept_model_approval(tmp_path):
     pytest.importorskip("omniforge.runtime")
     from omniforge.mcp import dispatch
-    from omniforge.runtime import execute_run
-    from omniforge.browser import browser_session
     cases = [
         ("OMNIFORGE_MCP_EXECUTION", "omniforge_run",
          {"name": "firmware-preflight", "project": str(tmp_path), "approve": True}),
@@ -31,7 +29,7 @@ def test_mcp_does_not_accept_model_approval(tmp_path):
 
 def test_autocode_rejects_linked_backup_root(tmp_path):
     pytest.importorskip("omniforge.autocode")
-    from omniforge.autocode import apply_proposal, _hash
+    from omniforge.autocode import _hash, apply_proposal
     target = tmp_path / "main.py"
     target.write_text("original")
     outside = tmp_path / "elsewhere"

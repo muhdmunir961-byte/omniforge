@@ -5,15 +5,15 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from omniforge.semantic import hybrid_search, embedding_search
-from omniforge.runtime import prepare_run, execute_run
-from omniforge.agents import read_workflow, execute_workflow, agent_command
-from omniforge.browser import validate_url, load_actions, browser_session
-from omniforge.autocode import validate_proposal, apply_proposal, request_edits, _hash
-from omniforge.provenance import build_manifest, check_manifest
-from omniforge.mcp import dispatch
-from omniforge.cli import main
+
+from omniforge.agents import agent_command, execute_workflow, read_workflow
+from omniforge.autocode import _hash, apply_proposal, request_edits, validate_proposal
+from omniforge.browser import browser_session, load_actions, validate_url
 from omniforge.core import bundled_names
+from omniforge.mcp import dispatch
+from omniforge.provenance import build_manifest, check_manifest
+from omniforge.runtime import execute_run, prepare_run
+from omniforge.semantic import embedding_search, hybrid_search
 
 
 def test_hybrid_search_relevance():
@@ -165,7 +165,6 @@ def test_optional_tool_adapters_are_packaged(tmp_path):
 
 
 def test_local_model_response_produces_validated_patch(monkeypatch,tmp_path):
-    import io
     from omniforge import autocode
     (tmp_path/'main.py').write_text('result = 1\n')
     sha = _hash((tmp_path/'main.py').read_bytes())
@@ -198,11 +197,12 @@ def test_manifest_bad_traversal_rejected(tmp_path):
 
 def test_adapter_checks_do_not_require_upstream_binaries():
     import subprocess
+
     from omniforge.core import bundled_root
     for name in ('trivy-scan','kicad-drc','esptool-chip','browser-snapshot'):
         script=bundled_root()/name/'scripts'/'check.py'
         cp=subprocess.run([sys.executable,str(script),'--check'],text=True,
-                          capture_output=True,timeout=10)
+                          capture_output=True,timeout=10,check=False)
         assert cp.returncode==0,cp.stderr
         obj=json.loads(cp.stdout)
         assert 'available' in obj

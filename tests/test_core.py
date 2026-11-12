@@ -3,15 +3,22 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
-from pathlib import Path
 
 import pytest
-from omniforge.core import (AGENT_LOCATIONS, audit_skill, bundled_root, bundled_names, catalog,
-                            forge_skill, install_skill, validate_skill)
+
+from omniforge.cli import main, repo_recon
+from omniforge.core import (
+    audit_skill,
+    bundled_names,
+    bundled_root,
+    catalog,
+    forge_skill,
+    install_skill,
+    validate_skill,
+)
+from omniforge.mcp import dispatch
 from omniforge.router import index, load_skill, search_skills, token_report
-from omniforge.mcp import dispatch, serve
 from omniforge.vscode import configure_vscode
-from omniforge.cli import repo_recon, main
 
 
 def test_skill_package_valid():
@@ -99,7 +106,7 @@ def test_mcp_stdio_subprocess():
     ]
     proc = subprocess.run([sys.executable, "-m", "omniforge", "mcp"],
                           input="\n".join(json.dumps(x) for x in commands) + "\n", capture_output=True,
-                          text=True, timeout=10)
+                          text=True, timeout=10, check=False)
     assert proc.returncode == 0, proc.stderr
     replies = [json.loads(row) for row in proc.stdout.splitlines()]
     assert [r["id"] for r in replies] == [1, 2, 3]
@@ -125,5 +132,6 @@ def test_symlink_source_rejected(tmp_path):
 def test_bundled_scripts_help_and_cli():
     for skill in bundled_names():
         for script in (bundled_root() / skill / "scripts").glob("*.py"):
-            proc = subprocess.run([sys.executable, str(script), "--help"], capture_output=True, text=True, timeout=10)
+            proc = subprocess.run([sys.executable, str(script), "--help"], capture_output=True,
+                                  text=True, timeout=10, check=False)
             assert proc.returncode == 0, f"{skill}: {proc.stderr}"

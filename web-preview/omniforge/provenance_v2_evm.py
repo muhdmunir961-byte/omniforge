@@ -4,7 +4,9 @@ No wallet private keys, signing, transaction submission or monetary operations.
 Only explicit user-approved external wallets can ever send the prepared payload.
 """
 from __future__ import annotations
+
 from pathlib import Path
+
 from .evm import ADDRESS, TXID, _quantity, rpc
 from .provenance_v2 import proof, verify
 

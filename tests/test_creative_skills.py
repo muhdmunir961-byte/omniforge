@@ -4,12 +4,13 @@ from __future__ import annotations
 import importlib.util
 import json
 import math
-from pathlib import Path
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
-from omniforge.core import bundled_names, bundled_root, validate_skill, audit_skill
+
+from omniforge.core import audit_skill, bundled_names, bundled_root, validate_skill
 from omniforge.router import load_skill, search_skills, token_report
 
 CREATIVE = ("interface-craft", "realtime-3d-mesh", "motion-interaction", "visual-qa")
@@ -78,7 +79,7 @@ def test_obj_generator_creates_real_mesh_and_never_overwrites(tmp_path, shape):
     obj = tmp_path / "demo.obj"
     command = [sys.executable, str(script), "--shape", shape, "--rings", "9",
                "--segments", "8", "--out", str(obj)]
-    result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+    result = subprocess.run(command, capture_output=True, text=True, timeout=10, check=False)
     assert result.returncode == 0, result.stderr
     metadata = json.loads(result.stdout)
     assert metadata["has_normals"] and metadata["has_uv"]
@@ -86,7 +87,7 @@ def test_obj_generator_creates_real_mesh_and_never_overwrites(tmp_path, shape):
     assert "\nv " in content and "\nvt " in content and "\nvn " in content and "\nf " in content
     assert content.count("\nv ") == metadata["vertices"]
     assert content.count("\nf ") == metadata["triangles"]
-    repeated = subprocess.run(command, capture_output=True, text=True, timeout=10)
+    repeated = subprocess.run(command, capture_output=True, text=True, timeout=10, check=False)
     assert repeated.returncode != 0 and obj.read_text() == content
 
 

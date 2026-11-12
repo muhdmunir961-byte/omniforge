@@ -11,11 +11,13 @@ import json
 import os
 import shutil
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from urllib.parse import urlparse
-from urllib.request import Request, HTTPRedirectHandler, build_opener
+from urllib.request import HTTPRedirectHandler, Request, build_opener
+
 from .core import secure_project_path
+
 
 class _RejectProviderRedirects(HTTPRedirectHandler):
     """Never forward chosen source files or bearer tokens via 30x responses."""
@@ -138,14 +140,14 @@ def apply_proposal(proposal: dict, project: Path, *, approve: bool = False) -> d
         if not target.is_relative_to(root) or not target.is_file() or target.is_symlink() or _hash(target.read_bytes()) != edit['sha256']:
             raise ValueError(f'Original file changed: {edit["path"]}')
         targets.append(target)
-    backup_root = secure_project_path(root, '.omniforge', 'backups', datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ'))
+    backup_root = secure_project_path(root, '.omniforge', 'backups', datetime.now(UTC).strftime('%Y%m%dT%H%M%S%fZ'))
     backup_root.mkdir(parents=True, exist_ok=False)
     try:
         for target in targets:
             backup = backup_root / target.relative_to(root)
             backup.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(target, backup)
-        for edit, target in zip(edits, targets):
+        for edit, target in zip(edits, targets, strict=True):
             with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',dir=target.parent,delete=False) as out:
                 out.write(edit['new_content'])
                 temp_path = Path(out.name)

@@ -1,4 +1,4 @@
-import argparse,json,shutil,subprocess,sys
+import argparse,json,shutil,sys
 
 def main():
  p=argparse.ArgumentParser(description='Non-invasive ESP32 tooling preflight');p.parse_args()

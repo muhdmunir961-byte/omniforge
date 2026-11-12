@@ -1,0 +1,16 @@
+# Lint configuration for OmniForge (ruff is a dev-only tool; the package itself
+# keeps a standard-library-only runtime).
+line-length = 120
+target-version = "py311"
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "C4", "PIE", "PLW"]
+ignore = [
+  "E501",   # long lines are allowed; readability over a hard column
+  "SIM108", # explicit if/else is often clearer than a nested conditional
+]
+
+[lint.per-file-ignores]
+# Bundled skill scripts are intentionally terse single-purpose scripts that are
+# copied into other projects; keep them compact.
+"src/omniforge/data/skills/*/scripts/*.py" = ["E701", "E702", "E401", "I001", "UP", "B", "SIM", "RUF"]

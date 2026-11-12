@@ -9,15 +9,15 @@ import datetime
 import html
 import json
 import os
-from pathlib import Path
 import subprocess
 import tempfile
+from pathlib import Path
 
 
 def execute(argv, *, expect=0, input_text=None):
     result = subprocess.run(
         argv, input=input_text, capture_output=True, text=True, timeout=40,
-        env={**os.environ, "PYTHONIOENCODING": "utf-8"},
+        env={**os.environ, "PYTHONIOENCODING": "utf-8"}, check=False,
     )
     if result.returncode != expect:
         raise AssertionError(
@@ -214,7 +214,7 @@ def run_preview(output):
         ], expect=1)
         check(invalid["ok"] is False, "ledger tampering is rejected")
 
-    stamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    stamp = datetime.datetime.now(datetime.UTC).isoformat()
     meta = {"result": "PASS", "version": "1.3.1", "utc": stamp,
             "cli_scenarios": len(records), "assertions": assertions,
             "details": "Installed wheel CLI; mock local projects only; no real wallets or third-party APIs"}

@@ -4,13 +4,12 @@ This module deliberately does not claim the host subprocess is a sandbox.
 """
 from __future__ import annotations
 
-import json
 import os
-import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
+
 from .core import bundled_names, bundled_root
 
 NETWORK_SKILLS = frozenset({'api-probe', 'browser-snapshot', 'trivy-scan'})

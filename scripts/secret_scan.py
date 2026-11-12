@@ -3,10 +3,10 @@
 This does NOT replace GitHub secret scanning or detect all credentials.
 It intentionally avoids printing secret values to CI logs.
 """
-from pathlib import Path
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 PATTERNS = {
     "private-key PEM": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),

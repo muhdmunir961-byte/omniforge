@@ -11,7 +11,7 @@ import json
 import os
 import re
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from .core import secure_project_path
@@ -134,7 +134,7 @@ def record(project: Path, note: str = "") -> dict:
         payload = {
             "version": 1,
             "height": len(entries),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "previous": entries[-1]["hash"] if entries else ZERO,
             "snapshot": snapshot_hash,
             "files": files,
