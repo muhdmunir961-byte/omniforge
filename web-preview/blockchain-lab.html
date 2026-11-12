@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f6f5f1">
+<meta name="description" content="Ujian blockchain OmniForge secara langsung: bina rantai hash SHA-256 sebenar, ubah fail, dan lihat pengesanan manipulasi dengan animasi.">
+<title>Blockchain Lab · OmniForge</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23262b27'/%3E%3Cpath d='M20 22h24M20 32h24M20 42h24' stroke='%23e0a171' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/showcase.css">
+<link rel="stylesheet" href="/blockchain-lab.css">
+</head>
+<body class="chain-page">
+
+<div class="announcement">
+  <span class="announce-led"></span><strong>OMNIFORGE</strong>
+  <span class="announcement-divider">/</span><span>BLOCKCHAIN LAB · REAL PYTHON</span>
+  <a href="https://github.com/muhdmunir961-byte/omniforge" target="_blank" rel="noreferrer">Source ↗</a>
+</div>
+
+<header class="site-head">
+  <a class="mark" href="/"><span class="mark-hex" aria-hidden="true">⬡</span><span>OMNIFORGE<span class="mark-sub">CHAIN LAB</span></span></a>
+  <nav aria-label="Navigasi utama">
+    <a href="/">Showcase</a>
+    <a href="/terminal.html">Live terminal</a>
+    <a href="/explorer.html">Explorer</a>
+    <a class="nav-alt" href="#lab">Uji sekarang <span aria-hidden="true">↗</span></a>
+  </nav>
+</header>
+
+<main>
+
+<section class="chain-hero">
+  <div class="eyebrow"><span class="eyebrow-square"></span> INTEGRITI / RANTAI HASH <span class="hero-ver">v1 + v2</span></div>
+  <h1>Setiap blok<br><em>mengunci</em> yang sebelumnya.</h1>
+  <p class="chain-deck">
+    Halaman ini menjalankan <strong>Python sebenar</strong> pada pelayan. Setiap blok mengandungi
+    cap jari SHA-256 fail projek anda, ditambah hash blok sebelumnya. Tukar satu bait sahaja,
+    dan rantai itu <strong>terputus</strong>.
+  </p>
+  <div class="chain-legend">
+    <span><i class="dot dot-live"></i> Pelayan hidup</span>
+    <span><i class="dot dot-idle"></i> Belum dijalankan</span>
+    <span><i class="dot dot-bad"></i> Manipulasi dikesan</span>
+    <span><i class="dot dot-limit"></i> Had: 4 baris / permintaan</span>
+  </div>
+</section>
+
+<section class="chain-lab" id="lab">
+
+  <!-- ---------- controls ---------- -->
+  <div class="lab-bar">
+    <div class="lab-bar-left">
+      <span class="lab-label">KAWALAN</span>
+      <span class="lab-status" id="statusPill" data-state="idle">SEDIA</span>
+    </div>
+    <div class="lab-bar-actions">
+      <button class="btn btn-main" id="btnBuild">
+        <span>Bina rantai</span><kbd>1</kbd>
+      </button>
+      <button class="btn" id="btnAppend">
+        <span>Tambah blok</span><kbd>2</kbd>
+      </button>
+      <button class="btn btn-danger" id="btnTamper">
+        <span>Ubah fail</span><kbd>3</kbd>
+      </button>
+      <button class="btn" id="btnVerify">
+        <span>Sahkan</span><kbd>4</kbd>
+      </button>
+      <button class="btn btn-ghost" id="btnReset">Set semula</button>
+    </div>
+  </div>
+
+  <!-- ---------- the chain ---------- -->
+  <div class="chain-stage" id="stage" aria-live="polite">
+    <div class="stage-empty" id="stageEmpty">
+      <div class="empty-glyph" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <p>Rantai kosong. Tekan <strong>Bina rantai</strong> untuk mencipta genesis sebenar.</p>
+    </div>
+    <div class="chain-rail" id="rail"></div>
+  </div>
+
+  <!-- ---------- inspector ---------- -->
+  <div class="inspector">
+    <div class="inspector-panel">
+      <div class="panel-head">
+        <span class="panel-label">OUTPUT SEBENAR</span>
+        <span class="panel-meta" id="outputMeta">—</span>
+      </div>
+      <pre class="panel-code" id="output"><span class="muted">$ menunggu arahan…</span></pre>
+    </div>
+
+    <aside class="inspector-side">
+      <div class="side-block">
+        <span class="panel-label">CARA IA BERFUNGSI</span>
+        <ol class="explain">
+          <li><b>01</b><div><strong>Snapshot fail</strong><p>Setiap fail projek dicap SHA-256, bukan disimpan.</p></div></li>
+          <li><b>02</b><div><strong>Blok baru</strong><p>Hash = SHA-256(domain + payload + prev_hash).</p></div></li>
+          <li><b>03</b><div><strong>Rantai</strong><p>Blok 2 mengunci blok 1. Ubah 1 → semua putus.</p></div></li>
+        </ol>
+      </div>
+      <div class="side-block side-warn">
+        <span class="panel-label">HAD SEBENAR</span>
+        <p>
+          Ini <strong>bukan</strong> blockchain terdesentralisasi dan <strong>bukan</strong>
+          bukti penulisan. Sesiapa yang ada akses fail boleh tulis semula seluruh sejarah.
+          Hanya <em>checkpoint</em> luar (atau anchor EVM) mengesan tulis-semula penuh.
+        </p>
+        <p class="side-note-limit">
+          Pelayan awam menerima <strong>maksimum 4 baris</strong> setiap permintaan dan
+          memusnahkan projek selepas itu. Jadi setiap butang membina semula rantai
+          (init + snapshot) dalam satu permintaan — bukan menyambung projek lama.
+        </p>
+      </div>
+    </aside>
+  </div>
+
+</section>
+
+<section class="chain-section">
+  <div class="section-heading">
+    <span class="eyebrow"><span class="eyebrow-square"></span> BUKTI, BUKAN DAKWAAN</span>
+    <h2>Apa yang sebenarnya diuji.</h2>
+    <p>
+      Setiap butang di atas menjalankan proses Python sebenar melalui allowlist pelayan.
+      Tiada rakaman, tiada simulasi di sisi pelayar.
+    </p>
+  </div>
+  <div class="claims">
+    <div class="claim"><span>01</span><strong>Hash sebenar</strong><p>Nilai 64 aksara yang anda lihat ialah keluaran SHA-256 sebenar daripada <code>ofprov</code>.</p></div>
+    <div class="claim"><span>02</span><strong>Rantaian sebenar</strong><p>Setiap blok menyimpan <code>prev_hash</code> blok sebelumnya, disahkan semasa <code>verify</code>.</p></div>
+    <div class="claim"><span>03</span><strong>Pengesanan sebenar</strong><p>Selepas fail diubah, <code>verify --check-files</code> melaporkan fail mana yang berubah.</p></div>
+    <div class="claim"><span>04</span><strong>Sesi terbuang</strong><p>Setiap permintaan guna projek sementara yang dimusnahkan selepas itu — sebab itu rantai dibina semula setiap kali.</p></div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div><span class="footer-mark">OMNIFORGE</span><span>Blockchain Lab</span></div>
+  <div><a href="/terminal.html">Terminal</a><a href="/explorer.html">Explorer</a><a href="https://github.com/muhdmunir961-byte/omniforge" target="_blank" rel="noreferrer">GitHub</a></div>
+</footer>
+
+<script src="/blockchain-lab.js" defer></script>
+</body>
+</html>
