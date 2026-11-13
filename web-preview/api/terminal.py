@@ -356,13 +356,19 @@ class handler(BaseHTTPRequestHandler):
 
     def _json(self, code: int, payload: dict) -> None:
         raw = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
-        self.send_response(code)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Cache-Control", "no-store")
-        self.send_header("X-Content-Type-Options", "nosniff")
-        self.send_header("Content-Length", str(len(raw)))
-        self.end_headers()
-        self.wfile.write(raw)
+        try:
+            self.send_response(code)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("Content-Length", str(len(raw)))
+            self.end_headers()
+            self.wfile.write(raw)
+        except (BrokenPipeError, ConnectionResetError):
+            # The client went away before the response was written. That is a
+            # normal disconnect, not a server error, and must not print a
+            # traceback or leave the handler in a bad state.
+            self.close_connection = True
 
     def do_GET(self) -> None:
         # Health must run a real CLI subprocess, not merely report Python ready.
