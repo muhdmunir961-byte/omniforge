@@ -30,25 +30,61 @@
 
 <main>
 
+<!-- ============================= HERO ============================= -->
 <section class="chain-hero">
-  <div class="eyebrow"><span class="eyebrow-square"></span> INTEGRITI / RANTAI HASH <span class="hero-ver">v1 + v2</span></div>
-  <h1>Setiap blok<br><em>mengunci</em> yang sebelumnya.</h1>
-  <p class="chain-deck">
-    Halaman ini menjalankan <strong>Python sebenar</strong> pada pelayan. Setiap blok mengandungi
-    cap jari SHA-256 fail projek anda, ditambah hash blok sebelumnya. Tukar satu bait sahaja,
-    dan rantai itu <strong>terputus</strong>.
-  </p>
-  <div class="chain-legend">
-    <span><i class="dot dot-live"></i> Pelayan hidup</span>
-    <span><i class="dot dot-idle"></i> Belum dijalankan</span>
-    <span><i class="dot dot-bad"></i> Manipulasi dikesan</span>
-    <span><i class="dot dot-limit"></i> Had: 4 baris / permintaan</span>
+  <div class="hero-copy">
+    <div class="eyebrow"><span class="eyebrow-square"></span> INTEGRITI / RANTAI HASH <span class="hero-ver">v1 + v2</span></div>
+    <h1>Setiap blok<br><em>mengunci</em> yang sebelumnya.</h1>
+    <p class="chain-deck">
+      Halaman ini menjalankan <strong>Python sebenar</strong> pada pelayan. Setiap blok mengandungi
+      cap jari SHA-256 fail projek anda, ditambah hash blok sebelumnya. Tukar satu bait sahaja,
+      dan rantai itu <strong>terputus</strong>.
+    </p>
+    <div class="hero-actions">
+      <button class="btn btn-main btn-lg" id="btnAutoplay">
+        <span class="play-glyph" aria-hidden="true">▶</span>
+        <span>Mainkan demo penuh</span>
+        <kbd>P</kbd>
+      </button>
+      <a class="quiet-link" href="#lab">atau jalankan sendiri ↓</a>
+    </div>
+  </div>
+
+  <!-- animated decorative chain -->
+  <div class="hero-visual" aria-hidden="true">
+    <div class="hv-label">RANTAI HIDUP</div>
+    <div class="hv-chain">
+      <div class="hv-block hv-a"><span>BLOCK 0</span><i></i></div>
+      <div class="hv-link hv-l1"><b></b></div>
+      <div class="hv-block hv-b"><span>BLOCK 1</span><i></i></div>
+      <div class="hv-link hv-l2"><b></b></div>
+      <div class="hv-block hv-c"><span>BLOCK 2</span><i></i></div>
+    </div>
+    <div class="hv-note">hash mengalir ke hadapan →</div>
   </div>
 </section>
 
+<!-- ============================= STATS ============================= -->
+<section class="stats-strip" aria-label="Statistik sesi">
+  <div class="stat"><span class="stat-label">BLOK DIBINA</span><strong id="statBlocks">0</strong></div>
+  <div class="stat"><span class="stat-label">PENGESAHAN LULUS</span><strong id="statVerified">0</strong></div>
+  <div class="stat"><span class="stat-label">MANIPULASI DIKESAN</span><strong id="statTamper">0</strong></div>
+  <div class="stat"><span class="stat-label">MASA PELAYAN</span><strong id="statLatency">—</strong></div>
+  <div class="stat stat-wide"><span class="stat-label">STATUS</span><strong id="statState" class="stat-state">SEDIA</strong></div>
+</section>
+
+<!-- ============================= LAB ============================= -->
 <section class="chain-lab" id="lab">
 
-  <!-- ---------- controls ---------- -->
+  <!-- narrative stepper -->
+  <ol class="stepper" id="stepper" aria-label="Langkah demo">
+    <li data-step="build" class="step active"><b>01</b><span>Bina genesis</span></li>
+    <li data-step="append" class="step"><b>02</b><span>Tambah blok</span></li>
+    <li data-step="tamper" class="step"><b>03</b><span>Ubah fail</span></li>
+    <li data-step="verify" class="step"><b>04</b><span>Sahkan</span></li>
+  </ol>
+
+  <!-- controls -->
   <div class="lab-bar">
     <div class="lab-bar-left">
       <span class="lab-label">KAWALAN</span>
@@ -71,18 +107,24 @@
     </div>
   </div>
 
-  <!-- ---------- the chain ---------- -->
+  <!-- the chain -->
   <div class="chain-stage" id="stage" aria-live="polite">
     <div class="stage-empty" id="stageEmpty">
       <div class="empty-glyph" aria-hidden="true">
         <span></span><span></span><span></span>
       </div>
-      <p>Rantai kosong. Tekan <strong>Bina rantai</strong> untuk mencipta genesis sebenar.</p>
+      <p>Rantai kosong. Tekan <strong>Bina rantai</strong> atau <strong>Mainkan demo penuh</strong>.</p>
     </div>
     <div class="chain-rail" id="rail"></div>
   </div>
 
-  <!-- ---------- inspector ---------- -->
+  <!-- narration line -->
+  <div class="narration" id="narration" hidden>
+    <span class="narration-dot"></span>
+    <p id="narrationText"></p>
+  </div>
+
+  <!-- inspector -->
   <div class="inspector">
     <div class="inspector-panel">
       <div class="panel-head">
@@ -119,6 +161,7 @@
 
 </section>
 
+<!-- ============================= PROOF ============================= -->
 <section class="chain-section">
   <div class="section-heading">
     <span class="eyebrow"><span class="eyebrow-square"></span> BUKTI, BUKAN DAKWAAN</span>
@@ -133,6 +176,19 @@
     <div class="claim"><span>02</span><strong>Rantaian sebenar</strong><p>Setiap blok menyimpan <code>prev_hash</code> blok sebelumnya, disahkan semasa <code>verify</code>.</p></div>
     <div class="claim"><span>03</span><strong>Pengesanan sebenar</strong><p>Selepas fail diubah, <code>verify --check-files</code> melaporkan fail mana yang berubah.</p></div>
     <div class="claim"><span>04</span><strong>Sesi terbuang</strong><p>Setiap permintaan guna projek sementara yang dimusnahkan selepas itu — sebab itu rantai dibina semula setiap kali.</p></div>
+  </div>
+
+  <div class="integrity-disclosure">
+    <span class="disclosure-signal" aria-hidden="true">⛓</span>
+    <div>
+      <strong>Kenapa ini penting</strong>
+      <p>
+        Rantai hash memberi anda <strong>bukti yang boleh diperiksa</strong>, bukan janji.
+        Tetapi ia hanya sekuat tempat anda simpan <em>kepala</em> rantai itu.
+        Simpan <code>--expected-head</code> di luar projek, dan tulis-semula penuh pun akan
+        kelihatan.
+      </p>
+    </div>
   </div>
 </section>
 

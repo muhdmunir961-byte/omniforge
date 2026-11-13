@@ -17,12 +17,16 @@
    */
   const MAX_BATCH = 4;
   const MAX_SNAPSHOTS = MAX_BATCH - 2;
+
   const rail = document.getElementById("rail");
   const stage = document.getElementById("stage");
   const stageEmpty = document.getElementById("stageEmpty");
   const output = document.getElementById("output");
   const outputMeta = document.getElementById("outputMeta");
   const statusPill = document.getElementById("statusPill");
+  const narration = document.getElementById("narration");
+  const narrationText = document.getElementById("narrationText");
+  const stepper = document.getElementById("stepper");
 
   const buttons = {
     build: document.getElementById("btnBuild"),
@@ -30,6 +34,15 @@
     tamper: document.getElementById("btnTamper"),
     verify: document.getElementById("btnVerify"),
     reset: document.getElementById("btnReset"),
+    autoplay: document.getElementById("btnAutoplay"),
+  };
+
+  const stats = {
+    blocks: document.getElementById("statBlocks"),
+    verified: document.getElementById("statVerified"),
+    tamper: document.getElementById("statTamper"),
+    latency: document.getElementById("statLatency"),
+    state: document.getElementById("statState"),
   };
 
   /** Mirror of the ledger that the server last confirmed. */
@@ -38,15 +51,54 @@
     blocks: [],       // {seq, hash, prevHash, note}
     tampered: false,
     verified: false,
-    snapshots: 0,     // how many snapshots this session has appended
+    snapshots: 0,
   };
+  let counters = { blocks: 0, verified: 0, tamper: 0 };
   let busy = false;
+  let autoplayRunning = false;
 
   // ---------------------------------------------------------------- helpers
 
   function setStatus(text, kind) {
     statusPill.textContent = text;
     statusPill.dataset.state = kind || "idle";
+    stats.state.textContent = text;
+    stats.state.parentElement.className = "stat stat-wide";
+    if (kind === "ok") stats.state.parentElement.classList.add("good");
+    if (kind === "bad") stats.state.parentElement.classList.add("tampered");
+  }
+
+  function bumpStat(node) {
+    const card = node.closest(".stat");
+    card.classList.remove("bump");
+    // force reflow so the animation can restart
+    void card.offsetWidth;
+    card.classList.add("bump");
+    setTimeout(() => card.classList.remove("bump"), 450);
+  }
+
+  function renderCounters() {
+    stats.blocks.textContent = counters.blocks;
+    stats.verified.textContent = counters.verified;
+    stats.tamper.textContent = counters.tamper;
+  }
+
+  function setStep(name) {
+    const order = ["build", "append", "tamper", "verify"];
+    const activeIndex = order.indexOf(name);
+    stepper.querySelectorAll(".step").forEach(step => {
+      const idx = order.indexOf(step.dataset.step);
+      step.classList.toggle("active", idx === activeIndex);
+      step.classList.toggle("done", activeIndex > -1 && idx < activeIndex);
+    });
+  }
+
+  function say(text) {
+    narrationText.innerHTML = text;
+    narration.hidden = false;
+    narration.style.animation = "none";
+    void narration.offsetWidth;
+    narration.style.animation = "";
   }
 
   function setBusy(value) {
@@ -61,6 +113,7 @@
     buttons.tamper.disabled = busy || !state.initialised;
     buttons.verify.disabled = busy || !state.initialised;
     buttons.reset.disabled = busy;
+    buttons.autoplay.disabled = busy;
     buttons.append.title = state.snapshots >= MAX_SNAPSHOTS
       ? `Had pelayan: ${MAX_BATCH} baris setiap permintaan (init + ${MAX_SNAPSHOTS} snapshot)`
       : "";
@@ -76,7 +129,6 @@
     return h ? h.slice(0, 10) + "…" + h.slice(-6) : "—";
   }
 
-  /** Render JSON with light colouring so 64-char hashes stay readable. */
   function showJSON(obj, meta) {
     const pretty = JSON.stringify(obj, null, 2);
     const escaped = escapeHtml(pretty);
@@ -102,15 +154,13 @@
     output.appendChild(line);
     outputMeta.textContent = "GAGAL";
     setStatus("RALAT", "bad");
+    say(`Ralat: ${escapeHtml(message)}`);
   }
 
   // ---------------------------------------------------------------- server
 
-  /**
-   * Run an ordered batch in ONE disposable project.
-   * Returns the per-command results, each with parsed stdout where possible.
-   */
   async function runBatch(commands) {
+    const started = performance.now();
     const response = await fetch(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -121,6 +171,9 @@
     if (!response.ok) {
       throw new Error(data.error || "Pelayan menolak arahan ini.");
     }
+    const elapsed = Math.round(performance.now() - started);
+    stats.latency.textContent = elapsed + " ms";
+    bumpStat(stats.latency);
     return (data.results || []).map(result => {
       let parsed = null;
       try { parsed = JSON.parse(result.stdout); } catch (_) { /* raw only */ }
@@ -176,16 +229,18 @@
       last.classList.add("flow");
       setTimeout(() => last.classList.remove("flow"), 2400);
     }
+    renderCounters();
     syncButtons();
   }
 
   // ---------------------------------------------------------------- actions
 
-  /** Build the genesis block: init + first snapshot in one project. */
-  async function build() {
+  async function build(options = {}) {
+    if (!options.silent) setStep("build");
     setBusy(true);
     setStatus("MEMBINA…", "running");
     showText("$ ofprov init\n$ ofprov snapshot\n\nMenjalankan Python sebenar…");
+    say("<strong>Langkah 1.</strong> Mencipta ledger baru dan snapshot pertama — blok genesis.");
     try {
       const results = await runBatch(["ofprov init", "ofprov snapshot"]);
       const init = results[0];
@@ -201,6 +256,8 @@
         verified: false,
         snapshots: 1,
       };
+      counters.blocks += 1;
+      bumpStat(stats.blocks);
       render();
       showJSON({
         batch: ["ofprov init", "ofprov snapshot"],
@@ -211,18 +268,18 @@
         files: block.files,
       }, "EXIT 0 · genesis direkod");
       setStatus("GENESIS SIAP", "ok");
+      say(`<strong>Genesis direkod.</strong> Hash <code>${escapeHtml((block.entry_hash || "").slice(0, 16))}…</code> ialah cap jari SHA-256 bagi ${block.files ?? "?"} fail. Belum ada blok sebelumnya.`);
+      return true;
     } catch (error) {
       fail(error.message);
+      return false;
     } finally {
       setBusy(false);
     }
   }
 
-  /**
-   * Append one block. The server rebuilds the whole session in one project, so
-   * we replay init + every previous snapshot + one new snapshot.
-   */
-  async function append() {
+  async function append(options = {}) {
+    if (!options.silent) setStep("append");
     setBusy(true);
     setStatus("MENAMBAH…", "running");
     const count = state.snapshots + 1;
@@ -231,52 +288,58 @@
       setBusy(false);
       fail(`Had pelayan ialah ${MAX_BATCH} baris setiap permintaan; rantai ini sudah penuh. `
            + "Tekan Set semula untuk mula rantai baru.");
-      return;
+      return false;
     }
     showText(`$ ${commands.join("\n$ ")}\n\nMenjalankan Python sebenar…`);
+    say("<strong>Langkah 2.</strong> Menambah blok baru yang mengunci hash blok sebelumnya.");
     try {
       const results = await runBatch(commands);
       const failures = results.filter(r => r.exit_code !== 0);
       if (failures.length) throw new Error(stderrOf(failures[0]));
 
-      // Rebuild block list from every snapshot result (all real hashes).
       const snaps = results.slice(1);
-      const blocks = snaps.map((result, index) => ({
+      state.blocks = snaps.map((result, index) => ({
         seq: result.parsed?.seq ?? index,
         hash: result.parsed?.entry_hash || "",
         prevHash: index === 0 ? null : (snaps[index - 1].parsed?.entry_hash || null),
         note: index === 0 ? "genesis" : "snapshot",
       }));
-      state.blocks = blocks;
       state.snapshots = snaps.length;
       state.tampered = false;
       state.verified = false;
+      counters.blocks += 1;
+      bumpStat(stats.blocks);
       render();
 
       const newest = snaps[snaps.length - 1].parsed || {};
+      const prev = snaps.length > 1 ? snaps[snaps.length - 2].parsed?.entry_hash : null;
       showJSON({
         batch_commands: commands.length,
         newest_seq: newest.seq,
         newest_entry_hash: newest.entry_hash,
-        prev_hash: snaps.length > 1 ? snaps[snaps.length - 2].parsed?.entry_hash : null,
+        prev_hash: prev,
         snapshot_hash: newest.snapshot_hash,
-      }, `EXIT 0 · ${blocks.length} blok dalam rantai`);
-      setStatus(`${blocks.length} BLOK`, "ok");
+      }, `EXIT 0 · ${state.blocks.length} blok dalam rantai`);
+      setStatus(`${state.blocks.length} BLOK`, "ok");
+      say(`<strong>Blok ${newest.seq} ditambah.</strong> Ia menyimpan <code>prev_hash</code> blok sebelumnya, jadi kedua-duanya kini terikat.`);
+      return true;
     } catch (error) {
       fail(error.message);
+      return false;
     } finally {
       setBusy(false);
     }
   }
 
-  /** Rewrite a sample file, then verify: tamper-demo exits 1 when detected. */
-  async function tamper() {
+  async function tamper(options = {}) {
+    if (!options.silent) setStep("tamper");
     setBusy(true);
     setStatus("MENGUBAH…", "running");
     const commands = ["ofprov init", ...Array(state.snapshots).fill("ofprov snapshot"),
                       "ofprov tamper-demo"];
     showText(`$ ofprov tamper-demo\n\n(Projek dibina semula: ${commands.length - 1} langkah, `
              + "kemudian fail sampel diubah dan disahkan.)\n\nMenjalankan Python sebenar…");
+    say("<strong>Langkah 3.</strong> Menukar satu fail selepas snapshot, kemudian mengesahkan.");
     try {
       const results = await runBatch(commands);
       const tamperResult = results[results.length - 1];
@@ -285,6 +348,10 @@
 
       state.tampered = detected;
       state.verified = false;
+      if (detected) {
+        counters.tamper += 1;
+        bumpStat(stats.tamper);
+      }
       render();
       if (detected) {
         stage.classList.add("shake");
@@ -300,27 +367,37 @@
       }, detected ? "EXIT 1 · manipulasi dikesan" : "TIDAK DIJANGKA");
       setStatus(detected ? "MANIPULASI DIKESAN" : "TIADA PERUBAHAN",
                 detected ? "bad" : "ok");
+      say(detected
+        ? `<strong>Manipulasi dikesan.</strong> <code>verify --check-files</code> melaporkan fail berubah: <code>${escapeHtml((payload.files?.modified || []).join(", ") || "—")}</code>. Rantai tidak lagi sepadan dengan fail.`
+        : "<strong>Tiada perubahan dikesan.</strong> Fail sampel mungkin tidak berubah.");
+      return detected;
     } catch (error) {
       fail(error.message);
+      return false;
     } finally {
       setBusy(false);
     }
   }
 
-  /** Verify chain integrity plus current files. */
-  async function verify() {
+  async function verify(options = {}) {
+    if (!options.silent) setStep("verify");
     setBusy(true);
     setStatus("MENGESAHKAN…", "running");
     const commands = ["ofprov init", ...Array(state.snapshots).fill("ofprov snapshot"),
                       "ofprov verify"];
     showText(`$ ofprov verify\n\n(Projek dibina semula: ${commands.length - 1} langkah.)\n\n`
              + "Menjalankan Python sebenar…");
+    say("<strong>Langkah 4.</strong> Menyemak setiap pautan hash dalam rantai.");
     try {
       const results = await runBatch(commands);
       const last = results[results.length - 1];
       const payload = last.parsed || {};
       const ok = last.exit_code === 0 && payload.ok === true;
       state.verified = ok;
+      if (ok) {
+        counters.verified += 1;
+        bumpStat(stats.verified);
+      }
       render();
       showJSON({
         command: "ofprov verify",
@@ -332,8 +409,13 @@
         anchor_evidence_events: payload.anchor_evidence_events,
       }, ok ? "EXIT 0 · rantai utuh" : "EXIT 1 · rantai tidak sepadan");
       setStatus(ok ? "RANTAI UTUH" : "RANTAI TERPUTUS", ok ? "ok" : "bad");
+      say(ok
+        ? `<strong>Rantai utuh.</strong> ${payload.entries} entri disahkan; kepala rantai <code>${escapeHtml((payload.head || "").slice(0, 16))}…</code>.`
+        : "<strong>Rantai tidak sepadan.</strong> Satu atau lebih pautan hash gagal disahkan.");
+      return ok;
     } catch (error) {
       fail(error.message);
+      return false;
     } finally {
       setBusy(false);
     }
@@ -341,23 +423,65 @@
 
   function reset() {
     state = { initialised: false, blocks: [], tampered: false, verified: false, snapshots: 0 };
+    counters = { blocks: 0, verified: 0, tamper: 0 };
     render();
     showText("$ menunggu arahan…");
     outputMeta.textContent = "—";
+    stats.latency.textContent = "—";
     setStatus("SEDIA", "idle");
+    narration.hidden = true;
+    setStep(null);
+  }
+
+  // ---------------------------------------------------------------- autoplay
+
+  async function autoplay() {
+    if (autoplayRunning || busy) return;
+    autoplayRunning = true;
+    buttons.autoplay.disabled = true;
+    try {
+      reset();
+      await pause(260);
+      if (!(await build({ silent: true }))) return;
+      await pause(950);
+      if (!(await append({ silent: true }))) return;
+      await pause(950);
+      await verify({ silent: true });
+      await pause(1100);
+      await tamper({ silent: true });
+      await pause(1100);
+      await verify({ silent: true });
+      say("<strong>Demo selesai.</strong> Empat langkah, semua dijalankan oleh Python sebenar. Cuba sendiri dengan butang di atas.");
+    } finally {
+      autoplayRunning = false;
+      buttons.autoplay.disabled = false;
+      syncButtons();
+    }
+  }
+
+  function pause(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   // ---------------------------------------------------------------- events
 
-  buttons.build.addEventListener("click", build);
-  buttons.append.addEventListener("click", append);
-  buttons.tamper.addEventListener("click", tamper);
-  buttons.verify.addEventListener("click", verify);
+  buttons.build.addEventListener("click", () => build());
+  buttons.append.addEventListener("click", () => append());
+  buttons.tamper.addEventListener("click", () => tamper());
+  buttons.verify.addEventListener("click", () => verify());
   buttons.reset.addEventListener("click", reset);
+  buttons.autoplay.addEventListener("click", autoplay);
 
   document.addEventListener("keydown", event => {
     if (event.target.matches("input, textarea")) return;
-    const map = { "1": build, "2": append, "3": tamper, "4": verify };
+    const map = {
+      "1": () => build(),
+      "2": () => append(),
+      "3": () => tamper(),
+      "4": () => verify(),
+      "p": autoplay,
+      "P": autoplay,
+    };
     const action = map[event.key];
     if (action && !busy) { event.preventDefault(); action(); }
   });
