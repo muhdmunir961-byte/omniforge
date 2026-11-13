@@ -37,7 +37,7 @@ jobs:
           cat preview-output/preview.md >> "$GITHUB_STEP_SUMMARY"
       - name: Upload HTML, Markdown and JSON preview artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: omniforge-real-cli-preview
           path: preview-output/
