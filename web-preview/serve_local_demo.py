@@ -24,6 +24,15 @@ class DemoSite(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(ROOT), **kwargs)
 
+    def end_headers(self):
+        # This is a development server whose files change on every edit. Without
+        # this, a browser can keep serving a stale app.js/data.js after a fix and
+        # make a corrected page look unchanged.
+        self.send_header("Cache-Control", "no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        super().end_headers()
+
     def do_GET(self):
         if urlsplit(self.path).path == "/api/terminal":
             return DemoAPI.do_GET(self)
