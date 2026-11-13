@@ -5,10 +5,25 @@ export const META = Object.freeze({
   sourceCommit: '6de32a84c6331b14bb1eadd5bf28ef267c649a5f',
   verifiedAt: '2026-10-25',
   python: '3.11+',
-  nativeSkills: 14,
-  adapters: 4,
+  nativeSkills: 14,   // builtin skills that ship a local script or instructions
+  adapters: 4,        // require an optional upstream tool
   researchCandidates: 112
 });
+
+/** Search aliases: a user typing "blockchain" should reach the ledger skills. */
+export const SEARCH_ALIASES = {
+  blockchain: 'provenance ledger hash chain integrity',
+  ledger: 'provenance hash chain integrity',
+  hash: 'provenance snapshot integrity',
+  crypto: 'provenance hash',
+  tamper: 'provenance integrity verify',
+  audit: 'provenance verify visual-qa security',
+  secret: 'secret-hygiene security credential',
+  log: 'log-triage observability error',
+  database: 'sqlite-inspector database schema',
+  api: 'api-probe openapi networking',
+  firmware: 'firmware-preflight esptool hardware esp32',
+};
 
 export const SKILLS = [
   {name:'api-probe',type:'builtin',category:'Networking',description:'Probe a URL explicitly authorized by the user, reporting response status, headers and timing without leaking credentials.',need:'Python standard library',example:'omniforge load api-probe'},

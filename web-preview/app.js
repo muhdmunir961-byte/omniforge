@@ -1,4 +1,4 @@
-import {META,SKILLS,AGENT_PATHS,MCP_TOOLS,CAPABILITIES,MODULES,WORKFLOW_TEMPLATES,PRINCIPLES,VERIFIED_RUNS,CLI_EXAMPLES} from './data.js';
+import {META,SKILLS,AGENT_PATHS,MCP_TOOLS,CAPABILITIES,MODULES,WORKFLOW_TEMPLATES,PRINCIPLES,VERIFIED_RUNS,CLI_EXAMPLES,SEARCH_ALIASES} from './data.js';
 
 const $=(id)=>document.getElementById(id);
 const el=(tag,classname,text)=>{const node=document.createElement(tag);if(classname)node.className=classname;if(text!==undefined)node.textContent=text;return node};
@@ -29,10 +29,55 @@ $('capGrid').replaceChildren(...CAPABILITIES.map(c=>{const card=el('button','cap
 
 // ----- skill registry -----
 let skillFilter='all',skillSelected='log-triage';
-function drawSkills(){const q=$('skillSearch').value.toLowerCase().trim();const list=SKILLS.filter(s=>(skillFilter==='all'||s.type===skillFilter)&&(!q||`${s.name} ${s.description} ${s.category}`.toLowerCase().includes(q)));$('skillsList').replaceChildren(...(list.length?list.map((s,idx)=>{const b=el('button','skill-row'+(skillSelected===s.name?' selected':''));b.innerHTML=`<span class="skill-id">${String(idx+1).padStart(2,'0')}</span><span class="skill-row-content"><strong>${escapeHTML(s.name)}</strong><small>${escapeHTML(s.category)} · ${escapeHTML(s.description)}</small></span><span class="skill-status ${s.type==='adapter'?'adapter':''}">${s.type==='builtin'?'BUNDLED':'ADAPTER'}</span>`;b.addEventListener('click',()=>{skillSelected=s.name;drawSkills()});return b}):[el('div','empty-list','No skills match this query. Try a different keyword.') ]));renderSkillDetail()}
+function drawSkills(){const q=$('skillSearch').value.toLowerCase().trim();
+  // Expand a query through the alias table so "blockchain" reaches ledger
+  // skills even though no skill name contains that word.
+  const expanded=q?`${q} ${SEARCH_ALIASES[q]||''}`.trim():'';
+  const terms=expanded?expanded.split(/\s+/):[];
+  const list=SKILLS.filter(s=>{
+    if(skillFilter!=='all'&&s.type!==skillFilter)return false;
+    if(!terms.length)return true;
+    const hay=`${s.name} ${s.description} ${s.category}`.toLowerCase();
+    return terms.some(t=>hay.includes(t));
+  });$('skillsList').replaceChildren(...(list.length?list.map((s,idx)=>{const b=el('button','skill-row'+(skillSelected===s.name?' selected':''));b.innerHTML=`<span class="skill-id">${String(idx+1).padStart(2,'0')}</span><span class="skill-row-content"><strong>${escapeHTML(s.name)}</strong><small>${escapeHTML(s.category)} · ${escapeHTML(s.description)}</small></span><span class="skill-status ${s.type==='adapter'?'adapter':''}">${s.type==='builtin'?'BUNDLED':'ADAPTER'}</span>`;b.addEventListener('click',()=>{skillSelected=s.name;drawSkills()});return b}):[emptySkillState(q)]));renderSkillDetail()}
+
+/**
+ * A query with no skill match is not a dead end. Provenance/blockchain is a CLI
+ * capability (ofprov), not a bundled skill, so point the user at the page that
+ * actually demonstrates it instead of only saying "no results".
+ */
+function emptySkillState(query){
+  const wrap=el('div','empty-list');
+  wrap.append(el('p',null,`No bundled skill matches "${query}".`));
+  const cliWords=['blockchain','ledger','hash','provenance','tamper','anchor','integrity','evm'];
+  const isCli=cliWords.some(w=>query.includes(w));
+  const p=el('p',null,isCli
+    ? 'Blockchain and provenance are CLI commands (ofprov), not skills. '
+    : 'It may still be a CLI feature. ');
+  wrap.append(p);
+  const links=el('p');
+  const a1=el('a',null,'Open the Blockchain lab ↗');
+  a1.href='/blockchain-lab.html';
+  const a2=el('a',null,'Provenance in the explorer ↗');
+  a2.href='#provenance';
+  a2.addEventListener('click',e=>{e.preventDefault();const btn=document.querySelector('[data-page="provenance"]');if(btn)btn.click()});
+  links.append(a1,document.createTextNode('  ·  '),a2);
+  wrap.append(links);
+  return wrap;
+}
 function renderSkillDetail(){const s=SKILLS.find(x=>x.name===skillSelected)||SKILLS[0];const p=$('skillDetail');p.innerHTML=`<p class="eyebrow">SKILL SPECIFICATION</p><h2>${escapeHTML(s.name)}</h2><span class="pill">${s.type==='builtin'?'LOCAL SCRIPT':'OPTIONAL UPSTREAM'}</span><span class="pill">${escapeHTML(s.category)}</span><p>${escapeHTML(s.description)}</p><span class="detail-label">REQUIREMENT</span><strong style="font-size:12px">${escapeHTML(s.need)}</strong><span class="detail-label">EXAMPLE SKILL.md FRONTMATTER</span><pre class="snippet">---\nname: ${escapeHTML(s.name)}\ndescription: "${escapeHTML(s.description)}"\n---</pre><span class="detail-label">INSTALL LOCATION / CODEX</span><pre class="snippet">${AGENT_PATHS.codex}/${escapeHTML(s.name)}/SKILL.md</pre><div class="action-row detail-actions"><button id="skillTry" class="solid-button">Try CLI example ↗</button><a class="ghost-button" href="${sourceLink('src/omniforge/data/skills/'+s.name+'/SKILL.md')}" target="_blank" rel="noopener noreferrer">Source ↗</a></div><p style="margin-top:17px;font-size:11px">A bundled skill is not necessarily running here. Adapter requirements must be installed separately on your machine.</p>`;p.querySelector('#skillTry').addEventListener('click',()=>navigate('terminal',s.example))}
 $('skillSearch').addEventListener('input',drawSkills);
 $('skillFilters').addEventListener('click',e=>{const b=e.target.closest('button[data-filter]');if(!b)return;skillFilter=b.dataset.filter;$('skillFilters').querySelectorAll('button').forEach(x=>x.classList.toggle('selected',x===b));drawSkills()});
+// Counts come from the data, never from hardcoded text that can drift.
+function syncSkillCounts(){
+  const builtin=SKILLS.filter(s=>s.type==='builtin').length;
+  const adapter=SKILLS.filter(s=>s.type==='adapter').length;
+  const labels={all:`All · ${SKILLS.length}`,builtin:`Built-in · ${builtin}`,adapter:`Adapters · ${adapter}`};
+  $('skillFilters').querySelectorAll('button[data-filter]').forEach(b=>{b.textContent=labels[b.dataset.filter]||b.textContent});
+  const intro=document.querySelector('#page-skills .intro');
+  if(intro)intro.textContent=`Explore the precise ${SKILLS.length} bundled skills. ${builtin} are local scripts; ${adapter} depend on optional upstream tools. The separate ${META.researchCandidates}-entry catalog is discovery only.`;
+}
+syncSkillCounts();
 drawSkills();
 
 // ----- hash utilities shared between both toy environments -----
@@ -147,3 +192,12 @@ $('refreshCi').addEventListener('click',fetchLiveCi);
 
 // Page load navigation — avoid requesting external URLs by default.
 const initial=location.hash.slice(1);if(NAV[initial])navigate(initial);else refreshTitle();
+// Build stamp: proves which copy of the code this browser actually loaded.
+// If the skill counts look wrong, compare this stamp with the file on disk.
+(function stampBuild(){
+  const node=document.getElementById('buildStamp');
+  if(!node)return;
+  const builtin=SKILLS.filter(s=>s.type==='builtin').length;
+  const adapter=SKILLS.filter(s=>s.type==='adapter').length;
+  node.textContent=`build ${SKILLS.length}/${builtin}/${adapter}`;
+})();

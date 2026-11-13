@@ -1,0 +1,266 @@
+/* OmniForge Vault — Obsidian-style knowledge graph.
+   Dark, calm, typographic. Motion is purposeful: force-directed settling,
+   hover ripples and a travelling pulse along selected edges. */
+
+:root {
+  --v-bg: #1c1f1d;
+  --v-panel: #232723;
+  --v-panel-2: #282d29;
+  --v-line: #333a34;
+  --v-ink: #e6e8e2;
+  --v-muted: #8b948b;
+  --v-dim: #6a736b;
+  --v-accent: #e0a171;
+  --v-green: #8fb59c;
+  --v-tool: #c9a26e;
+  --v-cat: #6f8c7b;
+  --v-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --v-sans: 'DM Sans', system-ui, -apple-system, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body.vault-page {
+  margin: 0; background: var(--v-bg); color: var(--v-ink);
+  font-family: var(--v-sans); font-size: 14px;
+  display: flex; flex-direction: column; overflow: hidden;
+}
+button, input { font-family: var(--v-sans); }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--v-accent); outline-offset: 2px; }
+
+/* ---------------------------------------------------------------- top bar */
+
+.vault-bar {
+  flex: none; display: flex; align-items: center; gap: 18px;
+  padding: 12px 18px; background: var(--v-panel);
+  border-bottom: 1px solid var(--v-line); z-index: 5;
+}
+.vault-brand {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--v-ink); text-decoration: none;
+  font-weight: 700; letter-spacing: .1em; font-size: 13px; white-space: nowrap;
+}
+.vault-mark {
+  width: 30px; height: 30px; border-radius: 7px; display: grid; place-items: center;
+  background: #2c322d; color: var(--v-accent); font-size: 17px;
+}
+.vault-sub {
+  display: block; font: 500 8.5px/1.6 var(--v-mono);
+  color: var(--v-dim); letter-spacing: .14em;
+}
+.vault-search {
+  flex: 1 1 auto; max-width: 460px; display: flex; align-items: center; gap: 9px;
+  background: var(--v-bg); border: 1px solid var(--v-line); border-radius: 6px;
+  padding: 0 11px; height: 34px; transition: border-color .2s;
+}
+.vault-search:focus-within { border-color: #4a544c; }
+.vault-search span { color: var(--v-dim); font-size: 14px; }
+.vault-search input {
+  flex: 1; background: none; border: 0; outline: none;
+  color: var(--v-ink); font-size: 12.5px; min-width: 0;
+}
+.vault-search input::placeholder { color: var(--v-dim); }
+.vault-search kbd {
+  font: 500 9px var(--v-mono); color: var(--v-dim);
+  border: 1px solid var(--v-line); border-radius: 3px; padding: 1px 5px;
+}
+.vault-nav { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+.vault-tab {
+  background: none; border: 1px solid transparent; border-radius: 5px;
+  color: var(--v-muted); font-size: 11.5px; font-weight: 600; padding: 7px 12px;
+  transition: background .18s, color .18s, border-color .18s;
+}
+.vault-tab:hover { background: var(--v-panel-2); color: var(--v-ink); }
+.vault-tab.active { background: #2f3631; border-color: #3d463f; color: var(--v-ink); }
+.vault-link {
+  color: var(--v-accent); text-decoration: none; font-size: 11.5px;
+  font-weight: 650; padding: 7px 10px; white-space: nowrap;
+}
+.vault-link:hover { color: #f0b98d; }
+
+/* ---------------------------------------------------------------- shell */
+
+.vault-shell {
+  flex: 1 1 auto; display: grid; grid-template-columns: minmax(0, 1fr) 344px;
+  min-height: 0;
+}
+
+/* ---------------------------------------------------------------- graph */
+
+.vault-graph-wrap {
+  position: relative; min-width: 0; min-height: 0;
+  background:
+    radial-gradient(circle at 30% 25%, #22282310 0%, transparent 55%),
+    radial-gradient(circle at 75% 70%, #2a2f2a12 0%, transparent 50%),
+    var(--v-bg);
+}
+#graphCanvas { display: block; width: 100%; height: 100%; cursor: grab; }
+#graphCanvas.dragging { cursor: grabbing; }
+
+.graph-legend {
+  position: absolute; left: 16px; bottom: 16px;
+  display: flex; flex-wrap: wrap; gap: 14px;
+  font: 500 9.5px var(--v-mono); color: var(--v-dim);
+  pointer-events: none;
+}
+.graph-legend span { display: flex; align-items: center; gap: 6px; }
+.lg { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.lg-skill { background: var(--v-green); }
+.lg-adapter { background: var(--v-accent); }
+.lg-tool { background: var(--v-tool); }
+.lg-cat { background: var(--v-cat); }
+
+.graph-controls {
+  position: absolute; right: 16px; bottom: 16px;
+  display: flex; align-items: center; gap: 7px;
+}
+.graph-controls button {
+  background: #262c27; border: 1px solid var(--v-line); color: var(--v-muted);
+  border-radius: 5px; padding: 7px 11px; font-size: 10.5px; font-weight: 600;
+  transition: background .18s, color .18s, border-color .18s;
+}
+.graph-controls button:hover { background: #303832; color: var(--v-ink); border-color: #46514a; }
+.graph-controls button.on { color: var(--v-accent); border-color: #5d4a37; }
+.graph-count { font: 500 9.5px var(--v-mono); color: var(--v-dim); margin-left: 4px; }
+
+.graph-hint {
+  position: absolute; left: 50%; top: 16px; transform: translateX(-50%);
+  font: 500 9.5px var(--v-mono); color: var(--v-dim);
+  background: #23272399; border: 1px solid var(--v-line); border-radius: 4px;
+  padding: 5px 11px; pointer-events: none;
+  transition: opacity .5s; white-space: nowrap;
+}
+.graph-hint.fade { opacity: 0; }
+
+/* ---------------------------------------------------------------- note */
+
+.vault-note {
+  background: var(--v-panel); border-left: 1px solid var(--v-line);
+  overflow-y: auto; min-height: 0; padding: 20px 20px 28px;
+}
+.note-empty {
+  display: grid; place-items: center; gap: 14px; min-height: 60vh;
+  color: var(--v-dim); text-align: center; font-size: 12px; line-height: 1.8;
+}
+.note-empty-glyph { font-size: 30px; opacity: .4; }
+.note-empty kbd {
+  font: 500 9px var(--v-mono); border: 1px solid var(--v-line);
+  border-radius: 3px; padding: 1px 5px; color: var(--v-muted);
+}
+.note-body { animation: noteIn .28s ease-out; }
+.note-body[hidden] { display: none; }
+
+.note-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.note-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+.note-badge {
+  font: 600 8.5px var(--v-mono); letter-spacing: .07em;
+  padding: 3px 7px; border-radius: 3px; border: 1px solid;
+}
+.nb-skill { color: #9dc7ab; border-color: #3d5a48; background: #26332b; }
+.nb-adapter { color: #e3b184; border-color: #5d4632; background: #322a22; }
+.nb-tool { color: #d5b486; border-color: #544530; background: #302a20; }
+.nb-cat { color: #93b3a1; border-color: #35463c; background: #232e28; }
+.note-close {
+  background: none; border: 1px solid var(--v-line); color: var(--v-dim);
+  border-radius: 4px; width: 24px; height: 24px; font-size: 11px; flex: none;
+  transition: color .18s, border-color .18s;
+}
+.note-close:hover { color: var(--v-ink); border-color: #4d574f; }
+
+.note-title {
+  margin: 14px 0 8px; font-size: 21px; letter-spacing: -.03em;
+  font-weight: 650; line-height: 1.25; word-break: break-word;
+}
+.note-desc { margin: 0 0 20px; font-size: 12.5px; line-height: 1.75; color: var(--v-muted); }
+
+.note-section { margin-bottom: 20px; }
+.note-label {
+  display: block; font: 600 9px var(--v-mono); letter-spacing: .11em;
+  color: var(--v-dim); margin-bottom: 9px;
+}
+.note-meta { margin: 0; display: grid; grid-template-columns: 78px 1fr; gap: 7px 10px; }
+.note-meta dt { font: 500 9.5px var(--v-mono); color: var(--v-dim); }
+.note-meta dd { margin: 0; font-size: 11.5px; color: var(--v-ink); word-break: break-word; }
+
+.note-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.note-link {
+  background: #2a302b; border: 1px solid var(--v-line); color: var(--v-muted);
+  border-radius: 4px; padding: 5px 9px; font-size: 10.5px;
+  transition: background .18s, color .18s, border-color .18s, transform .18s;
+}
+.note-link:hover {
+  background: #333b34; color: var(--v-ink); border-color: #4b564d;
+  transform: translateY(-1px);
+}
+.note-link .nl-dot { display: inline-block; width: 5px; height: 5px; border-radius: 50%; margin-right: 5px; }
+
+.note-code {
+  margin: 0; background: #1a1e1b; border: 1px solid var(--v-line); border-radius: 5px;
+  padding: 11px 12px; font: 10.5px/1.7 var(--v-mono); color: #b9c6b9;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+
+/* ---------------------------------------------------------------- list */
+
+.vault-list { grid-column: 1 / -1; overflow-y: auto; padding: 30px 30px 60px; }
+.list-head h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -.04em; font-weight: 650; }
+.list-head h1 span { color: var(--v-dim); font-size: 15px; font-weight: 500; }
+.list-head p { margin: 0 0 26px; color: var(--v-muted); font-size: 12.5px; }
+.list-groups { display: grid; gap: 26px; }
+.list-group h2 {
+  margin: 0 0 10px; font: 600 9.5px var(--v-mono);
+  letter-spacing: .11em; color: var(--v-dim); text-transform: uppercase;
+}
+.list-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 9px; }
+.list-card {
+  text-align: left; background: var(--v-panel); border: 1px solid var(--v-line);
+  border-radius: 6px; padding: 13px 14px; color: var(--v-ink);
+  transition: border-color .18s, transform .18s, background .18s;
+}
+.list-card:hover { border-color: #4b564d; transform: translateY(-2px); background: var(--v-panel-2); }
+.list-card strong { display: block; font-size: 12.5px; font-weight: 650; margin-bottom: 4px; word-break: break-word; }
+.list-card small { color: var(--v-muted); font-size: 10.5px; line-height: 1.6; display: block; }
+
+/* ---------------------------------------------------------------- footer */
+
+.vault-foot {
+  flex: none; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; padding: 9px 18px; background: var(--v-panel);
+  border-top: 1px solid var(--v-line); font: 500 9.5px var(--v-mono); color: var(--v-dim);
+}
+.vault-foot code { color: var(--v-muted); }
+
+/* ---------------------------------------------------------------- keyframes */
+
+@keyframes noteIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------------------------------------------------------------- responsive */
+
+@media (max-width: 900px) {
+  .vault-shell { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) auto; }
+  .vault-note {
+    border-left: 0; border-top: 1px solid var(--v-line);
+    max-height: 46vh; padding: 16px 16px 22px;
+  }
+  .note-empty { min-height: 120px; }
+  .vault-search { max-width: none; }
+  .vault-nav .vault-link { display: none; }
+}
+@media (max-width: 620px) {
+  .vault-bar { flex-wrap: wrap; gap: 10px; padding: 10px 12px; }
+  .vault-search { order: 3; flex-basis: 100%; }
+  .vault-nav { margin-left: 0; }
+  .graph-legend { display: none; }
+  .vault-list { padding: 22px 16px 40px; }
+  .list-cards { grid-template-columns: 1fr; }
+  .vault-foot span:first-child { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .note-body { animation: none; }
+  .list-card:hover, .note-link:hover { transform: none; }
+}
