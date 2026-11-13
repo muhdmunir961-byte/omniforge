@@ -192,3 +192,12 @@ $('refreshCi').addEventListener('click',fetchLiveCi);
 
 // Page load navigation — avoid requesting external URLs by default.
 const initial=location.hash.slice(1);if(NAV[initial])navigate(initial);else refreshTitle();
+// Build stamp: proves which copy of the code this browser actually loaded.
+// If the skill counts look wrong, compare this stamp with the file on disk.
+(function stampBuild(){
+  const node=document.getElementById('buildStamp');
+  if(!node)return;
+  const builtin=SKILLS.filter(s=>s.type==='builtin').length;
+  const adapter=SKILLS.filter(s=>s.type==='adapter').length;
+  node.textContent=`build ${SKILLS.length}/${builtin}/${adapter}`;
+})();
