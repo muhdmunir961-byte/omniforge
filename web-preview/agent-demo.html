@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0e1110">
+<meta name="description" content="Demo langsung: satu prompt menjana pelan, memanggil GitHub API sebenar dan menjalankan CLI OmniForge sebenar.">
+<title>Agent Demo · OmniForge</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e1110'/%3E%3Cpath d='M18 24h20M18 32h28M18 40h14' stroke='%237ee0a8' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/agent-demo.css">
+</head>
+<body class="agent-page">
+
+<header class="agent-bar">
+  <a class="agent-brand" href="/">
+    <span class="brand-dot" aria-hidden="true"></span>
+    <span>OMNIFORGE<span class="brand-sub">AGENT DEMO</span></span>
+  </a>
+  <div class="agent-status" id="agentStatus" data-state="idle">
+    <span class="status-led"></span><span id="statusText">SEDIA</span>
+  </div>
+  <nav class="agent-nav">
+    <a href="/vault.html">Vault</a>
+    <a href="/blockchain-lab.html">Chain lab</a>
+    <a href="/terminal.html">Terminal</a>
+  </nav>
+</header>
+
+<main class="agent-main">
+
+  <!-- ============ PROMPT ============ -->
+  <section class="prompt-zone" id="promptZone">
+    <div class="prompt-head">
+      <span class="prompt-eyebrow">SATU PROMPT · SEMUA DIJANA</span>
+      <h1>Tulis apa yang anda mahu.<br><em>Lihat ia berlaku.</em></h1>
+      <p class="prompt-sub">
+        Prompt ini memacu <strong>GitHub API sebenar</strong> dan
+        <strong>CLI OmniForge sebenar</strong>. Setiap nombor di bawah datang
+        dari API hidup — bukan data palsu.
+      </p>
+    </div>
+
+    <div class="prompt-box">
+      <div class="prompt-input-wrap">
+        <span class="prompt-caret" aria-hidden="true">›</span>
+        <textarea id="promptInput" rows="3"
+          placeholder="Contoh: audit repo ini untuk keselamatan dan integriti, kemudian bina laporan"
+          aria-label="Prompt"></textarea>
+      </div>
+      <div class="prompt-actions">
+        <div class="prompt-presets" id="presets">
+          <button class="preset" data-prompt="audit repo ini untuk keselamatan dan integriti">🔒 Audit keselamatan</button>
+          <button class="preset" data-prompt="periksa status CI dan commit terkini repo">⚙ Status CI</button>
+          <button class="preset" data-prompt="bina rantai provenance dan sahkan integriti fail">⛓ Provenance</button>
+          <button class="preset" data-prompt="senaraikan semua skill dan pilih yang sesuai untuk debugging">◇ Pilih skill</button>
+        </div>
+        <button class="run-btn" id="runBtn">
+          <span class="run-glyph" aria-hidden="true">▶</span>
+          <span>Jalankan</span>
+          <kbd>⌘↵</kbd>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PIPELINE ============ -->
+  <section class="pipeline" id="pipeline" hidden>
+    <ol class="phase-list" id="phaseList"></ol>
+    <div class="pipeline-progress"><span id="progressBar"></span></div>
+  </section>
+
+  <!-- ============ LIVE GRID ============ -->
+  <section class="live-grid" id="liveGrid" hidden>
+
+    <!-- terminal -->
+    <div class="live-panel terminal-panel">
+      <div class="panel-bar">
+        <span class="panel-title">AGENT LOG</span>
+        <span class="panel-meta" id="logMeta">—</span>
+      </div>
+      <div class="log-stream" id="logStream" aria-live="polite"></div>
+    </div>
+
+    <!-- github stats -->
+    <div class="live-panel github-panel">
+      <div class="panel-bar">
+        <span class="panel-title">GITHUB API · LANGSUNG</span>
+        <span class="panel-meta" id="ghMeta">—</span>
+      </div>
+      <div class="gh-body">
+        <div class="gh-repo">
+          <div class="gh-name" id="ghName">—</div>
+          <div class="gh-desc" id="ghDesc"></div>
+        </div>
+        <div class="gh-stats" id="ghStats"></div>
+        <div class="gh-checks" id="ghChecks"></div>
+        <div class="gh-commits" id="ghCommits"></div>
+      </div>
+    </div>
+
+    <!-- cli output -->
+    <div class="live-panel cli-panel">
+      <div class="panel-bar">
+        <span class="panel-title">OMNIFORGE CLI · SEBENAR</span>
+        <span class="panel-meta" id="cliMeta">—</span>
+      </div>
+      <pre class="cli-out" id="cliOut"><span class="dim">$ menunggu…</span></pre>
+    </div>
+
+    <!-- result -->
+    <div class="live-panel result-panel">
+      <div class="panel-bar">
+        <span class="panel-title">HASIL</span>
+        <span class="panel-meta" id="resultMeta">—</span>
+      </div>
+      <div class="result-body" id="resultBody"></div>
+    </div>
+
+  </section>
+
+  <footer class="agent-foot">
+    <span>Data GitHub: API awam, tiada token. CLI: allowlist pelayan, projek sementara.</span>
+    <a href="https://github.com/muhdmunir961-byte/omniforge" target="_blank" rel="noreferrer">Source ↗</a>
+  </footer>
+
+</main>
+
+<script src="/agent-demo.js" defer></script>
+</body>
+</html>
