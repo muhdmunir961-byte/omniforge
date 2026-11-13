@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1c1f1d">
+<meta name="description" content="Vault Obsidian OmniForge: graf pengetahuan interaktif bagi 18 skill, 10 tool MCP dan kategori — dengan animasi fizik dan panel nota.">
+<title>Vault · OmniForge</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%231c1f1d'/%3E%3Ccircle cx='24' cy='24' r='5' fill='%23e0a171'/%3E%3Ccircle cx='42' cy='32' r='4' fill='%238fb59c'/%3E%3Ccircle cx='30' cy='44' r='4' fill='%23c9a26e'/%3E%3Cpath d='M24 24 42 32 30 44' stroke='%235b665c' stroke-width='2' fill='none'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/vault.css">
+</head>
+<body class="vault-page">
+
+<header class="vault-bar">
+  <a class="vault-brand" href="/">
+    <span class="vault-mark" aria-hidden="true">⬡</span>
+    <span>OMNIFORGE<span class="vault-sub">VAULT</span></span>
+  </a>
+  <div class="vault-search">
+    <span aria-hidden="true">⌕</span>
+    <input id="vaultSearch" type="search" placeholder="Cari nota, skill, tool…" aria-label="Cari dalam vault" autocomplete="off">
+    <kbd>/</kbd>
+  </div>
+  <nav class="vault-nav" aria-label="Paparan">
+    <button class="vault-tab active" data-mode="graph">Graf</button>
+    <button class="vault-tab" data-mode="list">Senarai</button>
+    <a class="vault-link" href="/blockchain-lab.html">Chain lab ↗</a>
+  </nav>
+</header>
+
+<main class="vault-shell">
+
+  <!-- ==================== graph ==================== -->
+  <section class="vault-graph-wrap" id="graphWrap">
+    <canvas id="graphCanvas" aria-label="Graf pengetahuan interaktif"></canvas>
+
+    <div class="graph-legend" aria-hidden="true">
+      <span><i class="lg lg-skill"></i> Skill</span>
+      <span><i class="lg lg-adapter"></i> Adapter</span>
+      <span><i class="lg lg-tool"></i> MCP tool</span>
+      <span><i class="lg lg-cat"></i> Kategori</span>
+    </div>
+
+    <div class="graph-controls">
+      <button id="btnReheat" title="Susun semula graf">↻ Susun semula</button>
+      <button id="btnPause" title="Jeda/teruskan fizik">⏸ Fizik</button>
+      <span class="graph-count" id="graphCount">— nod</span>
+    </div>
+
+    <div class="graph-hint" id="graphHint">Klik nod untuk buka nota · seret untuk gerak · tatal untuk zum</div>
+  </section>
+
+  <!-- ==================== note panel ==================== -->
+  <aside class="vault-note" id="notePanel" aria-live="polite">
+    <div class="note-empty" id="noteEmpty">
+      <div class="note-empty-glyph" aria-hidden="true">◫</div>
+      <p>Pilih satu nod dalam graf,<br>atau tekan <kbd>↻ Susun semula</kbd>.</p>
+    </div>
+
+    <article class="note-body" id="noteBody" hidden>
+      <div class="note-head">
+        <div class="note-badges" id="noteBadges"></div>
+        <button class="note-close" id="noteClose" aria-label="Tutup nota">✕</button>
+      </div>
+      <h2 class="note-title" id="noteTitle"></h2>
+      <p class="note-desc" id="noteDesc"></p>
+
+      <div class="note-section" id="noteMetaSection">
+        <span class="note-label">BUTIRAN</span>
+        <dl class="note-meta" id="noteMeta"></dl>
+      </div>
+
+      <div class="note-section" id="noteLinksSection">
+        <span class="note-label">PAUTAN <span id="noteLinkCount"></span></span>
+        <div class="note-links" id="noteLinks"></div>
+      </div>
+
+      <div class="note-section" id="noteCmdSection">
+        <span class="note-label">CONTOH CLI</span>
+        <pre class="note-code" id="noteCmd"></pre>
+      </div>
+    </article>
+  </aside>
+
+  <!-- ==================== list mode ==================== -->
+  <section class="vault-list" id="listView" hidden>
+    <div class="list-head">
+      <h1>Semua nota <span id="listCount"></span></h1>
+      <p>Setiap skill, tool dan kategori ialah satu nota. Klik untuk buka.</p>
+    </div>
+    <div class="list-groups" id="listGroups"></div>
+  </section>
+
+</main>
+
+<footer class="vault-foot">
+  <span>Vault dijana daripada <code>data.js</code> sebenar — bukan senarai hardcoded.</span>
+  <span id="vaultStats"></span>
+</footer>
+
+<script type="module" src="/vault.js"></script>
+</body>
+</html>
